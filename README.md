@@ -126,6 +126,8 @@ No print, aparece a pasta de mundo com diretórios como `behavior_packs` e JSON 
 
 ## 8) Próximos passos imediatos
 
+- guia de publicação sem binários no repositório: `docs/publicacao_sem_binarios.md`.
+
 - [ ] Criar pasta `packs/` com BP e RP base;
 - [ ] Adicionar `manifest.json` para cada pack com UUIDs válidos;
 - [ ] Definir namespace do projeto;
