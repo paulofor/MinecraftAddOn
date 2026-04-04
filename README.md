@@ -122,6 +122,14 @@ No print, aparece a pasta de mundo com diretórios como `behavior_packs` e JSON 
 
 > Faça sempre backup antes de substituir packs em produção.
 
+### Serviço do Minecraft Server (systemd)
+
+Para iniciar o serviço do servidor Minecraft Bedrock:
+
+```bash
+systemctl start bedrock.service
+```
+
 ---
 
 ## 8) Próximos passos imediatos
