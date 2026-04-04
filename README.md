@@ -51,7 +51,8 @@ MinecraftAddOn/
 ├─ tools/
 │  ├─ validate.sh                      # valida JSON e estrutura
 │  ├─ package.sh                       # gera .mcpack/.zip
-│  └─ deploy.sh                        # copia para servidor (opcional)
+│  ├─ deploy.sh                        # copia para servidor (opcional)
+│  └─ backup_environment.sh            # backup do ambiente + agendamento no cron
 ├─ docs/
 │  ├─ roadmap.md
 │  ├─ conventions.md
@@ -129,6 +130,22 @@ Para iniciar o serviço do servidor Minecraft Bedrock:
 ```bash
 systemctl start bedrock.service
 ```
+
+### Backup automático diário às 04:00
+
+Para salvar todo o ambiente do repositório em `.tar.gz`:
+
+```bash
+./tools/backup_environment.sh
+```
+
+Para agendar o backup diário às **04:00** no `crontab`:
+
+```bash
+./tools/backup_environment.sh --install-cron
+```
+
+Os arquivos serão salvos em `backups/` (padrão) e backups antigos serão removidos após 7 dias.
 
 ---
 
