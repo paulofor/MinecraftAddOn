@@ -133,6 +133,8 @@ systemctl start bedrock.service
 
 ### Backup automático diário às 04:00
 
+#### Backup do ambiente do repositório
+
 Para salvar todo o ambiente do repositório em `.tar.gz`:
 
 ```bash
@@ -146,6 +148,28 @@ Para agendar o backup diário às **04:00** no `crontab`:
 ```
 
 Os arquivos serão salvos em `backups/` (padrão) e backups antigos serão removidos após 7 dias.
+
+#### Backup dos dados do mundo (hora local do servidor)
+
+Para gerar backup manual de um mundo específico:
+
+```bash
+./tools/backup_world_data.sh --world-dir /caminho/do/mundo
+```
+
+Para publicar o agendamento diário às **04:00** no `crontab` (hora local do servidor):
+
+```bash
+./tools/backup_world_data.sh --world-dir /caminho/do/mundo --install-cron
+```
+
+Exemplo realista para Bedrock:
+
+```bash
+./tools/backup_world_data.sh --world-dir /opt/bedrock-server/worlds/Bedrock level --install-cron
+```
+
+Backups são salvos por padrão em `backups/worlds/` e a retenção padrão é de 14 dias.
 
 ### Publicação automática no servidor (GitHub Actions)
 
