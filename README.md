@@ -151,7 +151,7 @@ Os arquivos serão salvos em `backups/` (padrão) e backups antigos serão remov
 
 Foi adicionado o workflow `.github/workflows/publish-server.yml` para publicar a pasta `packs/` no servidor:
 
-- Host: `186.202.208.206`
+- Host: `186.202.209.206`
 - Usuário: `root`
 - Senha: secret `VPS_SENHA`
 
