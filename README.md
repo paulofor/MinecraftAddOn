@@ -51,7 +51,8 @@ MinecraftAddOn/
 ├─ tools/
 │  ├─ validate.sh                      # valida JSON e estrutura
 │  ├─ package.sh                       # gera .mcpack/.zip
-│  └─ deploy.sh                        # copia para servidor (opcional)
+│  ├─ deploy.sh                        # copia para servidor (opcional)
+│  └─ backup_environment.sh            # backup do ambiente + agendamento no cron
 ├─ docs/
 │  ├─ roadmap.md
 │  ├─ conventions.md
@@ -129,6 +130,36 @@ Para iniciar o serviço do servidor Minecraft Bedrock:
 ```bash
 systemctl start bedrock.service
 ```
+
+### Backup automático diário às 04:00
+
+Para salvar todo o ambiente do repositório em `.tar.gz`:
+
+```bash
+./tools/backup_environment.sh
+```
+
+Para agendar o backup diário às **04:00** no `crontab`:
+
+```bash
+./tools/backup_environment.sh --install-cron
+```
+
+Os arquivos serão salvos em `backups/` (padrão) e backups antigos serão removidos após 7 dias.
+
+### Publicação automática no servidor (GitHub Actions)
+
+Foi adicionado o workflow `.github/workflows/publish-server.yml` para publicar a pasta `packs/` no servidor:
+
+- Host: `186.202.208.206`
+- Usuário: `root`
+- Senha: secret `VPS_SENHA`
+
+Configuração recomendada no GitHub:
+
+1. Criar o secret **`VPS_SENHA`** em *Settings > Secrets and variables > Actions*;
+2. (Opcional) Criar a variável **`VPS_DESTINO`** com o diretório remoto desejado (padrão: `/root/MinecraftAddOn`);
+3. Fazer push na branch `work` ou `main`, ou rodar manualmente via `workflow_dispatch`.
 
 ---
 

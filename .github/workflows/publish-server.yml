@@ -1,0 +1,54 @@
+name: Publicar no servidor VPS
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - work
+      - main
+    paths:
+      - 'packs/**'
+      - '.github/workflows/publish-server.yml'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      VPS_HOST: 186.202.208.206
+      VPS_USER: root
+      VPS_PORT: 22
+      REMOTE_DIR: ${{ vars.VPS_DESTINO || '/root/MinecraftAddOn' }}
+
+    steps:
+      - name: Checkout do repositório
+        uses: actions/checkout@v4
+
+      - name: Instalar dependências (rsync + sshpass)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y rsync sshpass
+
+      - name: Preparar pasta remota
+        env:
+          VPS_SENHA: ${{ secrets.VPS_SENHA }}
+        run: |
+          sshpass -p "$VPS_SENHA" \
+            ssh -o StrictHostKeyChecking=no -p "$VPS_PORT" "$VPS_USER@$VPS_HOST" \
+            "mkdir -p '$REMOTE_DIR/packs'"
+
+      - name: Publicar packs no servidor
+        env:
+          VPS_SENHA: ${{ secrets.VPS_SENHA }}
+        run: |
+          sshpass -p "$VPS_SENHA" \
+            rsync -az --delete \
+            -e "ssh -o StrictHostKeyChecking=no -p $VPS_PORT" \
+            packs/ "$VPS_USER@$VPS_HOST:$REMOTE_DIR/packs/"
+
+      - name: Validar publicação remota
+        env:
+          VPS_SENHA: ${{ secrets.VPS_SENHA }}
+        run: |
+          sshpass -p "$VPS_SENHA" \
+            ssh -o StrictHostKeyChecking=no -p "$VPS_PORT" "$VPS_USER@$VPS_HOST" \
+            "ls -lah '$REMOTE_DIR/packs'"
