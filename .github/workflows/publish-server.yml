@@ -23,32 +23,32 @@ jobs:
       - name: Checkout do repositório
         uses: actions/checkout@v4
 
-      - name: Instalar dependências (rsync + sshpass)
+      - name: Instalar dependência (rsync)
         run: |
           sudo apt-get update
-          sudo apt-get install -y rsync sshpass
+          sudo apt-get install -y rsync
+
+      - name: Configurar chave SSH
+        env:
+          VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+        run: |
+          mkdir -p ~/.ssh
+          printf '%s\n' "$VPS_SSH_KEY" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          ssh-keyscan -p "$VPS_PORT" "$VPS_HOST" >> ~/.ssh/known_hosts
 
       - name: Preparar pasta remota
-        env:
-          VPS_SENHA: ${{ secrets.VPS_SENHA }}
         run: |
-          sshpass -p "$VPS_SENHA" \
-            ssh -o StrictHostKeyChecking=no -p "$VPS_PORT" "$VPS_USER@$VPS_HOST" \
+          ssh -i ~/.ssh/id_ed25519 -p "$VPS_PORT" "$VPS_USER@$VPS_HOST" \
             "mkdir -p '$REMOTE_DIR/packs'"
 
       - name: Publicar packs no servidor
-        env:
-          VPS_SENHA: ${{ secrets.VPS_SENHA }}
         run: |
-          sshpass -p "$VPS_SENHA" \
-            rsync -az --delete \
-            -e "ssh -o StrictHostKeyChecking=no -p $VPS_PORT" \
+          rsync -az --delete \
+            -e "ssh -i ~/.ssh/id_ed25519 -p $VPS_PORT" \
             packs/ "$VPS_USER@$VPS_HOST:$REMOTE_DIR/packs/"
 
       - name: Validar publicação remota
-        env:
-          VPS_SENHA: ${{ secrets.VPS_SENHA }}
         run: |
-          sshpass -p "$VPS_SENHA" \
-            ssh -o StrictHostKeyChecking=no -p "$VPS_PORT" "$VPS_USER@$VPS_HOST" \
+          ssh -i ~/.ssh/id_ed25519 -p "$VPS_PORT" "$VPS_USER@$VPS_HOST" \
             "ls -lah '$REMOTE_DIR/packs'"
