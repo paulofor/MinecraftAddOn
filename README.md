@@ -147,6 +147,20 @@ Para agendar o backup diário às **04:00** no `crontab`:
 
 Os arquivos serão salvos em `backups/` (padrão) e backups antigos serão removidos após 7 dias.
 
+### Publicação automática no servidor (GitHub Actions)
+
+Foi adicionado o workflow `.github/workflows/publish-server.yml` para publicar a pasta `packs/` no servidor:
+
+- Host: `186.202.208.206`
+- Usuário: `root`
+- Senha: secret `VPS_SENHA`
+
+Configuração recomendada no GitHub:
+
+1. Criar o secret **`VPS_SENHA`** em *Settings > Secrets and variables > Actions*;
+2. (Opcional) Criar a variável **`VPS_DESTINO`** com o diretório remoto desejado (padrão: `/root/MinecraftAddOn`);
+3. Fazer push na branch `work` ou `main`, ou rodar manualmente via `workflow_dispatch`.
+
 ---
 
 ## 8) Próximos passos imediatos
