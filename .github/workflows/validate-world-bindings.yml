@@ -1,0 +1,32 @@
+name: Validate Bedrock World Bindings
+
+on:
+  workflow_dispatch:
+    inputs:
+      world_dir:
+        description: "Diretório do mundo Bedrock no servidor remoto"
+        required: true
+        default: "/opt/bedrock-server/worlds/Bedrock level"
+      repo_dir:
+        description: "Diretório remoto do repositório"
+        required: true
+        default: "/root/MinecraftAddOn"
+
+jobs:
+  validate-remote-world:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Validar vínculos no servidor remoto
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          password: ${{ secrets.VPS_SENHA }}
+          port: ${{ secrets.VPS_PORT || 22 }}
+          script: |
+            set -euo pipefail
+            cd "${{ github.event.inputs.repo_dir }}"
+            python3 tools/validate_world_bindings.py --world-dir "${{ github.event.inputs.world_dir }}"
