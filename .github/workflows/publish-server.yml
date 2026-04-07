@@ -18,6 +18,9 @@ jobs:
       VPS_USER: root
       VPS_PORT: 22
       REMOTE_DIR: ${{ vars.VPS_DESTINO || '/root/MinecraftAddOn' }}
+      WORLD_DIR: ${{ vars.BEDROCK_WORLD_DIR || '/root/bedrock-server/worlds/Bedrock level' }}
+      WORLD_BP_DIR: ${{ vars.BEDROCK_WORLD_BP_DIR || '/root/bedrock-server/worlds/Bedrock level/behavior_packs' }}
+      WORLD_RP_DIR: ${{ vars.BEDROCK_WORLD_RP_DIR || '/root/bedrock-server/worlds/Bedrock level/resource_packs' }}
 
     steps:
       - name: Checkout do repositório
@@ -40,7 +43,7 @@ jobs:
       - name: Preparar pasta remota
         run: |
           ssh -i ~/.ssh/id_ed25519 -p "$VPS_PORT" "$VPS_USER@$VPS_HOST" \
-            "mkdir -p '$REMOTE_DIR/packs'"
+            "mkdir -p '$REMOTE_DIR/packs' '$WORLD_BP_DIR' '$WORLD_RP_DIR'"
 
       - name: Publicar packs no servidor
         run: |
@@ -48,7 +51,16 @@ jobs:
             -e "ssh -i ~/.ssh/id_ed25519 -p $VPS_PORT" \
             packs/ "$VPS_USER@$VPS_HOST:$REMOTE_DIR/packs/"
 
-      - name: Validar publicação remota
+      - name: Promover packs para o mundo Bedrock
         run: |
           ssh -i ~/.ssh/id_ed25519 -p "$VPS_PORT" "$VPS_USER@$VPS_HOST" \
-            "ls -lah '$REMOTE_DIR/packs'"
+            "rsync -az --delete '$REMOTE_DIR/packs/BP_QuadroIdeias/' '$WORLD_BP_DIR/BP_QuadroIdeias/' && \
+             rsync -az --delete '$REMOTE_DIR/packs/RP_QuadroIdeias/' '$WORLD_RP_DIR/RP_QuadroIdeias/'"
+
+      - name: Validar publicação remota (diretórios finais do mundo)
+        run: |
+          ssh -i ~/.ssh/id_ed25519 -p "$VPS_PORT" "$VPS_USER@$VPS_HOST" \
+            "echo 'Behavior packs em: $WORLD_BP_DIR/BP_QuadroIdeias' && \
+             ls -lah '$WORLD_BP_DIR/BP_QuadroIdeias' && \
+             echo 'Resource packs em: $WORLD_RP_DIR/RP_QuadroIdeias' && \
+             ls -lah '$WORLD_RP_DIR/RP_QuadroIdeias'"
