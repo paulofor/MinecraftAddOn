@@ -155,6 +155,57 @@ Para executar essa checagem remotamente via SSH (sem login interativo):
   --world-dir "/opt/bedrock-server/worlds/Bedrock level"
 ```
 
+### Checklist de runtime do mundo (Script API / Experimentos)
+
+Antes de validar em produção, confirme no mundo/servidor Bedrock que os requisitos de runtime estão habilitados para a **mesma versão do servidor em uso**:
+
+- [ ] O pack possui módulo `script` no `manifest.json` (quando houver scripts em `BP_*/scripts`).
+- [ ] Dependências de Script API declaradas no `manifest.json` (ex.: `@minecraft/server`) com versão compatível com o binário do Bedrock Server.
+- [ ] Experimentos exigidos pelo add-on habilitados no mundo (por exemplo, recursos beta/experimental quando necessário na versão instalada).
+- [ ] `world_behavior_packs.json` e `world_resource_packs.json` vinculados aos UUIDs/versões atuais dos manifests.
+- [ ] O servidor foi reiniciado/recarregado após atualização dos packs, quando a versão/plataforma exigir.
+
+> Dica: se houver divergência entre versão do módulo Script API e versão do servidor, o mundo pode abrir sem os comportamentos de script.
+
+### Confirmação pós-publicação (logs do Bedrock)
+
+Após copiar/publicar os packs no servidor, valide imediatamente os logs para detectar erro de import/script:
+
+```bash
+journalctl -u bedrock.service -n 200 --no-pager
+```
+
+Procure por mensagens de erro relacionadas a:
+- falha de carregamento de módulo de script;
+- import inválido/não encontrado;
+- dependência com versão incompatível;
+- API/experimento desabilitado no mundo.
+
+Se necessário, acompanhe em tempo real durante o boot:
+
+```bash
+journalctl -u bedrock.service -f
+```
+
+### Troubleshooting rápido
+
+| Sintoma nos logs | Causa provável | Ação recomendada |
+| --- | --- | --- |
+| `Failed to load module` / `Cannot find module` | Caminho de import incorreto, arquivo ausente ou módulo não suportado na versão atual | Revisar imports no `scripts/`, confirmar arquivo publicado e compatibilidade da versão da Script API no `manifest.json`. |
+| `Invalid dependency` / `Dependency version mismatch` | Dependência declarada com versão diferente da suportada pelo Bedrock Server | Ajustar versão da dependência no `manifest.json` para a versão suportada pela build do servidor e republicar. |
+| `Script API disabled` / recursos experimentais desativados | Mundo sem APIs/experimentos necessários habilitados | Habilitar os experimentos/APIs requeridos na configuração do mundo e reiniciar o servidor. |
+| Pack aparece, mas comportamento não executa | Vinculação do mundo com UUID/versão antiga | Executar `tools/validate_world_bindings.py`, corrigir `world_*_packs.json` e reiniciar/recarregar. |
+
+### Reinício/reload do serviço após publicação (opcional)
+
+Em ambientes com deploy automatizado, pode ser necessário forçar reload do serviço após atualizar `packs/`:
+
+```bash
+systemctl restart bedrock.service
+```
+
+Você pode incluir essa etapa no workflow de publicação (ex.: GitHub Actions via SSH) quando o servidor não aplicar hot-reload de packs de forma confiável.
+
 ### Backup automático diário às 04:00
 
 #### Backup do ambiente do repositório
