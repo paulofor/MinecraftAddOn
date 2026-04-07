@@ -131,6 +131,30 @@ Para iniciar o serviço do servidor Minecraft Bedrock:
 systemctl start bedrock.service
 ```
 
+### Validação dos vínculos do mundo (UUID + versão)
+
+Para validar no servidor se os arquivos `world_behavior_packs.json` e
+`world_resource_packs.json` estão apontando para os UUIDs corretos e a mesma versão
+do `manifest.json` atual:
+
+```bash
+python3 tools/validate_world_bindings.py --world-dir "/opt/bedrock-server/worlds/Bedrock level"
+```
+
+Regras validadas automaticamente:
+- BP UUID: `068c529a-0932-4d6b-95ee-da0af9fb8e23`;
+- RP UUID: `99378e84-5b66-408a-b77c-1cc7b33f2b0b`;
+- versão em `world_*_packs.json` igual à versão dos manifests (ex.: `[0,1,0]`).
+
+Para executar essa checagem remotamente via SSH (sem login interativo):
+
+```bash
+./tools/validate_world_bindings_remote.sh \
+  --host 186.202.209.206 \
+  --user root \
+  --world-dir "/opt/bedrock-server/worlds/Bedrock level"
+```
+
 ### Backup automático diário às 04:00
 
 #### Backup do ambiente do repositório
@@ -184,6 +208,9 @@ Configuração recomendada no GitHub:
 1. Criar o secret **`VPS_SENHA`** em *Settings > Secrets and variables > Actions*;
 2. (Opcional) Criar a variável **`VPS_DESTINO`** com o diretório remoto desejado (padrão: `/root/MinecraftAddOn`);
 3. Fazer push na branch `work` ou `main`, ou rodar manualmente via `workflow_dispatch`.
+
+Também foi adicionado o workflow `.github/workflows/validate-world-bindings.yml` para
+rodar a validação de vínculos diretamente no servidor via `workflow_dispatch`.
 
 ---
 
