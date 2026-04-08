@@ -258,7 +258,9 @@ Backups são salvos por padrão em `backups/worlds/` e a retenção padrão é d
 
 ### Publicação automática no servidor (GitHub Actions)
 
-Foi adicionado o workflow `.github/workflows/publish-server.yml` para publicar a pasta `packs/` no servidor:
+Foi adicionado o workflow `.github/workflows/publish-server.yml` para publicar a pasta `packs/` no servidor.
+
+Além dos packs, o workflow também publica e atualiza automaticamente o log viewer (`infra/log-viewer/server.py`) e instala/reinicia os serviços `bedrock-log-export.service` e `bedrock-log-viewer.service` via `systemd`, deixando a URL `http://SEU_IP:8080` ativa sem setup manual no host.
 
 - Host: `186.202.209.206`
 - Usuário: `root`
