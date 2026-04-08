@@ -1,7 +1,13 @@
 import { world, system, BlockPermutation, ItemStack, DynamicPropertiesDefinition } from "@minecraft/server";
 import { ModalFormData } from "@minecraft/server-ui";
 
-const BOARD_ITEM_ID = "digicomo:quadro_ideias";
+const PRIMARY_BOARD_ITEM_ID = "digicomo:quadro_ideias";
+const BOARD_ITEM_IDS = [
+  PRIMARY_BOARD_ITEM_ID,
+  "digicom:quadro_ideias",
+  "digicomo:quadro_ideias_item",
+  "digicom:quadro_ideias_item"
+];
 const BOARD_BLOCK_ID = "digicomo:quadro_ideias_bloco";
 const IDEAS_DB_KEY = "digicomo:quadro_ideias_db";
 const MAX_IDEAS_PER_BOARD = 8;
@@ -55,7 +61,7 @@ world.beforeEvents.playerInteractWithBlock.subscribe((event) => {
     return;
   }
 
-  if (itemStack?.typeId === BOARD_ITEM_ID) {
+  if (itemStack && BOARD_ITEM_IDS.includes(itemStack.typeId)) {
     logInfo(`Interação de colocação detectada por ${player.name}. item=${itemStack.typeId}, blocoBase=${block.typeId}`);
     event.cancel = true;
 
@@ -89,70 +95,81 @@ function consumeBoardItem(player, itemStack) {
     return;
   }
 
-  if (current.amount <= 1) {
-    inventory.setItem(slot, undefined);
-    return;
-  }
+  const amount = current.amount - 1;
 
-  const next = new ItemStack(current.typeId, current.amount - 1);
-  inventory.setItem(slot, next);
+  if (amount <= 0) {
+    inventory.setItem(slot, undefined);
+  } else {
+    current.amount = amount;
+    inventory.setItem(slot, current);
+  }
 }
 
-async function openIdeaForm(player, block) {
-  const allBoards = readIdeasDB();
+function openIdeaForm(player, block) {
+  const db = readIdeasDB();
   const key = makeBoardKey(block);
-  const boardIdeas = allBoards[key] ?? [];
-  logInfo(`Formulário aberto. key=${key}, ideiasAtuais=${boardIdeas.length}, jogador=${player.name}`);
+  const boardIdeas = db[key] ?? [];
+  const ideasText = boardIdeas.length
+    ? boardIdeas.map((idea, index) => `${index + 1}. §e${idea.author}§r: ${idea.text}`).join("\n")
+    : "(Nenhum post-it ainda)";
 
-  const preview = boardIdeas.length
-    ? boardIdeas.map((idea, idx) => `${idx + 1}. ${idea.author}: ${idea.text}`).join("\n")
-    : "Sem post-its ainda.";
+  logInfo(`Formulário aberto. key=${key}, ideiasAtuais=${boardIdeas.length}, jogador=${player.name}`);
 
   const form = new ModalFormData()
     .title("Quadro de Ideias")
-    .textField(`Post-its atuais:\n${preview}\n\nEscreva uma nova ideia:`, "Ex.: Organizar sessão de construção colaborativa", "")
+    .textField(
+      `Post-its atuais:\n${ideasText}\n\nNova ideia (máx. 80 caracteres):`,
+      "Escreva sua ideia",
+      ""
+    )
     .toggle("Limpar quadro (somente para facilitadores)", false);
 
-  const result = await form.show(player);
+  form.show(player).then((response) => {
+    if (response.canceled || !response.formValues) {
+      logInfo(`Formulário cancelado por ${player.name}.`);
+      return;
+    }
 
-  if (result.canceled) {
-    logInfo(`Formulário cancelado por ${player.name}.`);
-    return;
-  }
+    const [newIdeaRaw, clearFlag] = response.formValues;
+    const newIdea = `${newIdeaRaw ?? ""}`.trim();
+    const shouldClear = Boolean(clearFlag);
 
-  const [ideaText, clearBoard] = result.formValues;
+    if (shouldClear && player.hasTag("facilitador")) {
+      db[key] = [];
+      writeIdeasDB(db);
+      player.sendMessage("§aQuadro limpo com sucesso.");
+      logInfo(`Quadro limpo por ${player.name}. key=${key}`);
+      return;
+    }
 
-  if (clearBoard === true && player.hasTag("facilitador")) {
-    allBoards[key] = [];
-    writeIdeasDB(allBoards);
-    world.sendMessage(`§e${player.name} limpou um Quadro de Ideias.`);
-    logInfo(`Quadro limpo por facilitador. key=${key}, jogador=${player.name}`);
-    return;
-  }
+    if (!newIdea) {
+      player.sendMessage("§eNenhuma ideia adicionada.");
+      return;
+    }
 
-  const text = (ideaText ?? "").trim();
-  if (!text) {
-    player.sendMessage("§7Nenhuma ideia adicionada.");
-    logInfo(`Entrada vazia ignorada. key=${key}, jogador=${player.name}`);
-    return;
-  }
+    if (newIdea.length > 80) {
+      player.sendMessage("§cA ideia deve ter no máximo 80 caracteres.");
+      return;
+    }
 
-  if (boardIdeas.length >= MAX_IDEAS_PER_BOARD) {
-    player.sendMessage(`§cEste quadro já tem ${MAX_IDEAS_PER_BOARD} post-its.`);
-    logInfo(`Limite de ideias atingido. key=${key}, limite=${MAX_IDEAS_PER_BOARD}`);
-    return;
-  }
+    if (boardIdeas.length >= MAX_IDEAS_PER_BOARD) {
+      player.sendMessage(`§cEste quadro já tem ${MAX_IDEAS_PER_BOARD} post-its.`);
+      logInfo(`Limite de ideias atingido. key=${key}, limite=${MAX_IDEAS_PER_BOARD}`);
+      return;
+    }
 
-  boardIdeas.push({
-    author: player.name,
-    text: text.slice(0, 80)
+    boardIdeas.push({
+      author: player.name,
+      text: newIdea
+    });
+
+    db[key] = boardIdeas;
+    writeIdeasDB(db);
+    player.sendMessage("§aIdeia adicionada ao quadro!");
+    logInfo(`Ideia adicionada. key=${key}, total=${boardIdeas.length}, autor=${player.name}`);
+  }).catch((error) => {
+    logError(`Erro ao exibir/processar formulário para ${player.name}.`, error);
   });
-
-  allBoards[key] = boardIdeas;
-  writeIdeasDB(allBoards);
-
-  world.sendMessage(`§b[Quadro] ${player.name} adicionou: §f${text.slice(0, 80)}`);
-  logInfo(`Ideia registrada com sucesso. key=${key}, total=${boardIdeas.length}, jogador=${player.name}`);
 }
 
 function makeBoardKey(block) {
@@ -178,17 +195,29 @@ function writeIdeasDB(data) {
 }
 
 function validateContentRegistration() {
-  logInfo(`Diagnóstico de conteúdo: esperado /give @s ${BOARD_ITEM_ID} 1`);
+  logInfo(`Diagnóstico de conteúdo: comandos aceitos /give @s <${BOARD_ITEM_IDS.join(" | ")}> 1`);
 
-  try {
-    const stack = new ItemStack(BOARD_ITEM_ID, 1);
-    logInfo(`Item registrado com sucesso: ${stack.typeId}.`);
-  } catch (error) {
+  const availableIds = [];
+
+  for (const candidate of BOARD_ITEM_IDS) {
+    try {
+      const stack = new ItemStack(candidate, 1);
+      availableIds.push(stack.typeId);
+    } catch (error) {
+      // ignora ids não registrados
+    }
+  }
+
+  if (availableIds.length === 0) {
     logError(
-      `Item "${BOARD_ITEM_ID}" não pôde ser instanciado. Possíveis causas: namespace incorreto, nome do item diferente ou item não carregado no BP.`,
-      error
+      `Nenhum id de item compatível foi instanciado (${BOARD_ITEM_IDS.join(", ")}). Possível BP desatualizado ou item não carregado.`,
+      "ids-nao-encontrados"
     );
-    suggestAlternativeItemIds();
+  } else {
+    logInfo(`Item(ns) registrado(s): ${availableIds.join(", ")}.`);
+    if (!availableIds.includes(PRIMARY_BOARD_ITEM_ID)) {
+      logInfo(`Atenção: id principal (${PRIMARY_BOARD_ITEM_ID}) não foi encontrado neste carregamento.`);
+    }
   }
 
   try {
@@ -199,39 +228,19 @@ function validateContentRegistration() {
   }
 }
 
-function suggestAlternativeItemIds() {
-  const alternatives = [
-    "digicom:quadro_ideias",
-    "digicomo:quadro_ideias_item",
-    "digicom:quadro_ideias_item"
-  ];
-
-  for (const candidate of alternatives) {
-    try {
-      const stack = new ItemStack(candidate, 1);
-      logInfo(`Atenção: id alternativo encontrado (${stack.typeId}). Revise namespace/nome do item e o comando /give.`);
-      return;
-    } catch (error) {
-      // ignora candidatos inválidos
-    }
-  }
-
-  logInfo(`Nenhum id alternativo comum foi encontrado (${alternatives.join(", ")}).`);
-}
-
 function runCommandPermissionDiagnostic(sourceEntity) {
   if (!sourceEntity || sourceEntity.typeId !== "minecraft:player") {
     logInfo("Diagnóstico de permissão de comando ignorado: execute /scriptevent como jogador para validar OP/permissão.");
     return;
   }
 
-  sourceEntity.runCommandAsync(`give @s ${BOARD_ITEM_ID} 1`)
+  sourceEntity.runCommandAsync(`give @s ${PRIMARY_BOARD_ITEM_ID} 1`)
     .then(() => {
-      logInfo(`Teste de permissão: jogador ${sourceEntity.name} conseguiu executar /give com sucesso.`);
+      logInfo(`Teste de permissão: jogador ${sourceEntity.name} conseguiu executar /give com sucesso para ${PRIMARY_BOARD_ITEM_ID}.`);
     })
     .catch((error) => {
       logError(
-        `Teste de permissão falhou para ${sourceEntity.name}. Possível falta de OP/permissão de comando ou cheats desativados.`,
+        `Teste de permissão falhou para ${sourceEntity.name} no id ${PRIMARY_BOARD_ITEM_ID}. Possível falta de OP/permissão de comando ou id não registrado.`,
         error
       );
     });
