@@ -4,21 +4,37 @@
     "name": "BP Quadro de Ideias",
     "description": "Behavior Pack do Quadro de Ideias com post-its colaborativos.",
     "uuid": "068c529a-0932-4d6b-95ee-da0af9fb8e23",
-    "version": [0, 1, 0],
-    "min_engine_version": [1, 21, 0]
+    "version": [
+      0,
+      1,
+      1
+    ],
+    "min_engine_version": [
+      1,
+      21,
+      0
+    ]
   },
   "modules": [
     {
       "type": "data",
       "uuid": "ee350a8e-4386-45ed-a56d-5007934dac47",
-      "version": [0, 1, 0]
+      "version": [
+        0,
+        1,
+        1
+      ]
     },
     {
       "type": "script",
       "language": "javascript",
       "entry": "scripts/main.js",
       "uuid": "3bc66f01-e143-47c3-8459-8852326b2f87",
-      "version": [0, 1, 0]
+      "version": [
+        0,
+        1,
+        1
+      ]
     }
   ],
   "dependencies": [
