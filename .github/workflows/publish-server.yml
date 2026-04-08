@@ -59,9 +59,9 @@ jobs:
             -e "ssh -i ~/.ssh/id_ed25519 -p $VPS_PORT" \
             infra/log-viewer/ "$VPS_USER@$VPS_HOST:$REMOTE_DIR/infra/log-viewer/"
 
-          rsync -az \
+          rsync -az --delete \
             -e "ssh -i ~/.ssh/id_ed25519 -p $VPS_PORT" \
-            tools/install_log_viewer_services.sh "$VPS_USER@$VPS_HOST:$REMOTE_DIR/tools/install_log_viewer_services.sh"
+            tools/ "$VPS_USER@$VPS_HOST:$REMOTE_DIR/tools/"
 
       - name: Promover packs para o mundo Bedrock
         run: |
