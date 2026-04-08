@@ -155,6 +155,16 @@ Para executar essa checagem remotamente via SSH (sem login interativo):
   --world-dir "/opt/bedrock-server/worlds/Bedrock level"
 ```
 
+Para **atualizar automaticamente** os vínculos do mundo com os UUIDs/versões dos manifests (sem heredoc inline):
+
+```bash
+./tools/update_world_bindings_remote.sh \
+  --host 186.202.209.206 \
+  --user root \
+  --identity ~/.ssh/id_ed25519 \
+  --world-dir "/root/bedrock-server/worlds/Bedrock level"
+```
+
 ### Checklist de runtime do mundo (Script API / Experimentos)
 
 Antes de validar em produção, confirme no mundo/servidor Bedrock que os requisitos de runtime estão habilitados para a **mesma versão do servidor em uso**:
