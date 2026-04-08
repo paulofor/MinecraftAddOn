@@ -6,6 +6,7 @@ const BOARD_BLOCK_ID = "digicomo:quadro_ideias_bloco";
 const IDEAS_DB_KEY = "digicomo:quadro_ideias_db";
 const MAX_IDEAS_PER_BOARD = 8;
 const LOG_PREFIX = "[QuadroIdeias]";
+const SCRIPT_EVENT_DIAG_ID = "digicomo:diagnostico";
 
 function logInfo(message) {
   console.warn(`${LOG_PREFIX} ${message}`);
@@ -29,7 +30,22 @@ world.afterEvents.worldInitialize.subscribe((event) => {
     }
 
     validateContentRegistration();
+    logInfo(`Se o /give falhar após atualização do addon, reinicie o mundo/servidor para recarregar os packs.`);
   });
+});
+
+
+
+world.afterEvents.scriptEventReceive.subscribe((event) => {
+  if (event.id !== SCRIPT_EVENT_DIAG_ID) {
+    return;
+  }
+
+  const sourceName = event.sourceEntity?.typeId === "minecraft:player" ? event.sourceEntity.name : "servidor";
+  logInfo(`Diagnóstico manual solicitado via /scriptevent por ${sourceName}. message=${event.message || "(vazio)"}`);
+
+  validateContentRegistration();
+  runCommandPermissionDiagnostic(event.sourceEntity);
 });
 
 world.beforeEvents.playerInteractWithBlock.subscribe((event) => {
@@ -162,20 +178,61 @@ function writeIdeasDB(data) {
 }
 
 function validateContentRegistration() {
+  logInfo(`Diagnóstico de conteúdo: esperado /give @s ${BOARD_ITEM_ID} 1`);
+
   try {
     const stack = new ItemStack(BOARD_ITEM_ID, 1);
     logInfo(`Item registrado com sucesso: ${stack.typeId}.`);
   } catch (error) {
     logError(
-      `Item "${BOARD_ITEM_ID}" não pôde ser instanciado. O comando /give pode falhar por erro de definição/registro do item.`,
+      `Item "${BOARD_ITEM_ID}" não pôde ser instanciado. Possíveis causas: namespace incorreto, nome do item diferente ou item não carregado no BP.`,
       error
     );
+    suggestAlternativeItemIds();
   }
 
   try {
     BlockPermutation.resolve(BOARD_BLOCK_ID);
     logInfo(`Bloco registrado com sucesso: ${BOARD_BLOCK_ID}.`);
   } catch (error) {
-    logError(`Bloco "${BOARD_BLOCK_ID}" não pôde ser resolvido.`, error);
+    logError(`Bloco "${BOARD_BLOCK_ID}" não pôde ser resolvido. Possível BP incompleto ou id diferente no arquivo de bloco.`, error);
   }
+}
+
+function suggestAlternativeItemIds() {
+  const alternatives = [
+    "digicom:quadro_ideias",
+    "digicomo:quadro_ideias_item",
+    "digicom:quadro_ideias_item"
+  ];
+
+  for (const candidate of alternatives) {
+    try {
+      const stack = new ItemStack(candidate, 1);
+      logInfo(`Atenção: id alternativo encontrado (${stack.typeId}). Revise namespace/nome do item e o comando /give.`);
+      return;
+    } catch (error) {
+      // ignora candidatos inválidos
+    }
+  }
+
+  logInfo(`Nenhum id alternativo comum foi encontrado (${alternatives.join(", ")}).`);
+}
+
+function runCommandPermissionDiagnostic(sourceEntity) {
+  if (!sourceEntity || sourceEntity.typeId !== "minecraft:player") {
+    logInfo("Diagnóstico de permissão de comando ignorado: execute /scriptevent como jogador para validar OP/permissão.");
+    return;
+  }
+
+  sourceEntity.runCommandAsync(`give @s ${BOARD_ITEM_ID} 1`)
+    .then(() => {
+      logInfo(`Teste de permissão: jogador ${sourceEntity.name} conseguiu executar /give com sucesso.`);
+    })
+    .catch((error) => {
+      logError(
+        `Teste de permissão falhou para ${sourceEntity.name}. Possível falta de OP/permissão de comando ou cheats desativados.`,
+        error
+      );
+    });
 }
