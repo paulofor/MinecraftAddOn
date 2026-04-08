@@ -1,4 +1,4 @@
-import { world, system, BlockPermutation, ItemStack } from "@minecraft/server";
+import { world, system, BlockPermutation, ItemStack, DynamicPropertiesDefinition } from "@minecraft/server";
 import { ModalFormData } from "@minecraft/server-ui";
 
 const BOARD_ITEM_ID = "digicomo:quadro_ideias";
@@ -7,14 +7,15 @@ const IDEAS_DB_KEY = "digicomo:quadro_ideias_db";
 const MAX_IDEAS_PER_BOARD = 8;
 
 world.afterEvents.worldInitialize.subscribe((event) => {
-  const def = event.propertyRegistry;
-  def.registerWorldDynamicProperties({
-    [IDEAS_DB_KEY]: "string"
-  });
+  const properties = new DynamicPropertiesDefinition();
+  properties.defineString(IDEAS_DB_KEY, 32767);
+  event.propertyRegistry.registerWorldDynamicProperties(properties);
 
-  if (!world.getDynamicProperty(IDEAS_DB_KEY)) {
-    world.setDynamicProperty(IDEAS_DB_KEY, JSON.stringify({}));
-  }
+  system.run(() => {
+    if (!world.getDynamicProperty(IDEAS_DB_KEY)) {
+      world.setDynamicProperty(IDEAS_DB_KEY, JSON.stringify({}));
+    }
+  });
 });
 
 world.beforeEvents.playerInteractWithBlock.subscribe((event) => {
