@@ -61,51 +61,51 @@ jobs:
         run: |
           ssh -i ~/.ssh/id_ed25519 -p "$VPS_PORT" "$VPS_USER@$VPS_HOST" \
             "python3 - <<'PY'
-import json
-from pathlib import Path
+          import json
+          from pathlib import Path
 
-remote_dir = Path('$REMOTE_DIR')
-world_dir = Path('$WORLD_DIR')
+          remote_dir = Path('$REMOTE_DIR')
+          world_dir = Path('$WORLD_DIR')
 
-bp_manifest = remote_dir / 'packs' / 'BP_QuadroIdeias' / 'manifest.json'
-rp_manifest = remote_dir / 'packs' / 'RP_QuadroIdeias' / 'manifest.json'
-world_bp_file = world_dir / 'world_behavior_packs.json'
-world_rp_file = world_dir / 'world_resource_packs.json'
+          bp_manifest = remote_dir / 'packs' / 'BP_QuadroIdeias' / 'manifest.json'
+          rp_manifest = remote_dir / 'packs' / 'RP_QuadroIdeias' / 'manifest.json'
+          world_bp_file = world_dir / 'world_behavior_packs.json'
+          world_rp_file = world_dir / 'world_resource_packs.json'
 
-def load_manifest(path: Path):
-    data = json.loads(path.read_text(encoding='utf-8'))
-    header = data.get('header', {})
-    pack_id = header.get('uuid')
-    version = header.get('version')
-    if not pack_id or not isinstance(version, list):
-        raise ValueError(f'Manifest inválido: {path}')
-    return pack_id, version
+          def load_manifest(path: Path):
+              data = json.loads(path.read_text(encoding='utf-8'))
+              header = data.get('header', {})
+              pack_id = header.get('uuid')
+              version = header.get('version')
+              if not pack_id or not isinstance(version, list):
+                  raise ValueError(f'Manifest inválido: {path}')
+              return pack_id, version
 
-def load_world_bindings(path: Path):
-    if not path.exists():
-        return []
-    data = json.loads(path.read_text(encoding='utf-8'))
-    return data if isinstance(data, list) else []
+          def load_world_bindings(path: Path):
+              if not path.exists():
+                  return []
+              data = json.loads(path.read_text(encoding='utf-8'))
+              return data if isinstance(data, list) else []
 
-def upsert_binding(bindings, pack_id, version):
-    next_bindings = [entry for entry in bindings if entry.get('pack_id') != pack_id]
-    next_bindings.append({'pack_id': pack_id, 'version': version})
-    return next_bindings
+          def upsert_binding(bindings, pack_id, version):
+              next_bindings = [entry for entry in bindings if entry.get('pack_id') != pack_id]
+              next_bindings.append({'pack_id': pack_id, 'version': version})
+              return next_bindings
 
-bp_id, bp_version = load_manifest(bp_manifest)
-rp_id, rp_version = load_manifest(rp_manifest)
+          bp_id, bp_version = load_manifest(bp_manifest)
+          rp_id, rp_version = load_manifest(rp_manifest)
 
-world_bp = upsert_binding(load_world_bindings(world_bp_file), bp_id, bp_version)
-world_rp = upsert_binding(load_world_bindings(world_rp_file), rp_id, rp_version)
+          world_bp = upsert_binding(load_world_bindings(world_bp_file), bp_id, bp_version)
+          world_rp = upsert_binding(load_world_bindings(world_rp_file), rp_id, rp_version)
 
-world_bp_file.write_text(json.dumps(world_bp, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
-world_rp_file.write_text(json.dumps(world_rp, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
+          world_bp_file.write_text(json.dumps(world_bp, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
+          world_rp_file.write_text(json.dumps(world_rp, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
 
-print('[ok] world_behavior_packs.json atualizado.')
-print('[ok] world_resource_packs.json atualizado.')
-print(f'[ok] BP: {bp_id} {bp_version}')
-print(f'[ok] RP: {rp_id} {rp_version}')
-PY"
+          print('[ok] world_behavior_packs.json atualizado.')
+          print('[ok] world_resource_packs.json atualizado.')
+          print(f'[ok] BP: {bp_id} {bp_version}')
+          print(f'[ok] RP: {rp_id} {rp_version}')
+          PY"
 
       - name: Validar publicação remota (diretórios finais do mundo)
         run: |
