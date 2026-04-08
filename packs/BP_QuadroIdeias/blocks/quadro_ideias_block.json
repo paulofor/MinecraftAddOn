@@ -1,5 +1,5 @@
 {
-  "format_version": "1.21.0",
+  "format_version": "1.20.80",
   "minecraft:block": {
     "description": {
       "identifier": "digicomo:quadro_ideias_bloco",
@@ -14,12 +14,28 @@
       "minecraft:friction": 0.6,
       "minecraft:light_dampening": 0,
       "minecraft:selection_box": {
-        "origin": [-8, -8, 6],
-        "size": [16, 16, 2]
+        "origin": [
+          -8,
+          -8,
+          6
+        ],
+        "size": [
+          16,
+          16,
+          2
+        ]
       },
       "minecraft:collision_box": {
-        "origin": [-8, -8, 6],
-        "size": [16, 16, 2]
+        "origin": [
+          -8,
+          -8,
+          6
+        ],
+        "size": [
+          16,
+          16,
+          2
+        ]
       },
       "minecraft:material_instances": {
         "*": {
@@ -30,8 +46,18 @@
       "minecraft:placement_filter": {
         "conditions": [
           {
-            "allowed_faces": ["north", "south", "east", "west"],
-            "block_filter": ["minecraft:stone", "minecraft:planks", "minecraft:concrete", "minecraft:bricks"]
+            "allowed_faces": [
+              "north",
+              "south",
+              "east",
+              "west"
+            ],
+            "block_filter": [
+              "minecraft:stone",
+              "minecraft:planks",
+              "minecraft:concrete",
+              "minecraft:bricks"
+            ]
           }
         ]
       }
