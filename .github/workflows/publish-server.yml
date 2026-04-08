@@ -8,6 +8,8 @@ on:
       - main
     paths:
       - 'packs/**'
+      - 'infra/**'
+      - 'tools/**'
       - '.github/workflows/publish-server.yml'
 
 jobs:
@@ -43,13 +45,23 @@ jobs:
       - name: Preparar pasta remota
         run: |
           ssh -i ~/.ssh/id_ed25519 -p "$VPS_PORT" "$VPS_USER@$VPS_HOST" \
-            "mkdir -p '$REMOTE_DIR/packs' '$WORLD_BP_DIR' '$WORLD_RP_DIR'"
+            "mkdir -p '$REMOTE_DIR/packs' '$REMOTE_DIR/infra/log-viewer' '$REMOTE_DIR/tools' '$WORLD_BP_DIR' '$WORLD_RP_DIR'"
 
       - name: Publicar packs no servidor
         run: |
           rsync -az --delete \
             -e "ssh -i ~/.ssh/id_ed25519 -p $VPS_PORT" \
             packs/ "$VPS_USER@$VPS_HOST:$REMOTE_DIR/packs/"
+
+      - name: Publicar log viewer no servidor
+        run: |
+          rsync -az --delete \
+            -e "ssh -i ~/.ssh/id_ed25519 -p $VPS_PORT" \
+            infra/log-viewer/ "$VPS_USER@$VPS_HOST:$REMOTE_DIR/infra/log-viewer/"
+
+          rsync -az --delete \
+            -e "ssh -i ~/.ssh/id_ed25519 -p $VPS_PORT" \
+            tools/ "$VPS_USER@$VPS_HOST:$REMOTE_DIR/tools/"
 
       - name: Promover packs para o mundo Bedrock
         run: |
@@ -113,6 +125,12 @@ jobs:
           print(f"[ok] BP: {bp_id} {bp_version}")
           print(f"[ok] RP: {rp_id} {rp_version}")
           PY
+
+
+      - name: Instalar/atualizar serviços do log viewer
+        run: |
+          ssh -i ~/.ssh/id_ed25519 -p "$VPS_PORT" "$VPS_USER@$VPS_HOST" \
+            "chmod +x '$REMOTE_DIR/tools/install_log_viewer_services.sh' && '$REMOTE_DIR/tools/install_log_viewer_services.sh' '$REMOTE_DIR' 'bedrock.service' '/root/bedrock-server/logs/bedrock.log' '8080'"
 
       - name: Validar publicação remota (diretórios finais do mundo)
         run: |

@@ -1,0 +1,16 @@
+services:
+  bedrock-log-viewer:
+    build:
+      context: .
+      dockerfile: infra/log-viewer/Dockerfile
+    container_name: bedrock-log-viewer
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      - LOG_PATH=/logs/bedrock.log
+      - DEFAULT_LINES=400
+      - MAX_LINES=5000
+    volumes:
+      # Monte aqui o arquivo de log exportado pelo host.
+      - /root/bedrock-server/logs/bedrock.log:/logs/bedrock.log:ro

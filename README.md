@@ -138,7 +138,7 @@ Para validar no servidor se os arquivos `world_behavior_packs.json` e
 do `manifest.json` atual:
 
 ```bash
-python3 tools/validate_world_bindings.py --world-dir "/opt/bedrock-server/worlds/Bedrock level"
+python3 tools/validate_world_bindings.py --world-dir "/root/bedrock-server/worlds/Bedrock level"
 ```
 
 Regras validadas automaticamente:
@@ -152,7 +152,7 @@ Para executar essa checagem remotamente via SSH (sem login interativo):
 ./tools/validate_world_bindings_remote.sh \
   --host 186.202.209.206 \
   --user root \
-  --world-dir "/opt/bedrock-server/worlds/Bedrock level"
+  --world-dir "/root/bedrock-server/worlds/Bedrock level"
 ```
 
 Para **atualizar automaticamente** os vínculos do mundo com os UUIDs/versões dos manifests (sem heredoc inline):
@@ -251,14 +251,16 @@ Para publicar o agendamento diário às **04:00** no `crontab` (hora local do se
 Exemplo realista para Bedrock:
 
 ```bash
-./tools/backup_world_data.sh --world-dir /opt/bedrock-server/worlds/Bedrock level --install-cron
+./tools/backup_world_data.sh --world-dir /root/bedrock-server/worlds/Bedrock level --install-cron
 ```
 
 Backups são salvos por padrão em `backups/worlds/` e a retenção padrão é de 14 dias.
 
 ### Publicação automática no servidor (GitHub Actions)
 
-Foi adicionado o workflow `.github/workflows/publish-server.yml` para publicar a pasta `packs/` no servidor:
+Foi adicionado o workflow `.github/workflows/publish-server.yml` para publicar a pasta `packs/` no servidor.
+
+Além dos packs, o workflow também publica e atualiza automaticamente o log viewer (`infra/log-viewer/server.py`) e instala/reinicia os serviços `bedrock-log-export.service` e `bedrock-log-viewer.service` via `systemd`, deixando a URL `http://SEU_IP:8080` ativa sem setup manual no host.
 
 - Host: `186.202.209.206`
 - Usuário: `root`
@@ -300,3 +302,56 @@ Quando isso estiver estável, evoluir para entidades, UI e mecânicas mais avan�
 ---
 
 Se quiser, no próximo passo eu já posso gerar automaticamente a **estrutura de pastas + manifests base + scripts `validate/package/deploy`** neste repositório.
+
+---
+
+## 8) Publicar logs do Bedrock em URL externa (container web)
+
+Para facilitar diagnóstico rápido de erros, este repositório inclui um **log viewer HTTP** em container, com:
+- atualização automática a cada 10s;
+- destaque visual de linhas com `error/failed/exception` e `warning`;
+- filtro por texto e quantidade de linhas.
+
+### 8.1 Arquivos adicionados
+
+- `infra/log-viewer/server.py` (servidor web de logs);
+- `infra/log-viewer/Dockerfile`;
+- `docker-compose.log-viewer.yml`;
+- `tools/export_bedrock_journal.sh` (exporta `journalctl` para arquivo consumido pelo container).
+
+### 8.2 Passo a passo no servidor
+
+1. Exporte o journal do serviço Bedrock para um arquivo contínuo:
+
+```bash
+./tools/export_bedrock_journal.sh bedrock.service /root/bedrock-server/logs/bedrock.log
+```
+
+> Dica: rode esse comando via `systemd`/`screen`/`tmux`, pois ele fica em modo contínuo (`-f`).
+
+2. Suba o container do visualizador:
+
+```bash
+docker compose -f docker-compose.log-viewer.yml up -d --build
+```
+
+3. Acesse localmente:
+
+```text
+http://SEU_IP:8080
+```
+
+4. Para publicar em URL externa (recomendado), coloque atrás de um reverse proxy com TLS (Nginx, Traefik ou Caddy), por exemplo:
+
+```text
+https://logs.seu-dominio.com
+```
+
+### 8.3 Segurança recomendada
+
+Como logs podem conter informações sensíveis, **não exponha a porta 8080 diretamente na internet** sem proteção. Recomenda-se:
+
+- HTTPS obrigatório;
+- autenticação básica/OAuth no proxy;
+- allowlist de IP quando possível;
+- rotação e retenção de logs.
