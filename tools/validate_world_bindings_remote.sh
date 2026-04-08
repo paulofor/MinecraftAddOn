@@ -4,7 +4,7 @@ set -euo pipefail
 usage() {
   cat <<USAGE
 Uso:
-  $(basename "$0") --host HOST --user USER --world-dir "/opt/bedrock-server/worlds/Bedrock level"
+  $(basename "$0") --host HOST --user USER --world-dir "/root/MinecraftServer/worlds/Bedrock level"
 
 Descrição:
   Executa remotamente a validação de world_behavior_packs.json e

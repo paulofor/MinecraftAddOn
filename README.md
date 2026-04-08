@@ -138,7 +138,7 @@ Para validar no servidor se os arquivos `world_behavior_packs.json` e
 do `manifest.json` atual:
 
 ```bash
-python3 tools/validate_world_bindings.py --world-dir "/opt/bedrock-server/worlds/Bedrock level"
+python3 tools/validate_world_bindings.py --world-dir "/root/MinecraftServer/worlds/Bedrock level"
 ```
 
 Regras validadas automaticamente:
@@ -152,7 +152,7 @@ Para executar essa checagem remotamente via SSH (sem login interativo):
 ./tools/validate_world_bindings_remote.sh \
   --host 186.202.209.206 \
   --user root \
-  --world-dir "/opt/bedrock-server/worlds/Bedrock level"
+  --world-dir "/root/MinecraftServer/worlds/Bedrock level"
 ```
 
 Para **atualizar automaticamente** os vínculos do mundo com os UUIDs/versões dos manifests (sem heredoc inline):
@@ -162,7 +162,7 @@ Para **atualizar automaticamente** os vínculos do mundo com os UUIDs/versões d
   --host 186.202.209.206 \
   --user root \
   --identity ~/.ssh/id_ed25519 \
-  --world-dir "/root/bedrock-server/worlds/Bedrock level"
+  --world-dir "/root/MinecraftServer/worlds/Bedrock level"
 ```
 
 ### Checklist de runtime do mundo (Script API / Experimentos)
@@ -251,7 +251,7 @@ Para publicar o agendamento diário às **04:00** no `crontab` (hora local do se
 Exemplo realista para Bedrock:
 
 ```bash
-./tools/backup_world_data.sh --world-dir /opt/bedrock-server/worlds/Bedrock level --install-cron
+./tools/backup_world_data.sh --world-dir /root/MinecraftServer/worlds/Bedrock level --install-cron
 ```
 
 Backups são salvos por padrão em `backups/worlds/` e a retenção padrão é de 14 dias.
@@ -324,7 +324,7 @@ Para facilitar diagnóstico rápido de erros, este repositório inclui um **log 
 1. Exporte o journal do serviço Bedrock para um arquivo contínuo:
 
 ```bash
-./tools/export_bedrock_journal.sh bedrock.service /opt/bedrock-server/logs/bedrock.log
+./tools/export_bedrock_journal.sh bedrock.service /root/MinecraftServer/logs/bedrock.log
 ```
 
 > Dica: rode esse comando via `systemd`/`screen`/`tmux`, pois ele fica em modo contínuo (`-f`).

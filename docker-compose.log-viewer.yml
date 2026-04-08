@@ -13,4 +13,4 @@ services:
       - MAX_LINES=5000
     volumes:
       # Monte aqui o arquivo de log exportado pelo host.
-      - /opt/bedrock-server/logs/bedrock.log:/logs/bedrock.log:ro
+      - /root/MinecraftServer/logs/bedrock.log:/logs/bedrock.log:ro
