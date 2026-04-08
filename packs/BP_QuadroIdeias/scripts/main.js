@@ -5,8 +5,19 @@ const BOARD_ITEM_ID = "digicomo:quadro_ideias";
 const BOARD_BLOCK_ID = "digicomo:quadro_ideias_bloco";
 const IDEAS_DB_KEY = "digicomo:quadro_ideias_db";
 const MAX_IDEAS_PER_BOARD = 8;
+const LOG_PREFIX = "[QuadroIdeias]";
+
+function logInfo(message) {
+  console.warn(`${LOG_PREFIX} ${message}`);
+}
+
+function logError(message, error) {
+  const detail = error instanceof Error ? `${error.name}: ${error.message}` : `${error ?? "erro-desconhecido"}`;
+  console.error(`${LOG_PREFIX} ${message} | ${detail}`);
+}
 
 world.afterEvents.worldInitialize.subscribe((event) => {
+  logInfo("worldInitialize acionado. Registrando propriedades dinâmicas.");
   const properties = new DynamicPropertiesDefinition();
   properties.defineString(IDEAS_DB_KEY, 32767);
   event.propertyRegistry.registerWorldDynamicProperties(properties);
@@ -14,7 +25,10 @@ world.afterEvents.worldInitialize.subscribe((event) => {
   system.run(() => {
     if (!world.getDynamicProperty(IDEAS_DB_KEY)) {
       world.setDynamicProperty(IDEAS_DB_KEY, JSON.stringify({}));
+      logInfo(`Banco de ideias inicializado com chave "${IDEAS_DB_KEY}".`);
     }
+
+    validateContentRegistration();
   });
 });
 
@@ -26,11 +40,13 @@ world.beforeEvents.playerInteractWithBlock.subscribe((event) => {
   }
 
   if (itemStack?.typeId === BOARD_ITEM_ID) {
+    logInfo(`Interação de colocação detectada por ${player.name}. item=${itemStack.typeId}, blocoBase=${block.typeId}`);
     event.cancel = true;
 
     const above = block.above();
     if (!above || !above.isAir) {
       player.sendMessage("§cNão há espaço para colocar o quadro aqui.");
+      logInfo(`Falha ao posicionar quadro por falta de espaço. jogador=${player.name}`);
       return;
     }
 
@@ -41,6 +57,7 @@ world.beforeEvents.playerInteractWithBlock.subscribe((event) => {
   }
 
   if (block.typeId === BOARD_BLOCK_ID) {
+    logInfo(`Abertura de formulário do quadro por ${player.name} em ${makeBoardKey(block)}`);
     event.cancel = true;
     system.run(() => openIdeaForm(player, block));
   }
@@ -52,6 +69,7 @@ function consumeBoardItem(player, itemStack) {
   const current = inventory?.getItem(slot);
 
   if (!inventory || !current || current.typeId !== itemStack.typeId) {
+    logInfo(`Consumo de item ignorado. inventory=${Boolean(inventory)}, current=${current?.typeId ?? "vazio"}, esperado=${itemStack.typeId}`);
     return;
   }
 
@@ -68,6 +86,7 @@ async function openIdeaForm(player, block) {
   const allBoards = readIdeasDB();
   const key = makeBoardKey(block);
   const boardIdeas = allBoards[key] ?? [];
+  logInfo(`Formulário aberto. key=${key}, ideiasAtuais=${boardIdeas.length}, jogador=${player.name}`);
 
   const preview = boardIdeas.length
     ? boardIdeas.map((idea, idx) => `${idx + 1}. ${idea.author}: ${idea.text}`).join("\n")
@@ -81,6 +100,7 @@ async function openIdeaForm(player, block) {
   const result = await form.show(player);
 
   if (result.canceled) {
+    logInfo(`Formulário cancelado por ${player.name}.`);
     return;
   }
 
@@ -90,17 +110,20 @@ async function openIdeaForm(player, block) {
     allBoards[key] = [];
     writeIdeasDB(allBoards);
     world.sendMessage(`§e${player.name} limpou um Quadro de Ideias.`);
+    logInfo(`Quadro limpo por facilitador. key=${key}, jogador=${player.name}`);
     return;
   }
 
   const text = (ideaText ?? "").trim();
   if (!text) {
     player.sendMessage("§7Nenhuma ideia adicionada.");
+    logInfo(`Entrada vazia ignorada. key=${key}, jogador=${player.name}`);
     return;
   }
 
   if (boardIdeas.length >= MAX_IDEAS_PER_BOARD) {
     player.sendMessage(`§cEste quadro já tem ${MAX_IDEAS_PER_BOARD} post-its.`);
+    logInfo(`Limite de ideias atingido. key=${key}, limite=${MAX_IDEAS_PER_BOARD}`);
     return;
   }
 
@@ -113,6 +136,7 @@ async function openIdeaForm(player, block) {
   writeIdeasDB(allBoards);
 
   world.sendMessage(`§b[Quadro] ${player.name} adicionou: §f${text.slice(0, 80)}`);
+  logInfo(`Ideia registrada com sucesso. key=${key}, total=${boardIdeas.length}, jogador=${player.name}`);
 }
 
 function makeBoardKey(block) {
@@ -123,11 +147,35 @@ function makeBoardKey(block) {
 function readIdeasDB() {
   try {
     return JSON.parse(world.getDynamicProperty(IDEAS_DB_KEY) ?? "{}");
-  } catch {
+  } catch (error) {
+    logError(`Falha ao ler JSON da chave "${IDEAS_DB_KEY}". Resetando para objeto vazio.`, error);
     return {};
   }
 }
 
 function writeIdeasDB(data) {
-  world.setDynamicProperty(IDEAS_DB_KEY, JSON.stringify(data));
+  try {
+    world.setDynamicProperty(IDEAS_DB_KEY, JSON.stringify(data));
+  } catch (error) {
+    logError(`Falha ao escrever JSON da chave "${IDEAS_DB_KEY}".`, error);
+  }
+}
+
+function validateContentRegistration() {
+  try {
+    const stack = new ItemStack(BOARD_ITEM_ID, 1);
+    logInfo(`Item registrado com sucesso: ${stack.typeId}.`);
+  } catch (error) {
+    logError(
+      `Item "${BOARD_ITEM_ID}" não pôde ser instanciado. O comando /give pode falhar por erro de definição/registro do item.`,
+      error
+    );
+  }
+
+  try {
+    BlockPermutation.resolve(BOARD_BLOCK_ID);
+    logInfo(`Bloco registrado com sucesso: ${BOARD_BLOCK_ID}.`);
+  } catch (error) {
+    logError(`Bloco "${BOARD_BLOCK_ID}" não pôde ser resolvido.`, error);
+  }
 }
