@@ -3,7 +3,7 @@ set -euo pipefail
 
 REMOTE_DIR="${1:-/root/MinecraftAddOn}"
 SERVICE_NAME="${2:-bedrock.service}"
-LOG_FILE="${3:-/opt/bedrock-server/logs/bedrock.log}"
+LOG_FILE="${3:-/root/MinecraftServer/logs/bedrock.log}"
 VIEWER_PORT="${4:-8080}"
 
 if [[ $EUID -ne 0 ]]; then
