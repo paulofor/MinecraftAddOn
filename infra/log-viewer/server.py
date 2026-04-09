@@ -14,7 +14,7 @@ from urllib.parse import parse_qs, urlparse
 
 LOG_PATH = Path(os.getenv("LOG_PATH", "/logs/bedrock.log"))
 HOST = os.getenv("HOST", "0.0.0.0")
-PORT = int(os.getenv("PORT", "8080"))
+PORT = int(os.getenv("PORT", "8081"))
 DEFAULT_LINES = int(os.getenv("DEFAULT_LINES", "300"))
 MAX_LINES = int(os.getenv("MAX_LINES", "3000"))
 VIEWER_VERSION = os.getenv("VIEWER_VERSION", "semversao-local")

@@ -261,7 +261,7 @@ Backups são salvos por padrão em `backups/worlds/` e a retenção padrão é d
 
 Foi adicionado o workflow `.github/workflows/publish-server.yml` para publicar a pasta `packs/` no servidor.
 
-Além dos packs, o workflow também publica e atualiza automaticamente o log viewer (`infra/log-viewer/server.py`) e instala/reinicia os serviços `bedrock-log-export.service` e `bedrock-log-viewer.service` via `systemd`, deixando a URL `http://SEU_IP:8080` ativa sem setup manual no host.
+Além dos packs, o workflow também publica e atualiza automaticamente o log viewer (`infra/log-viewer/server.py`) e instala/reinicia os serviços `bedrock-log-export.service` e `bedrock-log-viewer.service` via `systemd`, deixando a URL `http://SEU_IP:8081` ativa sem setup manual no host.
 
 - Host: `186.202.209.206`
 - Usuário: `root`
@@ -339,7 +339,7 @@ docker compose -f docker-compose.log-viewer.yml up -d --build
 3. Acesse localmente:
 
 ```text
-http://SEU_IP:8080
+http://SEU_IP:8081
 ```
 
 4. Para publicar em URL externa (recomendado), coloque atrás de um reverse proxy com TLS (Nginx, Traefik ou Caddy), por exemplo:
@@ -350,7 +350,7 @@ https://logs.seu-dominio.com
 
 ### 8.3 Segurança recomendada
 
-Como logs podem conter informações sensíveis, **não exponha a porta 8080 diretamente na internet** sem proteção. Recomenda-se:
+Como logs podem conter informações sensíveis, **não exponha a porta 8081 diretamente na internet** sem proteção. Recomenda-se:
 
 - HTTPS obrigatório;
 - autenticação básica/OAuth no proxy;
