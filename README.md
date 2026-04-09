@@ -309,7 +309,7 @@ Se quiser, no próximo passo eu já posso gerar automaticamente a **estrutura de
 ## 8) Publicar logs do Bedrock em URL externa (container web)
 
 Para facilitar diagnóstico rápido de erros, este repositório inclui um **log viewer HTTP** em container, com:
-- atualização automática a cada 10s;
+- atualização manual (sem auto-refresh no navegador);
 - destaque visual de linhas com `error/failed/exception` e `warning`;
 - filtro por texto e quantidade de linhas.
 
