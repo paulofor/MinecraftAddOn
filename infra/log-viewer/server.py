@@ -17,8 +17,6 @@ HOST = os.getenv("HOST", "0.0.0.0")
 PORT = int(os.getenv("PORT", "8080"))
 DEFAULT_LINES = int(os.getenv("DEFAULT_LINES", "300"))
 MAX_LINES = int(os.getenv("MAX_LINES", "3000"))
-DEFAULT_REFRESH_SECONDS = int(os.getenv("DEFAULT_REFRESH_SECONDS", "30"))
-MAX_REFRESH_SECONDS = int(os.getenv("MAX_REFRESH_SECONDS", "300"))
 
 ERROR_RE = re.compile(r"(error|exception|fail(ed)?|traceback)", re.IGNORECASE)
 WARN_RE = re.compile(r"(warn(ing)?|deprecated)", re.IGNORECASE)
@@ -130,16 +128,6 @@ class LogHandler(BaseHTTPRequestHandler):
 
     requested_lines = max(20, min(requested_lines, MAX_LINES))
 
-    try:
-      requested_refresh = int(
-        params.get("refresh", [str(DEFAULT_REFRESH_SECONDS)])[0]
-      )
-    except ValueError:
-      requested_refresh = DEFAULT_REFRESH_SECONDS
-
-    requested_refresh = max(0, min(requested_refresh, MAX_REFRESH_SECONDS))
-    auto_refresh_enabled = params.get("auto", ["1"])[0] != "0"
-
     lines = read_last_lines(LOG_PATH, requested_lines)
     if query:
       filtered = [ln for ln in lines if query.lower() in ln.lower()]
@@ -169,7 +157,7 @@ class LogHandler(BaseHTTPRequestHandler):
   <header>
     <div class=\"tag\">Minecraft Log Viewer</div>
     <div class=\"meta\">
-      Atualização automática configurável (inclui pausa para copiar logs).
+      Log estático na tela. Atualize manualmente quando quiser carregar um novo snapshot.
       Use um proxy/reverse proxy para expor em URL pública com TLS.
     </div>
   </header>
@@ -178,27 +166,15 @@ class LogHandler(BaseHTTPRequestHandler):
       <form class=\"controls\" method=\"GET\">
         <label>Linhas <input type=\"number\" name=\"lines\" min=\"20\" max=\"{MAX_LINES}\" value=\"{requested_lines}\" /></label>
         <label>Filtro <input type=\"text\" name=\"q\" value=\"{html.escape(query)}\" placeholder=\"error, failed, player name...\" /></label>
-        <label>Atualização (s) <input type=\"number\" name=\"refresh\" min=\"0\" max=\"{MAX_REFRESH_SECONDS}\" value=\"{requested_refresh}\" /></label>
-        <label><input type=\"checkbox\" name=\"auto\" value=\"1\" {'checked' if auto_refresh_enabled else ''} /> Auto atualizar</label>
-        <input type=\"hidden\" name=\"auto\" value=\"0\" />
         <button type=\"submit\">Atualizar</button>
       </form>
       <div class=\"meta\">
         Arquivo: {LOG_PATH} | exibindo {len(filtered)} linha(s) | snapshot: {now} |
-        auto refresh: {'ligado' if auto_refresh_enabled and requested_refresh > 0 else 'pausado'}{' (' + str(requested_refresh) + 's)' if auto_refresh_enabled and requested_refresh > 0 else ''}
+        atualização automática: desativada
       </div>
       <pre>{''.join(body_lines) if body_lines else '<span class="line">Nenhuma linha para exibir.</span>'}</pre>
     </div>
   </main>
-  <script>
-    (() => {{
-      const enabled = {str(auto_refresh_enabled).lower()};
-      const seconds = {requested_refresh};
-      if (enabled && seconds > 0) {{
-        window.setTimeout(() => window.location.reload(), seconds * 1000);
-      }}
-    }})();
-  </script>
 </body>
 </html>"""
 
