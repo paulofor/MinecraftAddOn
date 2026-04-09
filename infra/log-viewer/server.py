@@ -17,6 +17,7 @@ HOST = os.getenv("HOST", "0.0.0.0")
 PORT = int(os.getenv("PORT", "8080"))
 DEFAULT_LINES = int(os.getenv("DEFAULT_LINES", "300"))
 MAX_LINES = int(os.getenv("MAX_LINES", "3000"))
+VIEWER_VERSION = os.getenv("VIEWER_VERSION", "semversao-local")
 
 ERROR_RE = re.compile(r"(error|exception|fail(ed)?|traceback)", re.IGNORECASE)
 WARN_RE = re.compile(r"(warn(ing)?|deprecated)", re.IGNORECASE)
@@ -170,7 +171,7 @@ class LogHandler(BaseHTTPRequestHandler):
       </form>
       <div class=\"meta\">
         Arquivo: {LOG_PATH} | exibindo {len(filtered)} linha(s) | snapshot: {now} |
-        atualização automática: desativada
+        atualização automática: desativada | versão do viewer: {VIEWER_VERSION}
       </div>
       <pre>{''.join(body_lines) if body_lines else '<span class="line">Nenhuma linha para exibir.</span>'}</pre>
     </div>
@@ -181,6 +182,9 @@ class LogHandler(BaseHTTPRequestHandler):
     payload = html_doc.encode("utf-8")
     self.send_response(HTTPStatus.OK)
     self.send_header("Content-Type", "text/html; charset=utf-8")
+    self.send_header("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0")
+    self.send_header("Pragma", "no-cache")
+    self.send_header("Expires", "0")
     self.send_header("Content-Length", str(len(payload)))
     self.end_headers()
     self.wfile.write(payload)
