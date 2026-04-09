@@ -261,7 +261,7 @@ Backups são salvos por padrão em `backups/worlds/` e a retenção padrão é d
 
 Foi adicionado o workflow `.github/workflows/publish-server.yml` para publicar a pasta `packs/` no servidor.
 
-Além dos packs, o workflow também publica e atualiza automaticamente o log viewer (`infra/log-viewer/server.py`) e instala/reinicia os serviços `bedrock-log-export.service` e `bedrock-log-viewer.service` via `systemd`, deixando a URL `http://SEU_IP:8080` ativa sem setup manual no host.
+Além dos packs, o workflow também publica e atualiza automaticamente o log viewer (`infra/log-viewer/server.py`) e instala/reinicia os serviços `bedrock-log-export.service` e `bedrock-log-viewer.service` via `systemd`, deixando a URL `http://SEU_IP:8081` ativa sem setup manual no host.
 
 - Host: `186.202.209.206`
 - Usuário: `root`
@@ -306,43 +306,49 @@ Se quiser, no próximo passo eu já posso gerar automaticamente a **estrutura de
 
 ---
 
-## 8) Publicar logs do Bedrock em URL externa (container web)
+## 8) Publicar logs do Bedrock em URL externa (serviço systemd)
 
-Para facilitar diagnóstico rápido de erros, este repositório inclui um **log viewer HTTP** em container, com:
+Para facilitar diagnóstico rápido de erros, este repositório inclui um **log viewer HTTP** executado como serviço `systemd` no host, com:
 - atualização manual (sem auto-refresh no navegador);
 - destaque visual de linhas com `error/failed/exception` e `warning`;
 - filtro por texto e quantidade de linhas.
 
-### 8.1 Arquivos adicionados
+### 8.1 Arquivos usados
 
 - `infra/log-viewer/server.py` (servidor web de logs);
-- `infra/log-viewer/Dockerfile`;
-- `docker-compose.log-viewer.yml`;
-- `tools/export_bedrock_journal.sh` (exporta `journalctl` para arquivo consumido pelo container).
+- `tools/export_bedrock_journal.sh` (exporta `journalctl` para arquivo contínuo);
+- `tools/install_log_viewer_services.sh` (instala/atualiza os serviços `bedrock-log-export` e `bedrock-log-viewer`).
 
 ### 8.2 Passo a passo no servidor
 
-1. Exporte o journal do serviço Bedrock para um arquivo contínuo:
+1. Instale/atualize os serviços:
 
 ```bash
-./tools/export_bedrock_journal.sh bedrock.service /root/MinecraftServer/logs/bedrock.log
+./tools/install_log_viewer_services.sh /root/MinecraftAddOn bedrock.service /root/MinecraftServer/logs/bedrock.log 8081
 ```
 
-> Dica: rode esse comando via `systemd`/`screen`/`tmux`, pois ele fica em modo contínuo (`-f`).
-
-2. Suba o container do visualizador:
+2. Verifique se os serviços estão ativos:
 
 ```bash
-docker compose -f docker-compose.log-viewer.yml up -d --build
+systemctl status bedrock-log-export.service --no-pager
+systemctl status bedrock-log-viewer.service --no-pager
 ```
 
-3. Acesse localmente:
+3. Verifique se a porta está escutando:
+
+```bash
+ss -lntp | grep 8081
+```
+
+4. Acesse localmente:
 
 ```text
-http://SEU_IP:8080
+http://SEU_IP:8081
 ```
 
-4. Para publicar em URL externa (recomendado), coloque atrás de um reverse proxy com TLS (Nginx, Traefik ou Caddy), por exemplo:
+> Se `docker ps` aparecer vazio, isso é esperado neste fluxo: o viewer não roda em container, ele roda via `systemd`.
+
+5. Para publicar em URL externa (recomendado), coloque atrás de um reverse proxy com TLS (Nginx, Traefik ou Caddy), por exemplo:
 
 ```text
 https://logs.seu-dominio.com
@@ -350,7 +356,7 @@ https://logs.seu-dominio.com
 
 ### 8.3 Segurança recomendada
 
-Como logs podem conter informações sensíveis, **não exponha a porta 8080 diretamente na internet** sem proteção. Recomenda-se:
+Como logs podem conter informações sensíveis, **não exponha a porta 8081 diretamente na internet** sem proteção. Recomenda-se:
 
 - HTTPS obrigatório;
 - autenticação básica/OAuth no proxy;
