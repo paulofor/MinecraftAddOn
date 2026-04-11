@@ -13,6 +13,14 @@ const IDEAS_DB_KEY = "digicomo:quadro_ideias_db";
 const MAX_IDEAS_PER_BOARD = 8;
 const LOG_PREFIX = "[QuadroIdeias]";
 const SCRIPT_EVENT_DIAG_ID = "digicomo:diagnostico";
+const CHAT_HELP_COMMAND = "!quadro";
+const CHAT_DIAG_COMMAND = "!quadrodiag";
+const COMMAND_HINTS = [
+  "/give @s digicomo:quadro_ideias 1",
+  "/give @s digicom:quadro_ideias 1",
+  "/give @s digicomo:quadro_ideias_item 1",
+  "/give @s digicom:quadro_ideias_item 1"
+];
 
 function logInfo(message) {
   console.warn(`${LOG_PREFIX} ${message}`);
@@ -37,6 +45,7 @@ world.afterEvents.worldInitialize.subscribe((event) => {
 
     validateContentRegistration();
     logInfo(`Se o /give falhar após atualização do addon, reinicie o mundo/servidor para recarregar os packs.`);
+    logInfo(`Comandos válidos (sem %): ${COMMAND_HINTS.join(" | ")}`);
   });
 });
 
@@ -82,6 +91,37 @@ world.beforeEvents.playerInteractWithBlock.subscribe((event) => {
     logInfo(`Abertura de formulário do quadro por ${player.name} em ${makeBoardKey(block)}`);
     event.cancel = true;
     system.run(() => openIdeaForm(player, block));
+  }
+});
+
+world.beforeEvents.chatSend.subscribe((event) => {
+  const message = `${event.message ?? ""}`.trim();
+  const lower = message.toLowerCase();
+  const player = event.sender;
+
+  if (!player) {
+    return;
+  }
+
+  if (lower === CHAT_HELP_COMMAND) {
+    event.cancel = true;
+    giveBoardWithoutCommand(player);
+    return;
+  }
+
+  if (lower === CHAT_DIAG_COMMAND) {
+    event.cancel = true;
+    player.sendMessage("§7Executando diagnóstico do Quadro de Ideias. Verifique os logs.");
+    logInfo(`Diagnóstico solicitado via chat por ${player.name}.`);
+    validateContentRegistration();
+    runCommandPermissionDiagnostic(player);
+    return;
+  }
+
+  if (lower.startsWith("/give") && message.includes("%")) {
+    player.sendMessage("§cErro comum detectado: remova o caractere '%' do comando /give.");
+    player.sendMessage(`§eExemplo correto: ${COMMAND_HINTS[0]}`);
+    logInfo(`Sintaxe suspeita detectada no chat de ${player.name}: "${message}".`);
   }
 });
 
@@ -244,4 +284,49 @@ function runCommandPermissionDiagnostic(sourceEntity) {
         error
       );
     });
+}
+
+function giveBoardWithoutCommand(player) {
+  const inventory = player.getComponent("minecraft:inventory")?.container;
+
+  if (!inventory) {
+    logError(`Falha ao acessar inventário para entrega de item sem /give. jogador=${player.name}`, "inventario-indisponivel");
+    player.sendMessage("§cNão foi possível acessar seu inventário agora.");
+    return;
+  }
+
+  const availableId = getFirstRegisteredBoardItemId();
+  if (!availableId) {
+    logError(`Falha ao entregar item sem /give para ${player.name}: nenhum id de item disponível.`, "item-indisponivel");
+    player.sendMessage("§cO item do quadro não está carregado neste mundo.");
+    return;
+  }
+
+  try {
+    const item = new ItemStack(availableId, 1);
+    const leftover = inventory.addItem(item);
+    if (leftover) {
+      player.sendMessage("§eSeu inventário está cheio. Libere espaço e tente novamente.");
+      logInfo(`Entrega via chat sem /give falhou por inventário cheio. jogador=${player.name}, item=${availableId}`);
+      return;
+    }
+
+    player.sendMessage(`§aVocê recebeu 1x ${availableId} (via ${CHAT_HELP_COMMAND}).`);
+    logInfo(`Entrega via chat concluída para ${player.name}. item=${availableId}`);
+  } catch (error) {
+    logError(`Erro ao entregar item via chat para ${player.name}. item=${availableId}`, error);
+    player.sendMessage("§cFalha ao entregar o item. Consulte os logs do servidor.");
+  }
+}
+
+function getFirstRegisteredBoardItemId() {
+  for (const candidate of BOARD_ITEM_IDS) {
+    try {
+      return new ItemStack(candidate, 1).typeId;
+    } catch (error) {
+      // tenta próximo id
+    }
+  }
+
+  return null;
 }
