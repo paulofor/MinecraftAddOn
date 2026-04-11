@@ -104,6 +104,18 @@ pre {
 }
 .addons ul { margin: 0.35rem 0 0; padding-left: 1.2rem; }
 .addons li { margin: 0.2rem 0; }
+.item-cmd {
+  margin-top: 0.2rem;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+code {
+  background: #111827;
+  border: 1px solid #36465e;
+  border-radius: 6px;
+  padding: 0.1rem 0.35rem;
+  color: #c5d9ff;
+}
 """
 
 
@@ -235,6 +247,18 @@ def get_addons_snapshot() -> list[dict[str, str]]:
   return packs
 
 
+def _item_with_give_command(identifier: str) -> str:
+  safe_identifier = html.escape(identifier)
+  cmd = f"/give @s {identifier}"
+  safe_cmd = html.escape(cmd)
+  return (
+    "<li>"
+    f"<div><strong>{safe_identifier}</strong></div>"
+    f'<div class="item-cmd">Comando: <code>{safe_cmd}</code></div>'
+    "</li>"
+  )
+
+
 class LogHandler(BaseHTTPRequestHandler):
   def do_GET(self) -> None:
     parsed = urlparse(self.path)
@@ -276,7 +300,7 @@ class LogHandler(BaseHTTPRequestHandler):
         available_items = addon.get("items", [])
         items_html = ""
         if available_items:
-          items_list = "".join(f"<li>{html.escape(item)}</li>" for item in available_items)
+          items_list = "".join(_item_with_give_command(item) for item in available_items)
           items_html = (
             "<div>itens disponíveis pelo Add On:</div>"
             "<ul>"
