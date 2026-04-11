@@ -11,6 +11,15 @@ services:
       - LOG_PATH=/logs/bedrock.log
       - DEFAULT_LINES=400
       - MAX_LINES=5000
+      - BEHAVIOR_PACKS_DIR=/data/behavior_packs
+      - RESOURCE_PACKS_DIR=/data/resource_packs
+      - WORLD_BEHAVIOR_BINDINGS_PATH=/data/world_behavior_packs.json
+      - WORLD_RESOURCE_BINDINGS_PATH=/data/world_resource_packs.json
     volumes:
       # Monte aqui o arquivo de log exportado pelo host.
       - /root/MinecraftServer/logs/bedrock.log:/logs/bedrock.log:ro
+      # Pastas/arquivos do mundo para listar packs instalados e vinculados.
+      - /root/MinecraftServer/worlds/Bedrock level/behavior_packs:/data/behavior_packs:ro
+      - /root/MinecraftServer/worlds/Bedrock level/resource_packs:/data/resource_packs:ro
+      - /root/MinecraftServer/worlds/Bedrock level/world_behavior_packs.json:/data/world_behavior_packs.json:ro
+      - /root/MinecraftServer/worlds/Bedrock level/world_resource_packs.json:/data/world_resource_packs.json:ro

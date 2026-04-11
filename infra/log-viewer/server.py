@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import html
+import json
 import os
 import re
 import time
@@ -18,6 +19,14 @@ PORT = int(os.getenv("PORT", "8081"))
 DEFAULT_LINES = int(os.getenv("DEFAULT_LINES", "300"))
 MAX_LINES = int(os.getenv("MAX_LINES", "3000"))
 VIEWER_VERSION = os.getenv("VIEWER_VERSION", "semversao-local")
+BP_DIR = Path(os.getenv("BEHAVIOR_PACKS_DIR", "/data/behavior_packs"))
+RP_DIR = Path(os.getenv("RESOURCE_PACKS_DIR", "/data/resource_packs"))
+WORLD_BP_BINDINGS = Path(
+  os.getenv("WORLD_BEHAVIOR_BINDINGS_PATH", "/data/world_behavior_packs.json")
+)
+WORLD_RP_BINDINGS = Path(
+  os.getenv("WORLD_RESOURCE_BINDINGS_PATH", "/data/world_resource_packs.json")
+)
 
 ERROR_RE = re.compile(r"(error|exception|fail(ed)?|traceback)", re.IGNORECASE)
 WARN_RE = re.compile(r"(warn(ing)?|deprecated)", re.IGNORECASE)
@@ -86,6 +95,15 @@ pre {
 .line.error { color: var(--error); }
 .line.warn { color: var(--warn); }
 .tag { color: var(--ok); font-weight: 600; }
+.addons {
+  margin-top: 0.75rem;
+  background: #0b1220;
+  border: 1px solid #263041;
+  border-radius: 8px;
+  padding: 0.75rem;
+}
+.addons ul { margin: 0.35rem 0 0; padding-left: 1.2rem; }
+.addons li { margin: 0.2rem 0; }
 """
 
 
@@ -112,6 +130,81 @@ def read_last_lines(path: Path, num_lines: int) -> list[str]:
     return lines[-num_lines:]
 
 
+def _fmt_version(version: list[int] | str | None) -> str:
+  if isinstance(version, list):
+    return ".".join(str(v) for v in version)
+  if isinstance(version, str):
+    return version
+  return "n/d"
+
+
+def _safe_read_json(path: Path) -> dict | list | None:
+  if not path.exists() or not path.is_file():
+    return None
+  try:
+    return json.loads(path.read_text(encoding="utf-8"))
+  except (OSError, json.JSONDecodeError):
+    return None
+
+
+def read_world_bindings(path: Path) -> dict[str, str]:
+  data = _safe_read_json(path)
+  if not isinstance(data, list):
+    return {}
+
+  bindings: dict[str, str] = {}
+  for item in data:
+    if not isinstance(item, dict):
+      continue
+    pack_id = item.get("pack_id")
+    version = item.get("version")
+    if isinstance(pack_id, str):
+      bindings[pack_id] = _fmt_version(version)
+  return bindings
+
+
+def read_installed_packs(base_dir: Path, pack_type: str, bindings: dict[str, str]) -> list[dict[str, str]]:
+  packs: list[dict[str, str]] = []
+  if not base_dir.exists() or not base_dir.is_dir():
+    return packs
+
+  for pack_dir in sorted([p for p in base_dir.iterdir() if p.is_dir()], key=lambda p: p.name.lower()):
+    manifest = _safe_read_json(pack_dir / "manifest.json")
+    if not isinstance(manifest, dict):
+      continue
+
+    header = manifest.get("header", {})
+    if not isinstance(header, dict):
+      header = {}
+
+    pack_uuid = header.get("uuid") if isinstance(header.get("uuid"), str) else ""
+    name = header.get("name") if isinstance(header.get("name"), str) else pack_dir.name
+    version = _fmt_version(header.get("version"))
+    enabled = bool(pack_uuid and pack_uuid in bindings)
+
+    packs.append(
+      {
+        "type": pack_type,
+        "name": name,
+        "uuid": pack_uuid or "sem-uuid",
+        "version": version,
+        "status": "ativo no mundo" if enabled else "instalado (não vinculado)",
+        "folder": pack_dir.name,
+      }
+    )
+  return packs
+
+
+def get_addons_snapshot() -> list[dict[str, str]]:
+  bp_bindings = read_world_bindings(WORLD_BP_BINDINGS)
+  rp_bindings = read_world_bindings(WORLD_RP_BINDINGS)
+
+  packs = []
+  packs.extend(read_installed_packs(BP_DIR, "Behavior Pack", bp_bindings))
+  packs.extend(read_installed_packs(RP_DIR, "Resource Pack", rp_bindings))
+  return packs
+
+
 class LogHandler(BaseHTTPRequestHandler):
   def do_GET(self) -> None:
     parsed = urlparse(self.path)
@@ -130,6 +223,7 @@ class LogHandler(BaseHTTPRequestHandler):
     requested_lines = max(20, min(requested_lines, MAX_LINES))
 
     lines = read_last_lines(LOG_PATH, requested_lines)
+    addons = get_addons_snapshot()
     if query:
       filtered = [ln for ln in lines if query.lower() in ln.lower()]
     else:
@@ -145,6 +239,28 @@ class LogHandler(BaseHTTPRequestHandler):
         css_class += " warn"
       safe_ln = html.escape(ln)
       body_lines.append(f'<span class="{css_class}">{safe_ln}</span>')
+
+    if addons:
+      addon_items = []
+      for addon in addons:
+        addon_items.append(
+          "<li>"
+          f"<strong>{html.escape(addon['name'])}</strong> "
+          f"({html.escape(addon['type'])}) • versão {html.escape(addon['version'])} • "
+          f"status: {html.escape(addon['status'])} • pasta: {html.escape(addon['folder'])}"
+          "</li>"
+        )
+      addons_html = (
+        '<div class="addons"><strong>Add-ons instalados/disponíveis</strong>'
+        "<ul>"
+        + "".join(addon_items)
+        + "</ul></div>"
+      )
+    else:
+      addons_html = (
+        '<div class="addons"><strong>Add-ons instalados/disponíveis</strong>'
+        '<div class="meta">Nenhum pack encontrado nos caminhos configurados.</div></div>'
+      )
 
     html_doc = f"""<!doctype html>
 <html lang=\"pt-BR\">
@@ -173,6 +289,7 @@ class LogHandler(BaseHTTPRequestHandler):
         Arquivo: {LOG_PATH} | exibindo {len(filtered)} linha(s) | snapshot: {now} |
         atualização automática: desativada | versão do viewer: {VIEWER_VERSION}
       </div>
+      {addons_html}
       <pre>{''.join(body_lines) if body_lines else '<span class="line">Nenhuma linha para exibir.</span>'}</pre>
     </div>
   </main>
@@ -194,6 +311,20 @@ class LogHandler(BaseHTTPRequestHandler):
 
 
 def main() -> None:
+  addons = get_addons_snapshot()
+  print("Add-ons detectados:")
+  if addons:
+    for addon in addons:
+      print(
+        f" - {addon['name']} [{addon['type']}] "
+        f"v{addon['version']} | {addon['status']} | pasta={addon['folder']}"
+      )
+  else:
+    print(
+      " - nenhum pack encontrado. "
+      f"Verifique BEHAVIOR_PACKS_DIR={BP_DIR} e RESOURCE_PACKS_DIR={RP_DIR}"
+    )
+
   server = ThreadingHTTPServer((HOST, PORT), LogHandler)
   print(f"Log viewer em http://{HOST}:{PORT} lendo {LOG_PATH}")
   server.serve_forever()
