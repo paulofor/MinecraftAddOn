@@ -34,10 +34,10 @@ WARN_RE = re.compile(r"(warn(ing)?|deprecated)", re.IGNORECASE)
 CSS = """
 :root {
   color-scheme: dark;
-  --bg: #0f172a;
-  --card: #111827;
-  --text: #e5e7eb;
-  --muted: #93a3b8;
+  --bg: #1c2a3d;
+  --card: #1f314a;
+  --text: #f2f6ff;
+  --muted: #c1cfe3;
   --error: #ff7b7b;
   --warn: #ffd166;
   --ok: #9be37a;
@@ -51,13 +51,13 @@ body {
 }
 header {
   padding: 1rem 1.25rem;
-  border-bottom: 1px solid #263041;
-  background: #0b1220;
+  border-bottom: 1px solid #3c4f69;
+  background: #162338;
 }
 main { padding: 1rem 1.25rem 2rem; }
 .card {
   background: var(--card);
-  border: 1px solid #263041;
+  border: 1px solid #3c4f69;
   border-radius: 10px;
   padding: 0.75rem;
 }
@@ -71,8 +71,8 @@ main { padding: 1rem 1.25rem 2rem; }
 input, button {
   padding: 0.45rem 0.6rem;
   border-radius: 8px;
-  border: 1px solid #36465e;
-  background: #0b1220;
+  border: 1px solid #526787;
+  background: #162338;
   color: var(--text);
 }
 button { cursor: pointer; }
@@ -87,7 +87,7 @@ pre {
   max-height: calc(100vh - 210px);
   line-height: 1.4;
   font-size: 0.86rem;
-  background: #0b1220;
+  background: #162338;
   border-radius: 8px;
   padding: 0.75rem;
 }
@@ -97,8 +97,8 @@ pre {
 .tag { color: var(--ok); font-weight: 600; }
 .addons {
   margin-top: 0.75rem;
-  background: #0b1220;
-  border: 1px solid #263041;
+  background: #162338;
+  border: 1px solid #3c4f69;
   border-radius: 8px;
   padding: 0.75rem;
 }
@@ -110,11 +110,26 @@ pre {
   color: var(--muted);
 }
 code {
-  background: #111827;
-  border: 1px solid #36465e;
+  background: #223651;
+  border: 1px solid #526787;
   border-radius: 6px;
   padding: 0.1rem 0.35rem;
   color: #c5d9ff;
+}
+.cmd-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+.copy-btn {
+  padding: 0.15rem 0.45rem;
+  font-size: 0.75rem;
+  line-height: 1.2;
+}
+.copy-status {
+  font-size: 0.75rem;
+  color: var(--ok);
+  min-height: 1em;
 }
 """
 
@@ -254,7 +269,12 @@ def _item_with_give_command(identifier: str) -> str:
   return (
     "<li>"
     f"<div><strong>{safe_identifier}</strong></div>"
-    f'<div class="item-cmd">Comando: <code>{safe_cmd}</code></div>'
+    '<div class="item-cmd">Comando: '
+    '<span class="cmd-row">'
+    f"<code>{safe_cmd}</code>"
+    f'<button type="button" class="copy-btn" data-cmd="{safe_cmd}">copy</button>'
+    '<span class="copy-status" aria-live="polite"></span>'
+    "</span></div>"
     "</li>"
   )
 
@@ -359,6 +379,26 @@ class LogHandler(BaseHTTPRequestHandler):
       <pre>{''.join(body_lines) if body_lines else '<span class="line">Nenhuma linha para exibir.</span>'}</pre>
     </div>
   </main>
+<script>
+document.querySelectorAll('.copy-btn').forEach((btn) => {{
+  btn.addEventListener('click', async () => {{
+    const cmd = btn.dataset.cmd || '';
+    const statusEl = btn.parentElement?.querySelector('.copy-status');
+    if (!cmd) {{
+      return;
+    }}
+    try {{
+      await navigator.clipboard.writeText(cmd);
+      if (statusEl) statusEl.textContent = 'copiado!';
+    }} catch (err) {{
+      if (statusEl) statusEl.textContent = 'falhou ao copiar';
+    }}
+    setTimeout(() => {{
+      if (statusEl) statusEl.textContent = '';
+    }}, 1200);
+  }});
+}});
+</script>
 </body>
 </html>"""
 
