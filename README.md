@@ -180,6 +180,26 @@ Para **atualizar automaticamente** os vínculos do mundo com os UUIDs/versões d
   --world-dir "/root/MinecraftServer/worlds/Bedrock level"
 ```
 
+### Deploy completo dos packs para o mundo remoto (cópia + vínculos + restart)
+
+Quando você altera arquivos dentro de `packs/`, use este script para copiar tudo para as
+pastas corretas do mundo (`behavior_packs/` e `resource_packs/`), atualizar
+`world_behavior_packs.json`/`world_resource_packs.json`, validar e reiniciar o serviço:
+
+```bash
+./tools/deploy_world_remote.sh \
+  --host 186.202.209.206 \
+  --user root \
+  --identity ~/.ssh/id_ed25519 \
+  --world-dir "/root/MinecraftServer/worlds/Bedrock level"
+```
+
+Opções úteis:
+- `--dry-run`: mostra os arquivos que seriam copiados sem alterar nada;
+- `--no-restart`: publica sem reiniciar o `bedrock.service`;
+- `--bp-name` / `--rp-name`: troca o nome das pastas dos packs, se necessário;
+- `--repo-dir`: caminho do repositório no servidor remoto (padrão: `/root/MinecraftAddOn`).
+
 ### Checklist de runtime do mundo (Script API / Experimentos)
 
 Antes de validar em produção, confirme no mundo/servidor Bedrock que os requisitos de runtime estão habilitados para a **mesma versão do servidor em uso**:
