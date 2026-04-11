@@ -276,7 +276,7 @@ Backups são salvos por padrão em `backups/worlds/` e a retenção padrão é d
 
 Foi adicionado o workflow `.github/workflows/publish-server.yml` para publicar a pasta `packs/` no servidor.
 
-Além dos packs, o workflow também publica e atualiza automaticamente o log viewer (`infra/log-viewer/server.py`) e instala/reinicia os serviços `bedrock-log-export.service` e `bedrock-log-viewer.service` via `systemd`, deixando a URL `http://SEU_IP:8081` ativa sem setup manual no host.
+Além dos packs, o workflow também publica e atualiza automaticamente o log viewer (`infra/log-viewer/server.py`) e sobe/reinicia o container `bedrock-log-viewer` via `docker compose`, deixando a URL `http://SEU_IP:8081` ativa sem setup manual no host.
 
 - Host: `186.202.209.206`
 - Usuário: `root`

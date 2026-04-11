@@ -127,10 +127,17 @@ jobs:
           PY
 
 
-      - name: Instalar/atualizar serviços do log viewer
+      - name: Publicar log viewer via Docker (sem comandos manuais no VPS)
         run: |
           ssh -i ~/.ssh/id_ed25519 -p "$VPS_PORT" "$VPS_USER@$VPS_HOST" \
-            "chmod +x '$REMOTE_DIR/tools/install_log_viewer_services.sh' && '$REMOTE_DIR/tools/install_log_viewer_services.sh' '$REMOTE_DIR' 'bedrock.service' '/opt/bedrock-server/logs/bedrock.log' '8080'"
+            "cd '$REMOTE_DIR' && \
+             VIEWER_PORT='8081' \
+             BEDROCK_LOG_PATH='/opt/bedrock-server/logs/bedrock.log' \
+             WORLD_DIR='$WORLD_DIR' \
+             WORLD_BP_DIR='$WORLD_BP_DIR' \
+             WORLD_RP_DIR='$WORLD_RP_DIR' \
+             docker compose -f docker-compose.log-viewer.yml up -d --build --remove-orphans && \
+             docker ps --filter name=bedrock-log-viewer --format 'table {{.Names}}\t{{.Status}}\t{{.Ports}}'"
 
       - name: Validar publicação remota (diretórios finais do mundo)
         run: |
