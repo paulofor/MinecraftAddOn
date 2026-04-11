@@ -1,13 +1,7 @@
 import { world, system, BlockPermutation, ItemStack } from "@minecraft/server";
 import { ModalFormData } from "@minecraft/server-ui";
 
-const PRIMARY_BOARD_ITEM_ID = "digicomo:quadro_ideias";
-const BOARD_ITEM_IDS = [
-  PRIMARY_BOARD_ITEM_ID,
-  "digicom:quadro_ideias",
-  "digicomo:quadro_ideias_item",
-  "digicom:quadro_ideias_item"
-];
+const BOARD_ITEM_ID = "digicomo:quadro_ideias";
 const BOARD_BLOCK_ID = "digicomo:quadro_ideias_bloco";
 const IDEAS_DB_KEY = "digicomo:quadro_ideias_db";
 const MAX_IDEAS_PER_BOARD = 8;
@@ -15,12 +9,7 @@ const LOG_PREFIX = "[QuadroIdeias]";
 const SCRIPT_EVENT_DIAG_ID = "digicomo:diagnostico";
 const CHAT_HELP_COMMAND = "!quadro";
 const CHAT_DIAG_COMMAND = "!quadrodiag";
-const COMMAND_HINTS = [
-  "/give @s digicomo:quadro_ideias 1",
-  "/give @s digicom:quadro_ideias 1",
-  "/give @s digicomo:quadro_ideias_item 1",
-  "/give @s digicom:quadro_ideias_item 1"
-];
+const GIVE_COMMAND_HINT = `/give @s ${BOARD_ITEM_ID} 1`;
 
 function logInfo(message) {
   console.warn(`${LOG_PREFIX} ${message}`);
@@ -36,14 +25,11 @@ world.afterEvents.worldInitialize.subscribe(() => {
 
   system.run(() => {
     ensureIdeasDBInitialized();
-
     validateContentRegistration();
-    logInfo(`Se o /give falhar após atualização do addon, reinicie o mundo/servidor para recarregar os packs.`);
-    logInfo(`Comandos válidos (sem %): ${COMMAND_HINTS.join(" | ")}`);
+    logInfo("Colocação do quadro delegada ao minecraft:block_placer (sem colocação manual por script).");
+    logInfo(`Comando válido para obter o item: ${GIVE_COMMAND_HINT}`);
   });
 });
-
-
 
 const scriptEventReceive = world.afterEvents?.scriptEventReceive;
 if (scriptEventReceive?.subscribe) {
@@ -63,26 +49,9 @@ if (scriptEventReceive?.subscribe) {
 }
 
 world.beforeEvents.playerInteractWithBlock.subscribe((event) => {
-  const { player, block, itemStack } = event;
+  const { player, block } = event;
 
   if (!block || !player) {
-    return;
-  }
-
-  if (itemStack && BOARD_ITEM_IDS.includes(itemStack.typeId)) {
-    logInfo(`Interação de colocação detectada por ${player.name}. item=${itemStack.typeId}, blocoBase=${block.typeId}`);
-    event.cancel = true;
-
-    const above = block.above();
-    if (!above || !above.isAir) {
-      player.sendMessage("§cNão há espaço para colocar o quadro aqui.");
-      logInfo(`Falha ao posicionar quadro por falta de espaço. jogador=${player.name}`);
-      return;
-    }
-
-    above.setPermutation(BlockPermutation.resolve(BOARD_BLOCK_ID));
-    consumeBoardItem(player, itemStack);
-    player.sendMessage("§aQuadro de Ideias colocado! Toque nele para adicionar um post-it.");
     return;
   }
 
@@ -121,7 +90,7 @@ if (chatSendEvent?.subscribe) {
 
     if (lower.startsWith("/give") && message.includes("%")) {
       player.sendMessage("§cErro comum detectado: remova o caractere '%' do comando /give.");
-      player.sendMessage(`§eExemplo correto: ${COMMAND_HINTS[0]}`);
+      player.sendMessage(`§eExemplo correto: ${GIVE_COMMAND_HINT}`);
       logInfo(`Sintaxe suspeita detectada no chat de ${player.name}: "${message}".`);
     }
   });
@@ -146,26 +115,6 @@ function ensureIdeasDBInitialized() {
     } catch (innerError) {
       logError(`Não foi possível resetar a chave "${IDEAS_DB_KEY}".`, innerError);
     }
-  }
-}
-
-function consumeBoardItem(player, itemStack) {
-  const inventory = player.getComponent("minecraft:inventory")?.container;
-  const slot = player.selectedSlotIndex;
-  const current = inventory?.getItem(slot);
-
-  if (!inventory || !current || current.typeId !== itemStack.typeId) {
-    logInfo(`Consumo de item ignorado. inventory=${Boolean(inventory)}, current=${current?.typeId ?? "vazio"}, esperado=${itemStack.typeId}`);
-    return;
-  }
-
-  const amount = current.amount - 1;
-
-  if (amount <= 0) {
-    inventory.setItem(slot, undefined);
-  } else {
-    current.amount = amount;
-    inventory.setItem(slot, current);
   }
 }
 
@@ -259,29 +208,13 @@ function writeIdeasDB(data) {
 }
 
 function validateContentRegistration() {
-  logInfo(`Diagnóstico de conteúdo: comandos aceitos /give @s <${BOARD_ITEM_IDS.join(" | ")}> 1`);
+  logInfo(`Diagnóstico de conteúdo: comando aceito ${GIVE_COMMAND_HINT}`);
 
-  const availableIds = [];
-
-  for (const candidate of BOARD_ITEM_IDS) {
-    try {
-      const stack = new ItemStack(candidate, 1);
-      availableIds.push(stack.typeId);
-    } catch (error) {
-      // ignora ids não registrados
-    }
-  }
-
-  if (availableIds.length === 0) {
-    logError(
-      `Nenhum id de item compatível foi instanciado (${BOARD_ITEM_IDS.join(", ")}). Possível BP desatualizado ou item não carregado.`,
-      "ids-nao-encontrados"
-    );
-  } else {
-    logInfo(`Item(ns) registrado(s): ${availableIds.join(", ")}.`);
-    if (!availableIds.includes(PRIMARY_BOARD_ITEM_ID)) {
-      logInfo(`Atenção: id principal (${PRIMARY_BOARD_ITEM_ID}) não foi encontrado neste carregamento.`);
-    }
+  try {
+    const stack = new ItemStack(BOARD_ITEM_ID, 1);
+    logInfo(`Item registrado com sucesso: ${stack.typeId}.`);
+  } catch (error) {
+    logError(`Item "${BOARD_ITEM_ID}" não pôde ser instanciado. Possível BP desatualizado ou item não carregado.`, error);
   }
 
   try {
@@ -298,13 +231,13 @@ function runCommandPermissionDiagnostic(sourceEntity) {
     return;
   }
 
-  sourceEntity.runCommandAsync(`give @s ${PRIMARY_BOARD_ITEM_ID} 1`)
+  sourceEntity.runCommandAsync(`give @s ${BOARD_ITEM_ID} 1`)
     .then(() => {
-      logInfo(`Teste de permissão: jogador ${sourceEntity.name} conseguiu executar /give com sucesso para ${PRIMARY_BOARD_ITEM_ID}.`);
+      logInfo(`Teste de permissão: jogador ${sourceEntity.name} conseguiu executar /give com sucesso para ${BOARD_ITEM_ID}.`);
     })
     .catch((error) => {
       logError(
-        `Teste de permissão falhou para ${sourceEntity.name} no id ${PRIMARY_BOARD_ITEM_ID}. Possível falta de OP/permissão de comando ou id não registrado.`,
+        `Teste de permissão falhou para ${sourceEntity.name} no id ${BOARD_ITEM_ID}. Possível falta de OP/permissão de comando ou id não registrado.`,
         error
       );
     });
@@ -319,38 +252,19 @@ function giveBoardWithoutCommand(player) {
     return;
   }
 
-  const availableId = getFirstRegisteredBoardItemId();
-  if (!availableId) {
-    logError(`Falha ao entregar item sem /give para ${player.name}: nenhum id de item disponível.`, "item-indisponivel");
-    player.sendMessage("§cO item do quadro não está carregado neste mundo.");
-    return;
-  }
-
   try {
-    const item = new ItemStack(availableId, 1);
+    const item = new ItemStack(BOARD_ITEM_ID, 1);
     const leftover = inventory.addItem(item);
     if (leftover) {
       player.sendMessage("§eSeu inventário está cheio. Libere espaço e tente novamente.");
-      logInfo(`Entrega via chat sem /give falhou por inventário cheio. jogador=${player.name}, item=${availableId}`);
+      logInfo(`Entrega via chat sem /give falhou por inventário cheio. jogador=${player.name}, item=${BOARD_ITEM_ID}`);
       return;
     }
 
-    player.sendMessage(`§aVocê recebeu 1x ${availableId} (via ${CHAT_HELP_COMMAND}).`);
-    logInfo(`Entrega via chat concluída para ${player.name}. item=${availableId}`);
+    player.sendMessage(`§aVocê recebeu 1x ${BOARD_ITEM_ID} (via ${CHAT_HELP_COMMAND}).`);
+    logInfo(`Entrega via chat concluída para ${player.name}. item=${BOARD_ITEM_ID}`);
   } catch (error) {
-    logError(`Erro ao entregar item via chat para ${player.name}. item=${availableId}`, error);
+    logError(`Erro ao entregar item via chat para ${player.name}. item=${BOARD_ITEM_ID}`, error);
     player.sendMessage("§cFalha ao entregar o item. Consulte os logs do servidor.");
   }
-}
-
-function getFirstRegisteredBoardItemId() {
-  for (const candidate of BOARD_ITEM_IDS) {
-    try {
-      return new ItemStack(candidate, 1).typeId;
-    } catch (error) {
-      // tenta próximo id
-    }
-  }
-
-  return null;
 }
