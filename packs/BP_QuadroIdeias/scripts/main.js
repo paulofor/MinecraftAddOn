@@ -10,6 +10,9 @@ const SCRIPT_EVENT_DIAG_ID = "digicomo:diagnostico";
 const CHAT_HELP_COMMAND = "!quadro";
 const CHAT_DIAG_COMMAND = "!quadrodiag";
 const GIVE_COMMAND_HINT = `/give @s ${BOARD_ITEM_ID} 1`;
+const FORM_OPEN_COOLDOWN_TICKS = 10;
+
+const formOpenTickByPlayer = new Map();
 
 function logInfo(message) {
   console.warn(`${LOG_PREFIX} ${message}`);
@@ -18,6 +21,18 @@ function logInfo(message) {
 function logError(message, error) {
   const detail = error instanceof Error ? `${error.name}: ${error.message}` : `${error ?? "erro-desconhecido"}`;
   console.error(`${LOG_PREFIX} ${message} | ${detail}`);
+}
+
+function getSafePlayerName(player, fallback = "jogador-desconhecido") {
+  if (!player) {
+    return fallback;
+  }
+
+  try {
+    return player.name ?? fallback;
+  } catch {
+    return fallback;
+  }
 }
 
 world.afterEvents.worldInitialize.subscribe(() => {
@@ -56,7 +71,18 @@ world.beforeEvents.playerInteractWithBlock.subscribe((event) => {
   }
 
   if (block.typeId === BOARD_BLOCK_ID) {
-    logInfo(`Abertura de formulário do quadro por ${player.name} em ${makeBoardKey(block)}`);
+    const playerName = getSafePlayerName(player);
+    const openKey = `${player.id}|${makeBoardKey(block)}`;
+    const currentTick = system.currentTick;
+    const previousTick = formOpenTickByPlayer.get(openKey);
+
+    if (previousTick !== undefined && currentTick - previousTick < FORM_OPEN_COOLDOWN_TICKS) {
+      return;
+    }
+
+    formOpenTickByPlayer.set(openKey, currentTick);
+
+    logInfo(`Abertura de formulário do quadro por ${playerName} em ${makeBoardKey(block)}`);
     event.cancel = true;
     system.run(() => openIdeaForm(player, block));
   }
@@ -119,6 +145,7 @@ function ensureIdeasDBInitialized() {
 }
 
 function openIdeaForm(player, block) {
+  const playerName = getSafePlayerName(player);
   const db = readIdeasDB();
   const key = makeBoardKey(block);
   const boardIdeas = db[key] ?? [];
@@ -126,7 +153,7 @@ function openIdeaForm(player, block) {
     ? boardIdeas.map((idea, index) => `${index + 1}. §e${idea.author}§r: ${idea.text}`).join("\n")
     : "(Nenhum post-it ainda)";
 
-  logInfo(`Formulário aberto. key=${key}, ideiasAtuais=${boardIdeas.length}, jogador=${player.name}`);
+  logInfo(`Formulário aberto. key=${key}, ideiasAtuais=${boardIdeas.length}, jogador=${playerName}`);
 
   const form = new ModalFormData()
     .title("Quadro de Ideias")
@@ -139,7 +166,7 @@ function openIdeaForm(player, block) {
 
   form.show(player).then((response) => {
     if (response.canceled || !response.formValues) {
-      logInfo(`Formulário cancelado por ${player.name}.`);
+      logInfo(`Formulário cancelado por ${playerName}.`);
       return;
     }
 
@@ -151,7 +178,7 @@ function openIdeaForm(player, block) {
       db[key] = [];
       writeIdeasDB(db);
       player.sendMessage("§aQuadro limpo com sucesso.");
-      logInfo(`Quadro limpo por ${player.name}. key=${key}`);
+      logInfo(`Quadro limpo por ${playerName}. key=${key}`);
       return;
     }
 
@@ -172,16 +199,16 @@ function openIdeaForm(player, block) {
     }
 
     boardIdeas.push({
-      author: player.name,
+      author: playerName,
       text: newIdea
     });
 
     db[key] = boardIdeas;
     writeIdeasDB(db);
     player.sendMessage("§aIdeia adicionada ao quadro!");
-    logInfo(`Ideia adicionada. key=${key}, total=${boardIdeas.length}, autor=${player.name}`);
+    logInfo(`Ideia adicionada. key=${key}, total=${boardIdeas.length}, autor=${playerName}`);
   }).catch((error) => {
-    logError(`Erro ao exibir/processar formulário para ${player.name}.`, error);
+    logError(`Erro ao exibir/processar formulário para ${playerName}.`, error);
   });
 }
 
