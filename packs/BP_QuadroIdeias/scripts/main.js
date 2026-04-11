@@ -45,17 +45,22 @@ world.afterEvents.worldInitialize.subscribe(() => {
 
 
 
-world.afterEvents.scriptEventReceive.subscribe((event) => {
-  if (event.id !== SCRIPT_EVENT_DIAG_ID) {
-    return;
-  }
+const scriptEventReceive = world.afterEvents?.scriptEventReceive;
+if (scriptEventReceive?.subscribe) {
+  scriptEventReceive.subscribe((event) => {
+    if (event.id !== SCRIPT_EVENT_DIAG_ID) {
+      return;
+    }
 
-  const sourceName = event.sourceEntity?.typeId === "minecraft:player" ? event.sourceEntity.name : "servidor";
-  logInfo(`Diagnóstico manual solicitado via /scriptevent por ${sourceName}. message=${event.message || "(vazio)"}`);
+    const sourceName = event.sourceEntity?.typeId === "minecraft:player" ? event.sourceEntity.name : "servidor";
+    logInfo(`Diagnóstico manual solicitado via /scriptevent por ${sourceName}. message=${event.message || "(vazio)"}`);
 
-  validateContentRegistration();
-  runCommandPermissionDiagnostic(event.sourceEntity);
-});
+    validateContentRegistration();
+    runCommandPermissionDiagnostic(event.sourceEntity);
+  });
+} else {
+  logInfo("Evento scriptEventReceive indisponível nesta versão da API. Diagnóstico via /scriptevent desabilitado.");
+}
 
 world.beforeEvents.playerInteractWithBlock.subscribe((event) => {
   const { player, block, itemStack } = event;
