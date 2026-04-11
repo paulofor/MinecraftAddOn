@@ -380,6 +380,26 @@ class LogHandler(BaseHTTPRequestHandler):
     </div>
   </main>
 <script>
+function copyWithExecCommand(text) {{
+  const ta = document.createElement('textarea');
+  ta.value = text;
+  ta.setAttribute('readonly', '');
+  ta.style.position = 'fixed';
+  ta.style.top = '-9999px';
+  ta.style.left = '-9999px';
+  document.body.appendChild(ta);
+  ta.focus();
+  ta.select();
+  let copied = false;
+  try {{
+    copied = document.execCommand('copy');
+  }} catch (err) {{
+    copied = false;
+  }}
+  document.body.removeChild(ta);
+  return copied;
+}}
+
 document.querySelectorAll('.copy-btn').forEach((btn) => {{
   btn.addEventListener('click', async () => {{
     const cmd = btn.dataset.cmd || '';
@@ -387,12 +407,19 @@ document.querySelectorAll('.copy-btn').forEach((btn) => {{
     if (!cmd) {{
       return;
     }}
-    try {{
-      await navigator.clipboard.writeText(cmd);
-      if (statusEl) statusEl.textContent = 'copiado!';
-    }} catch (err) {{
-      if (statusEl) statusEl.textContent = 'falhou ao copiar';
+    let copied = false;
+    if (navigator.clipboard && window.isSecureContext) {{
+      try {{
+        await navigator.clipboard.writeText(cmd);
+        copied = true;
+      }} catch (err) {{
+        copied = false;
+      }}
     }}
+    if (!copied) {{
+      copied = copyWithExecCommand(cmd);
+    }}
+    if (statusEl) statusEl.textContent = copied ? 'copiado!' : 'falhou ao copiar';
     setTimeout(() => {{
       if (statusEl) statusEl.textContent = '';
     }}, 1200);
