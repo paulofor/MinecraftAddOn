@@ -195,6 +195,29 @@ def read_installed_packs(base_dir: Path, pack_type: str, bindings: dict[str, str
   return packs
 
 
+def read_pack_items(pack_dir: Path) -> list[str]:
+  items_dir = pack_dir / "items"
+  if not items_dir.exists() or not items_dir.is_dir():
+    return []
+
+  identifiers: list[str] = []
+  for item_file in sorted(items_dir.glob("*.json"), key=lambda p: p.name.lower()):
+    item_data = _safe_read_json(item_file)
+    if not isinstance(item_data, dict):
+      continue
+    minecraft_item = item_data.get("minecraft:item")
+    if not isinstance(minecraft_item, dict):
+      continue
+    description = minecraft_item.get("description")
+    if not isinstance(description, dict):
+      continue
+    identifier = description.get("identifier")
+    if isinstance(identifier, str) and identifier.strip():
+      identifiers.append(identifier.strip())
+
+  return sorted(set(identifiers), key=str.lower)
+
+
 def get_addons_snapshot() -> list[dict[str, str]]:
   bp_bindings = read_world_bindings(WORLD_BP_BINDINGS)
   rp_bindings = read_world_bindings(WORLD_RP_BINDINGS)
@@ -202,6 +225,13 @@ def get_addons_snapshot() -> list[dict[str, str]]:
   packs = []
   packs.extend(read_installed_packs(BP_DIR, "Behavior Pack", bp_bindings))
   packs.extend(read_installed_packs(RP_DIR, "Resource Pack", rp_bindings))
+
+  for pack in packs:
+    if pack["type"] != "Behavior Pack":
+      pack["items"] = []
+      continue
+    pack["items"] = read_pack_items(BP_DIR / pack["folder"])
+
   return packs
 
 
@@ -243,11 +273,23 @@ class LogHandler(BaseHTTPRequestHandler):
     if addons:
       addon_items = []
       for addon in addons:
+        available_items = addon.get("items", [])
+        items_html = ""
+        if available_items:
+          items_list = "".join(f"<li>{html.escape(item)}</li>" for item in available_items)
+          items_html = (
+            "<div>itens disponíveis pelo Add On:</div>"
+            "<ul>"
+            f"{items_list}"
+            "</ul>"
+          )
+
         addon_items.append(
           "<li>"
           f"<strong>{html.escape(addon['name'])}</strong> "
           f"({html.escape(addon['type'])}) • versão {html.escape(addon['version'])} • "
           f"status: {html.escape(addon['status'])} • pasta: {html.escape(addon['folder'])}"
+          f"{items_html}"
           "</li>"
         )
       addons_html = (
