@@ -1,5 +1,5 @@
 {
-  "format_version": "1.19.0",
+  "format_version": "1.20.80",
   "minecraft:recipe_shaped": {
     "description": {
       "identifier": "digicomo:quadro_ideias_recipe"
@@ -23,6 +23,11 @@
     "result": {
       "item": "digicomo:quadro_ideias",
       "count": 1
-    }
+    },
+    "unlock": [
+      {
+        "context": "AlwaysUnlocked"
+      }
+    ]
   }
 }

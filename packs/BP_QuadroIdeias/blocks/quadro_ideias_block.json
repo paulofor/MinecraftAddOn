@@ -1,5 +1,5 @@
 {
-  "format_version": "1.20.80",
+  "format_version": "1.21.0",
   "minecraft:block": {
     "description": {
       "identifier": "digicomo:quadro_ideias_bloco",
@@ -15,24 +15,24 @@
         "origin": [
           -8,
           0,
-          6
+          -8
         ],
         "size": [
           16,
           16,
-          2
+          16
         ]
       },
       "minecraft:collision_box": {
         "origin": [
           -8,
           0,
-          6
+          -8
         ],
         "size": [
           16,
           16,
-          2
+          16
         ]
       },
       "minecraft:material_instances": {
