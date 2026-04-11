@@ -131,6 +131,21 @@ Para iniciar o serviço do servidor Minecraft Bedrock:
 systemctl start bedrock.service
 ```
 
+### Visualizar add-ons instalados na página do log viewer (porta 8081)
+
+O `infra/log-viewer/server.py` agora também mostra, na própria página `http://<host>:8081`,
+os add-ons encontrados em `behavior_packs` e `resource_packs`, incluindo status de vínculo
+com o mundo (ativo/não vinculado).
+
+No `docker-compose.log-viewer.yml`, já estão mapeados:
+
+- `.../worlds/Bedrock level/behavior_packs`
+- `.../worlds/Bedrock level/resource_packs`
+- `.../worlds/Bedrock level/world_behavior_packs.json`
+- `.../worlds/Bedrock level/world_resource_packs.json`
+
+Ao subir o container, o servidor também imprime no log a lista de add-ons detectados.
+
 ### Validação dos vínculos do mundo (UUID + versão)
 
 Para validar no servidor se os arquivos `world_behavior_packs.json` e
