@@ -93,36 +93,41 @@ world.beforeEvents.playerInteractWithBlock.subscribe((event) => {
   }
 });
 
-world.beforeEvents.chatSend.subscribe((event) => {
-  const message = `${event.message ?? ""}`.trim();
-  const lower = message.toLowerCase();
-  const player = event.sender;
+const chatSendEvent = world.beforeEvents?.chatSend;
+if (chatSendEvent?.subscribe) {
+  chatSendEvent.subscribe((event) => {
+    const message = `${event.message ?? ""}`.trim();
+    const lower = message.toLowerCase();
+    const player = event.sender;
 
-  if (!player) {
-    return;
-  }
+    if (!player) {
+      return;
+    }
 
-  if (lower === CHAT_HELP_COMMAND) {
-    event.cancel = true;
-    giveBoardWithoutCommand(player);
-    return;
-  }
+    if (lower === CHAT_HELP_COMMAND) {
+      event.cancel = true;
+      giveBoardWithoutCommand(player);
+      return;
+    }
 
-  if (lower === CHAT_DIAG_COMMAND) {
-    event.cancel = true;
-    player.sendMessage("§7Executando diagnóstico do Quadro de Ideias. Verifique os logs.");
-    logInfo(`Diagnóstico solicitado via chat por ${player.name}.`);
-    validateContentRegistration();
-    runCommandPermissionDiagnostic(player);
-    return;
-  }
+    if (lower === CHAT_DIAG_COMMAND) {
+      event.cancel = true;
+      player.sendMessage("§7Executando diagnóstico do Quadro de Ideias. Verifique os logs.");
+      logInfo(`Diagnóstico solicitado via chat por ${player.name}.`);
+      validateContentRegistration();
+      runCommandPermissionDiagnostic(player);
+      return;
+    }
 
-  if (lower.startsWith("/give") && message.includes("%")) {
-    player.sendMessage("§cErro comum detectado: remova o caractere '%' do comando /give.");
-    player.sendMessage(`§eExemplo correto: ${COMMAND_HINTS[0]}`);
-    logInfo(`Sintaxe suspeita detectada no chat de ${player.name}: "${message}".`);
-  }
-});
+    if (lower.startsWith("/give") && message.includes("%")) {
+      player.sendMessage("§cErro comum detectado: remova o caractere '%' do comando /give.");
+      player.sendMessage(`§eExemplo correto: ${COMMAND_HINTS[0]}`);
+      logInfo(`Sintaxe suspeita detectada no chat de ${player.name}: "${message}".`);
+    }
+  });
+} else {
+  logInfo("Evento chatSend indisponível nesta versão da API. Comandos via chat (!quadro/!quadrodiag) desabilitados.");
+}
 
 function ensureIdeasDBInitialized() {
   try {
