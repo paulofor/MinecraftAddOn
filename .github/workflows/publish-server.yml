@@ -10,6 +10,7 @@ on:
       - 'packs/**'
       - 'infra/**'
       - 'tools/**'
+      - 'docker-compose.log-viewer.yml'
       - '.github/workflows/publish-server.yml'
 
 jobs:
@@ -58,6 +59,10 @@ jobs:
           rsync -az --delete \
             -e "ssh -i ~/.ssh/id_ed25519 -p $VPS_PORT" \
             infra/log-viewer/ "$VPS_USER@$VPS_HOST:$REMOTE_DIR/infra/log-viewer/"
+
+          rsync -az \
+            -e "ssh -i ~/.ssh/id_ed25519 -p $VPS_PORT" \
+            docker-compose.log-viewer.yml "$VPS_USER@$VPS_HOST:$REMOTE_DIR/docker-compose.log-viewer.yml"
 
           rsync -az --delete \
             -e "ssh -i ~/.ssh/id_ed25519 -p $VPS_PORT" \
