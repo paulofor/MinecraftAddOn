@@ -21,9 +21,9 @@ jobs:
       VPS_USER: root
       VPS_PORT: 22
       REMOTE_DIR: ${{ vars.VPS_DESTINO || '/root/MinecraftAddOn' }}
-      WORLD_DIR: ${{ vars.BEDROCK_WORLD_DIR || '/root/bedrock-server/worlds/Bedrock level' }}
-      WORLD_BP_DIR: ${{ vars.BEDROCK_WORLD_BP_DIR || '/root/bedrock-server/worlds/Bedrock level/behavior_packs' }}
-      WORLD_RP_DIR: ${{ vars.BEDROCK_WORLD_RP_DIR || '/root/bedrock-server/worlds/Bedrock level/resource_packs' }}
+      WORLD_DIR: ${{ vars.BEDROCK_WORLD_DIR || '/root/MinecraftServer/worlds/Bedrock level' }}
+      WORLD_BP_DIR: ${{ vars.BEDROCK_WORLD_BP_DIR || '/root/MinecraftServer/worlds/Bedrock level/behavior_packs' }}
+      WORLD_RP_DIR: ${{ vars.BEDROCK_WORLD_RP_DIR || '/root/MinecraftServer/worlds/Bedrock level/resource_packs' }}
 
     steps:
       - name: Checkout do repositório
@@ -71,8 +71,9 @@ jobs:
       - name: Promover packs para o mundo Bedrock
         run: |
           ssh -i ~/.ssh/id_ed25519 -p "$VPS_PORT" "$VPS_USER@$VPS_HOST" \
-            "rsync -az --delete '$REMOTE_DIR/packs/BP_QuadroIdeias/' '$WORLD_BP_DIR/BP_QuadroIdeias/' && \
-             rsync -az --delete '$REMOTE_DIR/packs/RP_QuadroIdeias/' '$WORLD_RP_DIR/RP_QuadroIdeias/'"
+            "set -euo pipefail && \
+             rsync -azc --delete --itemize-changes '$REMOTE_DIR/packs/BP_QuadroIdeias/' '$WORLD_BP_DIR/BP_QuadroIdeias/' && \
+             rsync -azc --delete --itemize-changes '$REMOTE_DIR/packs/RP_QuadroIdeias/' '$WORLD_RP_DIR/RP_QuadroIdeias/'"
 
       - name: Vincular automaticamente os packs ao mundo
         run: |
@@ -147,7 +148,69 @@ jobs:
       - name: Validar publicação remota (diretórios finais do mundo)
         run: |
           ssh -i ~/.ssh/id_ed25519 -p "$VPS_PORT" "$VPS_USER@$VPS_HOST" \
-            "echo 'Behavior packs em: $WORLD_BP_DIR/BP_QuadroIdeias' && \
+            "set -euo pipefail && \
+             echo 'Behavior packs em: $WORLD_BP_DIR/BP_QuadroIdeias' && \
              ls -lah '$WORLD_BP_DIR/BP_QuadroIdeias' && \
              echo 'Resource packs em: $WORLD_RP_DIR/RP_QuadroIdeias' && \
              ls -lah '$WORLD_RP_DIR/RP_QuadroIdeias'"
+
+      - name: Validar sincronização (falhar se não refletiu no mundo)
+        run: |
+          ssh -i ~/.ssh/id_ed25519 -p "$VPS_PORT" "$VPS_USER@$VPS_HOST" \
+            "set -euo pipefail && REMOTE_DIR='$REMOTE_DIR' WORLD_BP_DIR='$WORLD_BP_DIR' WORLD_RP_DIR='$WORLD_RP_DIR' python3 -" <<'PY'
+          import hashlib
+          import json
+          import os
+          from pathlib import Path
+
+          remote_dir = Path(os.environ["REMOTE_DIR"])
+          world_bp_dir = Path(os.environ["WORLD_BP_DIR"])
+          world_rp_dir = Path(os.environ["WORLD_RP_DIR"])
+
+          checks = [
+              ("BP", remote_dir / "packs" / "BP_QuadroIdeias", world_bp_dir / "BP_QuadroIdeias"),
+              ("RP", remote_dir / "packs" / "RP_QuadroIdeias", world_rp_dir / "RP_QuadroIdeias"),
+          ]
+
+          def sha256(path: Path) -> str:
+              h = hashlib.sha256()
+              with path.open("rb") as f:
+                  for chunk in iter(lambda: f.read(1024 * 1024), b""):
+                      h.update(chunk)
+              return h.hexdigest()
+
+          def load_manifest(path: Path) -> tuple[str, list[int]]:
+              data = json.loads(path.read_text(encoding="utf-8"))
+              header = data.get("header", {})
+              pack_id = header.get("uuid")
+              version = header.get("version")
+              if not pack_id or not isinstance(version, list):
+                  raise RuntimeError(f"Manifest inválido: {path}")
+              return pack_id, version
+
+          for label, src_dir, dst_dir in checks:
+              src_manifest = src_dir / "manifest.json"
+              dst_manifest = dst_dir / "manifest.json"
+
+              if not src_manifest.exists():
+                  raise RuntimeError(f"[{label}] Manifest de origem ausente: {src_manifest}")
+              if not dst_manifest.exists():
+                  raise RuntimeError(f"[{label}] Manifest de destino ausente: {dst_manifest}")
+
+              src_id, src_version = load_manifest(src_manifest)
+              dst_id, dst_version = load_manifest(dst_manifest)
+
+              if src_id != dst_id or src_version != dst_version:
+                  raise RuntimeError(
+                      f"[{label}] UUID/versão divergente (origem={src_id} {src_version}, destino={dst_id} {dst_version})"
+                  )
+
+              src_hash = sha256(src_manifest)
+              dst_hash = sha256(dst_manifest)
+              if src_hash != dst_hash:
+                  raise RuntimeError(f"[{label}] Conteúdo do manifest diverge após sync.")
+
+              print(f"[ok] {label} sincronizado: uuid={dst_id} version={dst_version}")
+
+          print("[ok] Sincronização do mundo confirmada.")
+          PY
