@@ -13,6 +13,9 @@
       "minecraft:icon": "book_writable",
       "minecraft:display_name": {
         "value": "item.digicomo:quadro_ideias.name"
+      },
+      "minecraft:block_placer": {
+        "block": "digicomo:quadro_ideias_bloco"
       }
     }
   }
