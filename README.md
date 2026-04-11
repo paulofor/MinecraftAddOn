@@ -251,7 +251,7 @@ journalctl -u bedrock.service -f
 | `Invalid dependency` / `Dependency version mismatch` | Dependência declarada com versão diferente da suportada pelo Bedrock Server | Ajustar versão da dependência no `manifest.json` para a versão suportada pela build do servidor e republicar. |
 | `Script API disabled` / recursos experimentais desativados | Mundo sem APIs/experimentos necessários habilitados | Habilitar os experimentos/APIs requeridos na configuração do mundo e reiniciar o servidor. |
 | Pack aparece, mas comportamento não executa | Vinculação do mundo com UUID/versão antiga | Executar `tools/validate_world_bindings.py`, corrigir `world_*_packs.json` e reiniciar/recarregar. |
-| `/give @s digicomo:quadro_ideias 1` falha com `item not found` | Mundo carregou pack antigo com namespace/id legado | Rodar `/scriptevent digicomo:diagnostico` e testar também os aliases: `digicom:quadro_ideias`, `digicomo:quadro_ideias_item`, `digicom:quadro_ideias_item`. |
+| `/give @s digicomo:quadro_ideias 1` falha com `item not found` | Mundo carregou pack antigo ou incompleto | Rodar `/scriptevent digicomo:diagnostico`, confirmar se o BP/RP corretos estão vinculados e reiniciar/recarregar o mundo. |
 
 #### Erro de sintaxe no `/give` (caso comum)
 
@@ -269,7 +269,7 @@ Comandos auxiliares do add-on (via chat, sem usar `/give`):
 Pontos frágeis conhecidos em produção:
 
 - packs atualizados sem reiniciar/recarregar o mundo (ids podem não carregar);
-- namespace digitado errado (`digicomo` x `digicom`);
+- namespace/item digitado diferente do padrão (`digicomo:quadro_ideias`);
 - jogador sem permissão de comando (mesmo com id correto no `/give`);
 - inventário cheio ao entregar item via fluxo alternativo.
 
