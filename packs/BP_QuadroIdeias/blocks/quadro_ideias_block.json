@@ -9,14 +9,12 @@
     },
     "components": {
       "minecraft:display_name": "tile.digicomo:quadro_ideias_bloco.name",
-      "minecraft:destroy_time": 1,
-      "minecraft:explosion_resistance": 2,
       "minecraft:friction": 0.6,
       "minecraft:light_dampening": 0,
       "minecraft:selection_box": {
         "origin": [
           -8,
-          -8,
+          0,
           6
         ],
         "size": [
@@ -28,7 +26,7 @@
       "minecraft:collision_box": {
         "origin": [
           -8,
-          -8,
+          0,
           6
         ],
         "size": [
@@ -60,6 +58,12 @@
             ]
           }
         ]
+      },
+      "minecraft:destructible_by_mining": {
+        "seconds_to_destroy": 1
+      },
+      "minecraft:destructible_by_explosion": {
+        "explosion_resistance": 2
       }
     }
   }

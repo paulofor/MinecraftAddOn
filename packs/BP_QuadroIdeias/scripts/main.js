@@ -1,4 +1,4 @@
-import { world, system, BlockPermutation, ItemStack, DynamicPropertiesDefinition } from "@minecraft/server";
+import { world, system, BlockPermutation, ItemStack } from "@minecraft/server";
 import { ModalFormData } from "@minecraft/server-ui";
 
 const PRIMARY_BOARD_ITEM_ID = "digicomo:quadro_ideias";
@@ -31,17 +31,11 @@ function logError(message, error) {
   console.error(`${LOG_PREFIX} ${message} | ${detail}`);
 }
 
-world.afterEvents.worldInitialize.subscribe((event) => {
-  logInfo("worldInitialize acionado. Registrando propriedades dinâmicas.");
-  const properties = new DynamicPropertiesDefinition();
-  properties.defineString(IDEAS_DB_KEY, 32767);
-  event.propertyRegistry.registerWorldDynamicProperties(properties);
+world.afterEvents.worldInitialize.subscribe(() => {
+  logInfo("worldInitialize acionado. Inicializando banco de ideias.");
 
   system.run(() => {
-    if (!world.getDynamicProperty(IDEAS_DB_KEY)) {
-      world.setDynamicProperty(IDEAS_DB_KEY, JSON.stringify({}));
-      logInfo(`Banco de ideias inicializado com chave "${IDEAS_DB_KEY}".`);
-    }
+    ensureIdeasDBInitialized();
 
     validateContentRegistration();
     logInfo(`Se o /give falhar após atualização do addon, reinicie o mundo/servidor para recarregar os packs.`);
@@ -124,6 +118,26 @@ world.beforeEvents.chatSend.subscribe((event) => {
     logInfo(`Sintaxe suspeita detectada no chat de ${player.name}: "${message}".`);
   }
 });
+
+function ensureIdeasDBInitialized() {
+  try {
+    const raw = world.getDynamicProperty(IDEAS_DB_KEY);
+    if (!raw) {
+      world.setDynamicProperty(IDEAS_DB_KEY, JSON.stringify({}));
+      logInfo(`Banco de ideias inicializado com chave "${IDEAS_DB_KEY}".`);
+      return;
+    }
+
+    JSON.parse(`${raw}`);
+  } catch (error) {
+    logError(`Falha ao inicializar a chave "${IDEAS_DB_KEY}". Resetando conteúdo.`, error);
+    try {
+      world.setDynamicProperty(IDEAS_DB_KEY, JSON.stringify({}));
+    } catch (innerError) {
+      logError(`Não foi possível resetar a chave "${IDEAS_DB_KEY}".`, innerError);
+    }
+  }
+}
 
 function consumeBoardItem(player, itemStack) {
   const inventory = player.getComponent("minecraft:inventory")?.container;
