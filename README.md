@@ -222,6 +222,26 @@ journalctl -u bedrock.service -f
 | Pack aparece, mas comportamento não executa | Vinculação do mundo com UUID/versão antiga | Executar `tools/validate_world_bindings.py`, corrigir `world_*_packs.json` e reiniciar/recarregar. |
 | `/give @s digicomo:quadro_ideias 1` falha com `item not found` | Mundo carregou pack antigo com namespace/id legado | Rodar `/scriptevent digicomo:diagnostico` e testar também os aliases: `digicom:quadro_ideias`, `digicomo:quadro_ideias_item`, `digicom:quadro_ideias_item`. |
 
+#### Erro de sintaxe no `/give` (caso comum)
+
+Se aparecer no chat algo como **"Erro de sintaxe ... inesperado em `/give @s %digicomo...`"**, normalmente é um erro de digitação:
+
+- não use `%` antes do namespace;
+- mantenha o `:` entre namespace e id do item;
+- exemplo correto: `/give @s digicomo:quadro_ideias 1`.
+
+Comandos auxiliares do add-on (via chat, sem usar `/give`):
+
+- `!quadro` → tenta entregar 1 item do Quadro de Ideias direto no inventário;
+- `!quadrodiag` → roda diagnóstico e escreve logs detalhados no servidor.
+
+Pontos frágeis conhecidos em produção:
+
+- packs atualizados sem reiniciar/recarregar o mundo (ids podem não carregar);
+- namespace digitado errado (`digicomo` x `digicom`);
+- jogador sem permissão de comando (mesmo com id correto no `/give`);
+- inventário cheio ao entregar item via fluxo alternativo.
+
 ### Reinício/reload do serviço após publicação (opcional)
 
 Em ambientes com deploy automatizado, pode ser necessário forçar reload do serviço após atualizar `packs/`:
