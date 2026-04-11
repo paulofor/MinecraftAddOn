@@ -6,7 +6,7 @@ services:
     container_name: bedrock-log-viewer
     restart: unless-stopped
     ports:
-      - "8081:8081"
+      - "${VIEWER_PORT:-8081}:8081"
     environment:
       - LOG_PATH=/logs/bedrock.log
       - DEFAULT_LINES=400
@@ -17,9 +17,9 @@ services:
       - WORLD_RESOURCE_BINDINGS_PATH=/data/world_resource_packs.json
     volumes:
       # Monte aqui o arquivo de log exportado pelo host.
-      - /root/MinecraftServer/logs/bedrock.log:/logs/bedrock.log:ro
+      - ${BEDROCK_LOG_PATH:-/opt/bedrock-server/logs/bedrock.log}:/logs/bedrock.log:ro
       # Pastas/arquivos do mundo para listar packs instalados e vinculados.
-      - /root/MinecraftServer/worlds/Bedrock level/behavior_packs:/data/behavior_packs:ro
-      - /root/MinecraftServer/worlds/Bedrock level/resource_packs:/data/resource_packs:ro
-      - /root/MinecraftServer/worlds/Bedrock level/world_behavior_packs.json:/data/world_behavior_packs.json:ro
-      - /root/MinecraftServer/worlds/Bedrock level/world_resource_packs.json:/data/world_resource_packs.json:ro
+      - ${WORLD_BP_DIR:-/opt/bedrock-server/worlds/Bedrock level/behavior_packs}:/data/behavior_packs:ro
+      - ${WORLD_RP_DIR:-/opt/bedrock-server/worlds/Bedrock level/resource_packs}:/data/resource_packs:ro
+      - ${WORLD_DIR:-/opt/bedrock-server/worlds/Bedrock level}/world_behavior_packs.json:/data/world_behavior_packs.json:ro
+      - ${WORLD_DIR:-/opt/bedrock-server/worlds/Bedrock level}/world_resource_packs.json:/data/world_resource_packs.json:ro
