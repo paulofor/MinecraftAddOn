@@ -1,5 +1,5 @@
 {
-  "format_version": "1.21.130",
+  "format_version": "1.20.80",
   "minecraft:block": {
     "description": {
       "identifier": "digicomo:quadro_ideias_bloco",
@@ -64,7 +64,8 @@
       },
       "minecraft:destructible_by_explosion": {
         "explosion_resistance": 2
-      }
+      },
+      "minecraft:geometry": "geometry.full_block"
     }
   }
 }
