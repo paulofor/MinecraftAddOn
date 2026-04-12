@@ -1,5 +1,5 @@
 {
-  "format_version": "1.26.11",
+  "format_version": "1.21.0",
   "minecraft:block": {
     "description": {
       "identifier": "digicomo:quadro_ideias_bloco",

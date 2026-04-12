@@ -215,11 +215,18 @@ Antes de validar em produção, confirme no mundo/servidor Bedrock que os requis
 ### Validação de compatibilidade de versão (sem chute)
 
 Para evitar “chutar” `format_version`, valide contra a versão real do Bedrock Server.
-Versão real em produção: `bedrock-server-1.26.11.1` (use `1.26.11` como tripla de compatibilidade nos JSONs).
 A regra usada é objetiva: `format_version` e `min_engine_version` devem ser **menores ou iguais** à versão do servidor.
 
+Descubra a versão em execução no host (exemplo):
+
 ```bash
-python3 tools/validate_engine_compat.py --server-version 1.26.11 --repo-dir .
+strings bedrock_server | rg -m1 -o '([0-9]+\.){3}[0-9]+'
+```
+
+Depois valide no repositório (exemplo para servidor `1.21.0`):
+
+```bash
+python3 tools/validate_engine_compat.py --server-version 1.21.0 --repo-dir .
 ```
 
 Se o script falhar, ajuste os arquivos para uma versão suportada pelo servidor em produção.
