@@ -231,6 +231,31 @@ python3 tools/validate_engine_compat.py --server-version 1.21.0 --repo-dir .
 
 Se o script falhar, ajuste os arquivos para uma versão suportada pelo servidor em produção.
 
+#### Como ver qual versão o loader “espera”
+
+Na prática, o loader espera formatos compatíveis com a **versão do binário Bedrock Server em execução**.
+Ele nem sempre mostra explicitamente “esperado X.Y.Z” no erro, então use este fluxo:
+
+1) Descobrir a versão do binário em execução:
+
+```bash
+strings /caminho/do/bedrock_server | rg -m1 -o '([0-9]+\.){3}[0-9]+'
+```
+
+2) Verificar no log o erro de incompatibilidade de dados:
+
+```bash
+journalctl -u bedrock.service -n 300 --no-pager | rg -n "Unexpected version|block_definitions|item_definitions|recipe"
+```
+
+3) Validar se seus JSONs estão <= versão do servidor:
+
+```bash
+python3 tools/validate_engine_compat.py --server-version X.Y.Z --repo-dir .
+```
+
+> Exemplo: se o binário indicar `1.21.0.3`, use `1.21.0` no validador.
+
 ### Confirmação pós-publicação (logs do Bedrock)
 
 Após copiar/publicar os packs no servidor, valide imediatamente os logs para detectar erro de import/script:
