@@ -72,8 +72,22 @@ jobs:
         run: |
           ssh -i ~/.ssh/id_ed25519 -p "$VPS_PORT" "$VPS_USER@$VPS_HOST" \
             "set -euo pipefail && \
-             rsync -azc --delete --itemize-changes '$REMOTE_DIR/packs/BP_QuadroIdeias/' '$WORLD_BP_DIR/BP_QuadroIdeias/' && \
-             rsync -azc --delete --itemize-changes '$REMOTE_DIR/packs/RP_QuadroIdeias/' '$WORLD_RP_DIR/RP_QuadroIdeias/'"
+             bp_found=0 && \
+             for src in '$REMOTE_DIR'/packs/BP_*; do \
+               [ -d \"\$src\" ] || continue; \
+               bp_found=1; \
+               name=\$(basename \"\$src\"); \
+               rsync -azc --delete --itemize-changes \"\$src/\" '$WORLD_BP_DIR'/\"\$name/\"; \
+             done && \
+             rp_found=0 && \
+             for src in '$REMOTE_DIR'/packs/RP_*; do \
+               [ -d \"\$src\" ] || continue; \
+               rp_found=1; \
+               name=\$(basename \"\$src\"); \
+               rsync -azc --delete --itemize-changes \"\$src/\" '$WORLD_RP_DIR'/\"\$name/\"; \
+             done && \
+             [ \"\$bp_found\" -eq 1 ] && \
+             [ \"\$rp_found\" -eq 1 ]"
 
       - name: Vincular automaticamente os packs ao mundo
         run: |
@@ -86,10 +100,15 @@ jobs:
           remote_dir = Path(os.environ["REMOTE_DIR"])
           world_dir = Path(os.environ["WORLD_DIR"])
 
-          bp_manifest = remote_dir / "packs" / "BP_QuadroIdeias" / "manifest.json"
-          rp_manifest = remote_dir / "packs" / "RP_QuadroIdeias" / "manifest.json"
+          bp_manifests = sorted((remote_dir / "packs").glob("BP_*/manifest.json"))
+          rp_manifests = sorted((remote_dir / "packs").glob("RP_*/manifest.json"))
           world_bp_file = world_dir / "world_behavior_packs.json"
           world_rp_file = world_dir / "world_resource_packs.json"
+
+          if not bp_manifests:
+              raise RuntimeError("Nenhum manifest BP_* encontrado em packs/.")
+          if not rp_manifests:
+              raise RuntimeError("Nenhum manifest RP_* encontrado em packs/.")
 
           def load_manifest(path: Path):
               data = json.loads(path.read_text(encoding="utf-8"))
@@ -111,11 +130,17 @@ jobs:
               next_bindings.append({"pack_id": pack_id, "version": version})
               return next_bindings
 
-          bp_id, bp_version = load_manifest(bp_manifest)
-          rp_id, rp_version = load_manifest(rp_manifest)
+          world_bp = load_world_bindings(world_bp_file)
+          for bp_manifest in bp_manifests:
+              bp_id, bp_version = load_manifest(bp_manifest)
+              world_bp = upsert_binding(world_bp, bp_id, bp_version)
+              print(f"[ok] BP vinculado: {bp_manifest.parent.name} {bp_id} {bp_version}")
 
-          world_bp = upsert_binding(load_world_bindings(world_bp_file), bp_id, bp_version)
-          world_rp = upsert_binding(load_world_bindings(world_rp_file), rp_id, rp_version)
+          world_rp = load_world_bindings(world_rp_file)
+          for rp_manifest in rp_manifests:
+              rp_id, rp_version = load_manifest(rp_manifest)
+              world_rp = upsert_binding(world_rp, rp_id, rp_version)
+              print(f"[ok] RP vinculado: {rp_manifest.parent.name} {rp_id} {rp_version}")
 
           world_bp_file.write_text(
               json.dumps(world_bp, ensure_ascii=False, indent=2) + "\n",
@@ -128,8 +153,6 @@ jobs:
 
           print("[ok] world_behavior_packs.json atualizado.")
           print("[ok] world_resource_packs.json atualizado.")
-          print(f"[ok] BP: {bp_id} {bp_version}")
-          print(f"[ok] RP: {rp_id} {rp_version}")
           PY
 
 
@@ -149,10 +172,22 @@ jobs:
         run: |
           ssh -i ~/.ssh/id_ed25519 -p "$VPS_PORT" "$VPS_USER@$VPS_HOST" \
             "set -euo pipefail && \
-             echo 'Behavior packs em: $WORLD_BP_DIR/BP_QuadroIdeias' && \
-             ls -lah '$WORLD_BP_DIR/BP_QuadroIdeias' && \
-             echo 'Resource packs em: $WORLD_RP_DIR/RP_QuadroIdeias' && \
-             ls -lah '$WORLD_RP_DIR/RP_QuadroIdeias'"
+             bp_found=0 && \
+             for dir in '$WORLD_BP_DIR'/BP_*; do \
+               [ -d \"\$dir\" ] || continue; \
+               bp_found=1; \
+               echo \"Behavior pack em: \$dir\"; \
+               ls -lah \"\$dir\"; \
+             done && \
+             rp_found=0 && \
+             for dir in '$WORLD_RP_DIR'/RP_*; do \
+               [ -d \"\$dir\" ] || continue; \
+               rp_found=1; \
+               echo \"Resource pack em: \$dir\"; \
+               ls -lah \"\$dir\"; \
+             done && \
+             [ \"\$bp_found\" -eq 1 ] && \
+             [ \"\$rp_found\" -eq 1 ]"
 
       - name: Validar sincronização (falhar se não refletiu no mundo)
         run: |
@@ -167,10 +202,18 @@ jobs:
           world_bp_dir = Path(os.environ["WORLD_BP_DIR"])
           world_rp_dir = Path(os.environ["WORLD_RP_DIR"])
 
-          checks = [
-              ("BP", remote_dir / "packs" / "BP_QuadroIdeias", world_bp_dir / "BP_QuadroIdeias"),
-              ("RP", remote_dir / "packs" / "RP_QuadroIdeias", world_rp_dir / "RP_QuadroIdeias"),
-          ]
+          checks = []
+          checks.extend(
+              ("BP", manifest.parent, world_bp_dir / manifest.parent.name)
+              for manifest in sorted((remote_dir / "packs").glob("BP_*/manifest.json"))
+          )
+          checks.extend(
+              ("RP", manifest.parent, world_rp_dir / manifest.parent.name)
+              for manifest in sorted((remote_dir / "packs").glob("RP_*/manifest.json"))
+          )
+
+          if not checks:
+              raise RuntimeError("Nenhum pack BP_/RP_ encontrado para validar.")
 
           def sha256(path: Path) -> str:
               h = hashlib.sha256()
