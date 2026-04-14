@@ -1,0 +1,17 @@
+{
+  "format_version": 2,
+  "header": {
+    "name": "BP Quadro de Informações",
+    "description": "Behavior Pack simples para testar um bloco customizado.",
+    "uuid": "8f8748bf-70cd-4d8b-9d12-3872333bfcb6",
+    "version": [0, 1, 0],
+    "min_engine_version": [1, 20, 0]
+  },
+  "modules": [
+    {
+      "type": "data",
+      "uuid": "94d4e345-e29d-4455-9af2-119f14e4222e",
+      "version": [0, 1, 0]
+    }
+  ]
+}

@@ -1,0 +1,7 @@
+{
+  "format_version": [1, 1, 0],
+  "digicomo:quadro_informacoes": {
+    "textures": "quadro_informacoes",
+    "sound": "wood"
+  }
+}

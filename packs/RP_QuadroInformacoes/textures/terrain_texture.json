@@ -1,0 +1,11 @@
+{
+  "num_mip_levels": 4,
+  "padding": 8,
+  "resource_pack_name": "quadro_informacoes",
+  "texture_name": "atlas.terrain",
+  "texture_data": {
+    "quadro_informacoes": {
+      "textures": "textures/blocks/quadro_informacoes"
+    }
+  }
+}
