@@ -1,0 +1,17 @@
+{
+  "format_version": 2,
+  "header": {
+    "name": "RP Quadro de Ideias",
+    "description": "Resource Pack mínimo para o bloco quadro de ideias.",
+    "uuid": "6e9da79f-464a-4b61-81ed-f2987a38f012",
+    "version": [0, 1, 0],
+    "min_engine_version": [1, 20, 0]
+  },
+  "modules": [
+    {
+      "type": "resources",
+      "uuid": "483d915f-4866-459f-a0e7-beac0ae56c2c",
+      "version": [0, 1, 0]
+    }
+  ]
+}

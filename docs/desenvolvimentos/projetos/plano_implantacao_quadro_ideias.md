@@ -77,7 +77,7 @@ Vamos usar o que funcionou no servidor de teste como base.
 - bloco visível no mundo;
 - sem erro no log do servidor.
 
-**Status:** pendente
+**Status:** implementado no repositório (aguardando validação no servidor)
 
 ---
 
@@ -253,10 +253,17 @@ O primeiro marco será considerado concluído quando:
 - foco: **Etapa 1 — Bloco mínimo funcional**
 
 ### Próxima ação
-- duplicar o pack que funcionou no servidor de teste;
-- renomear para `quadro_ideias`;
-- ajustar identificadores;
-- validar com `/setblock`.
+- publicar `packs/BP_QuadroIdeias` e `packs/RP_QuadroIdeias` no servidor principal;
+- vincular os dois packs no mundo;
+- validar com `/setblock` e `/testforblock`;
+- registrar o resultado obtido no log de execução abaixo.
+
+### Log de execução da Etapa 1 (repositório)
+- behavior pack `BP_QuadroIdeias` criado com UUIDs novos;
+- resource pack `RP_QuadroIdeias` criado com UUIDs novos;
+- bloco `digicomo:quadro_ideias` definido e mapeado em BP/RP;
+- textura mínima inicial reaproveitada para garantir carregamento do bloco;
+- pendente: validação em jogo no servidor principal usando comandos previstos.
 
 ### Comandos previstos para o próximo teste
 - `/setblock ~ ~ ~ digicomo:quadro_ideias`
