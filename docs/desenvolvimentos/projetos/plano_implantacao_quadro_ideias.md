@@ -101,7 +101,7 @@ Vamos usar o que funcionou no servidor de teste como base.
 - não parece mais pedra comum;
 - sem erro de pack.
 
-**Status:** pendente
+**Status:** implementado no repositório (aguardando validação no servidor)
 
 ---
 
@@ -250,12 +250,12 @@ O primeiro marco será considerado concluído quando:
 
 ## Registro de execução
 ### Etapa atual
-- foco: **Etapa 1 — Bloco mínimo funcional**
+- foco: **Etapa 2 — Aparência própria**
 
 ### Próxima ação
-- publicar `packs/BP_QuadroIdeias` e `packs/RP_QuadroIdeias` no servidor principal;
-- vincular os dois packs no mundo;
-- validar com `/setblock` e `/testforblock`;
+- publicar atualização dos packs `BP_QuadroIdeias` e `RP_QuadroIdeias` no servidor principal;
+- recolocar o bloco com `/setblock ~ ~ ~ air` e `/setblock ~ ~ ~ digicomo:quadro_ideias`;
+- validar o novo visual do quadro e o nome exibido no jogo;
 - registrar o resultado obtido no log de execução abaixo.
 
 ### Log de execução da Etapa 1 (repositório)

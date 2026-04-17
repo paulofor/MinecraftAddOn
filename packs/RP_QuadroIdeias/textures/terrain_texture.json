@@ -4,8 +4,14 @@
   "resource_pack_name": "quadro_ideias",
   "texture_name": "atlas.terrain",
   "texture_data": {
-    "quadro_ideias": {
-      "textures": "textures/blocks/quadro_ideias"
+    "quadro_ideias_frente": {
+      "textures": "textures/blocks/quadro_ideias_frente"
+    },
+    "quadro_ideias_lateral": {
+      "textures": "textures/blocks/quadro_ideias_lateral"
+    },
+    "quadro_ideias_topo": {
+      "textures": "textures/blocks/quadro_ideias_topo"
     }
   }
 }
