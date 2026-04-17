@@ -69,7 +69,7 @@ Vamos usar o que funcionou no servidor de teste como base.
 **Teste obrigatório no jogo:**
 - entrar com permissões de operador;
 - rodar:
-  - `/setblock ~ ~ ~ digicomo:quadro_ideias`
+  - `/setblock ~ ~-1 ~ digicomo:quadro_ideias`
 - confirmar que o bloco aparece.
 
 **Resultado esperado:**
@@ -92,8 +92,8 @@ Vamos usar o que funcionou no servidor de teste como base.
 **Teste obrigatório no jogo:**
 - remover o bloco anterior;
 - rodar:
-  - `/setblock ~ ~ ~ air`
-  - `/setblock ~ ~ ~ digicomo:quadro_ideias`
+  - `/setblock ~ ~-1 ~ air`
+  - `/setblock ~ ~-1 ~ digicomo:quadro_ideias`
 - verificar se a aparência mudou.
 
 **Resultado esperado:**
@@ -214,11 +214,11 @@ Este projeto **precisa sempre manter um plano de comandos no jogo**.
 - dar permissão de operador ao jogador no servidor:
   - `op <gamertag>`
 - colocar o bloco manualmente:
-  - `/setblock ~ ~ ~ digicomo:quadro_ideias`
+  - `/setblock ~ ~-1 ~ digicomo:quadro_ideias`
 - verificar se o bloco está presente:
-  - `/testforblock ~ ~ ~ digicomo:quadro_ideias`
+  - `/testforblock ~ ~-1 ~ digicomo:quadro_ideias`
 - limpar a posição para novo teste:
-  - `/setblock ~ ~ ~ air`
+  - `/setblock ~ ~-1 ~ air`
 - obter o item quando existir:
   - `/give @s digicomo:quadro_ideias 1`
 
@@ -254,7 +254,7 @@ O primeiro marco será considerado concluído quando:
 
 ### Próxima ação
 - publicar atualização dos packs `BP_QuadroIdeias` e `RP_QuadroIdeias` no servidor principal;
-- recolocar o bloco com `/setblock ~ ~ ~ air` e `/setblock ~ ~ ~ digicomo:quadro_ideias`;
+- recolocar o bloco com `/setblock ~ ~-1 ~ air` e `/setblock ~ ~-1 ~ digicomo:quadro_ideias`;
 - validar o novo visual do quadro e o nome exibido no jogo;
 - registrar o resultado obtido no log de execução abaixo.
 
@@ -266,8 +266,17 @@ O primeiro marco será considerado concluído quando:
 - pendente: validação em jogo no servidor principal usando comandos previstos.
 
 ### Comandos previstos para o próximo teste
-- `/setblock ~ ~ ~ digicomo:quadro_ideias`
-- `/testforblock ~ ~ ~ digicomo:quadro_ideias`
+- `/setblock ~ ~-1 ~ digicomo:quadro_ideias`
+- `/testforblock ~ ~-1 ~ digicomo:quadro_ideias`
+
+### Diagnóstico rápido quando aparecer “o bloco não pode ser colocado”
+No Bedrock, `~ ~ ~` costuma apontar para o bloco ocupado pelo próprio jogador.
+Nesse caso, o jogo pode recusar a alteração e mostrar a mensagem de bloqueio, até com `air`.
+
+**Use sempre o bloco abaixo do jogador para testes rápidos:**
+- `/setblock ~ ~-1 ~ air`
+- `/setblock ~ ~-1 ~ digicomo:quadro_ideias`
+- `/testforblock ~ ~-1 ~ digicomo:quadro_ideias`
 
 ---
 
