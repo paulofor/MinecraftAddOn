@@ -1,7 +1,14 @@
 {
   "format_version": [1, 1, 0],
   "digicomo:quadro_ideias": {
-    "textures": "quadro_ideias",
+    "textures": {
+      "up": "quadro_ideias_topo",
+      "down": "quadro_ideias_topo",
+      "north": "quadro_ideias_frente",
+      "south": "quadro_ideias_frente",
+      "east": "quadro_ideias_lateral",
+      "west": "quadro_ideias_lateral"
+    },
     "sound": "wood"
   }
 }

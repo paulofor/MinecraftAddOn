@@ -8,6 +8,37 @@
       }
     },
     "components": {
+      "minecraft:geometry": "minecraft:geometry.full_block",
+      "minecraft:material_instances": {
+        "*": {
+          "texture": "quadro_ideias_lateral",
+          "render_method": "opaque"
+        },
+        "up": {
+          "texture": "quadro_ideias_topo",
+          "render_method": "opaque"
+        },
+        "down": {
+          "texture": "quadro_ideias_topo",
+          "render_method": "opaque"
+        },
+        "north": {
+          "texture": "quadro_ideias_frente",
+          "render_method": "opaque"
+        },
+        "south": {
+          "texture": "quadro_ideias_frente",
+          "render_method": "opaque"
+        },
+        "east": {
+          "texture": "quadro_ideias_lateral",
+          "render_method": "opaque"
+        },
+        "west": {
+          "texture": "quadro_ideias_lateral",
+          "render_method": "opaque"
+        }
+      },
       "minecraft:destructible_by_mining": {
         "seconds_to_destroy": 1.5
       },
