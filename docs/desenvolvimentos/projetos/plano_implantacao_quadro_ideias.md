@@ -123,7 +123,7 @@ Vamos usar o que funcionou no servidor de teste como base.
 - item coloca o bloco correto;
 - sem erro no log.
 
-**Status:** pendente
+**Status:** implementado no repositório (aguardando validação no servidor)
 
 ---
 
@@ -250,12 +250,12 @@ O primeiro marco será considerado concluído quando:
 
 ## Registro de execução
 ### Etapa atual
-- foco: **Etapa 2 — Aparência própria**
+- foco: **Etapa 3 — Item para colocar o bloco**
 
 ### Próxima ação
 - publicar atualização dos packs `BP_QuadroIdeias` e `RP_QuadroIdeias` no servidor principal;
-- recolocar o bloco com `/setblock ~ ~-1 ~ air` e `/setblock ~ ~-1 ~ digicomo:quadro_ideias`;
-- validar o novo visual do quadro e o nome exibido no jogo;
+- rodar `/give @s digicomo:quadro_ideias 1` para obter o item do quadro;
+- colocar o item no chão e confirmar que ele gera o bloco correto;
 - registrar o resultado obtido no log de execução abaixo.
 
 ### Log de execução da Etapa 1 (repositório)
@@ -265,8 +265,22 @@ O primeiro marco será considerado concluído quando:
 - textura mínima inicial reaproveitada para garantir carregamento do bloco;
 - pendente: validação em jogo no servidor principal usando comandos previstos.
 
+### Log de execução da Etapa 2 (repositório)
+- texturas dedicadas (`frente`, `lateral`, `topo`) publicadas no `RP_QuadroIdeias`;
+- `blocks.json` e `terrain_texture.json` revisados para usar o novo visual;
+- nome exibido no jogo ajustado para “Quadro de Ideias Familiar”;
+- pendente: validação em jogo no servidor principal usando comandos previstos.
+
+### Log de execução da Etapa 3 (repositório)
+- item customizado `digicomo:quadro_ideias` criado em `BP_QuadroIdeias/items`;
+- componente `minecraft:block_placer` configurado para colocar o bloco do quadro;
+- textura de item adicionada em `RP_QuadroIdeias/textures/item_texture.json`;
+- nome amigável do item registrado em `texts/en_US.lang`;
+- pendente: validação em jogo no servidor principal usando comandos previstos.
+
 ### Comandos previstos para o próximo teste
-- `/setblock ~ ~-1 ~ digicomo:quadro_ideias`
+- `/give @s digicomo:quadro_ideias 1`
+- colocar o item no chão
 - `/testforblock ~ ~-1 ~ digicomo:quadro_ideias`
 
 ### Diagnóstico rápido quando aparecer “o bloco não pode ser colocado”
