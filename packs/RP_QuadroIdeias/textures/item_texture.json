@@ -1,0 +1,9 @@
+{
+  "resource_pack_name": "quadro_ideias",
+  "texture_name": "atlas.items",
+  "texture_data": {
+    "quadro_ideias_item": {
+      "textures": "textures/blocks/quadro_ideias_frente"
+    }
+  }
+}
