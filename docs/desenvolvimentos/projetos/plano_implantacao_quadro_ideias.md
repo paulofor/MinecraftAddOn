@@ -150,7 +150,10 @@ Vamos usar o que funcionou no servidor de teste como base.
 - o quadro vira ponto real de planejamento;
 - cada pessoa consegue propor algo.
 
-**Status:** pendente
+**Guia operacional da etapa:**
+- `docs/desenvolvimentos/projetos/quadro_ideias_uso_pratico_v1.md`
+
+**Status:** implementado no repositório (aguardando validação no servidor)
 
 ---
 
