@@ -455,3 +455,11 @@ Como logs podem conter informações sensíveis, **não exponha a porta 8081 dir
 - autenticação básica/OAuth no proxy;
 - allowlist de IP quando possível;
 - rotação e retenção de logs.
+
+### Servidor MCP read-only para inspeção do host Bedrock
+
+Foi adicionado um módulo MCP containerizado para permitir que o Codex execute leituras no host Linux do servidor Bedrock com segurança (escopo restrito e comandos em allowlist).
+
+- Compose: `docker-compose.mcp-bedrock-readonly.yml`
+- Código: `infra/mcp-bedrock-readonly/server.py`
+- Guia: `docs/desenvolvimentos/projetos/mcp_servidor_bedrock_readonly.md`

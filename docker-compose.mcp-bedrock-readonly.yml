@@ -1,0 +1,17 @@
+services:
+  bedrock-mcp-readonly:
+    build:
+      context: .
+      dockerfile: infra/mcp-bedrock-readonly/Dockerfile
+    container_name: bedrock-mcp-readonly
+    restart: unless-stopped
+    stdin_open: true
+    tty: true
+    environment:
+      - ALLOWED_ROOTS=${ALLOWED_ROOTS:-/opt/bedrock-server,/var/log,/root/MinecraftAddOn}
+      - READ_CMD_TIMEOUT=${READ_CMD_TIMEOUT:-10}
+      - MAX_FILE_BYTES=${MAX_FILE_BYTES:-200000}
+    volumes:
+      - ${BEDROCK_ROOT:-/opt/bedrock-server}:/opt/bedrock-server:ro
+      - ${HOST_LOG_DIR:-/var/log}:/var/log:ro
+      - ${HOST_REPO_DIR:-/root/MinecraftAddOn}:/root/MinecraftAddOn:ro
