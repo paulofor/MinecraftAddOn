@@ -460,6 +460,8 @@ Como logs podem conter informações sensíveis, **não exponha a porta 8081 dir
 
 Foi adicionado um módulo MCP containerizado para permitir que o Codex execute leituras no host Linux do servidor Bedrock com segurança (escopo restrito e comandos em allowlist).
 
+Por padrão, o compose expõe o endpoint HTTP em `http://SEU_HOST:8765/mcp` (healthcheck em `/health`), com opção de voltar para `stdio` via variável de ambiente.
+
 - Compose: `docker-compose.mcp-bedrock-readonly.yml`
 - Código: `infra/mcp-bedrock-readonly/server.py`
 - Guia: `docs/desenvolvimentos/projetos/mcp_servidor_bedrock_readonly.md`
