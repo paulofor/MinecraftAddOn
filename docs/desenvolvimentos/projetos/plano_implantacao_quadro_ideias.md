@@ -178,7 +178,7 @@ Vamos usar o que funcionou no servidor de teste como base.
 - menu funcional;
 - ideia registrada sem erro.
 
-**Status:** futuro
+**Status:** implementado no repositório (aguardando validação no servidor)
 
 ---
 
@@ -253,12 +253,13 @@ O primeiro marco será considerado concluído quando:
 
 ## Registro de execução
 ### Etapa atual
-- foco: **Etapa 3 — Item para colocar o bloco**
+- foco: **Etapa 5 — Interação por script**
 
 ### Próxima ação
-- publicar atualização dos packs `BP_QuadroIdeias` e `RP_QuadroIdeias` no servidor principal;
+- publicar atualização do `BP_QuadroIdeias` no servidor principal com Script API habilitada;
 - rodar `/give @s digicomo:quadro_ideias 1` para obter o item do quadro;
-- colocar o item no chão e confirmar que ele gera o bloco correto;
+- colocar o item no chão e interagir com o bloco para abrir o menu;
+- cadastrar uma ideia de teste e avançar status até concluída;
 - registrar o resultado obtido no log de execução abaixo.
 
 ### Log de execução da Etapa 1 (repositório)
@@ -281,9 +282,20 @@ O primeiro marco será considerado concluído quando:
 - nome amigável do item registrado em `texts/en_US.lang`;
 - pendente: validação em jogo no servidor principal usando comandos previstos.
 
+### Log de execução da Etapa 5 (repositório)
+- módulo `script` adicionado ao `manifest.json` do `BP_QuadroIdeias`;
+- dependências `@minecraft/server` e `@minecraft/server-ui` configuradas;
+- script `packs/BP_QuadroIdeias/scripts/main.js` implementado com menu interativo ao clicar no bloco;
+- fluxo entregue: **Nova ideia**, **Ver ideias**, **Em andamento** e **Concluído**;
+- persistência inicial implementada com dynamic properties no mundo;
+- pendente: validação em jogo no servidor principal usando comandos previstos.
+
 ### Comandos previstos para o próximo teste
 - `/give @s digicomo:quadro_ideias 1`
 - colocar o item no chão
+- interagir (clique) no bloco do quadro para abrir menu
+- criar ideia de teste via opção **Nova ideia**
+- abrir a ideia e usar **Avançar status** para mover até **Concluído**
 - `/testforblock ~ ~-1 ~ digicomo:quadro_ideias`
 
 ### Diagnóstico rápido quando aparecer “o bloco não pode ser colocado”

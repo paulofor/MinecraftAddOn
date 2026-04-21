@@ -2,16 +2,33 @@
   "format_version": 2,
   "header": {
     "name": "BP Quadro de Ideias",
-    "description": "Behavior Pack mínimo para validar o bloco quadro de ideias.",
+    "description": "Behavior Pack com interação por script para o quadro de ideias.",
     "uuid": "2edb13d5-57c0-4a9e-a76a-26604bfc6ee3",
-    "version": [0, 1, 0],
+    "version": [0, 2, 0],
     "min_engine_version": [1, 20, 0]
   },
   "modules": [
     {
       "type": "data",
       "uuid": "ac1e8392-5a7d-4930-824d-26e93a596cf8",
-      "version": [0, 1, 0]
+      "version": [0, 2, 0]
+    },
+    {
+      "type": "script",
+      "language": "javascript",
+      "uuid": "cb595493-2504-41eb-921f-964af34d0c6c",
+      "version": [0, 2, 0],
+      "entry": "scripts/main.js"
+    }
+  ],
+  "dependencies": [
+    {
+      "module_name": "@minecraft/server",
+      "version": "2.0.0"
+    },
+    {
+      "module_name": "@minecraft/server-ui",
+      "version": "2.0.0"
     }
   ]
 }
