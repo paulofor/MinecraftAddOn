@@ -7,6 +7,7 @@ import json
 import os
 import subprocess
 import sys
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from typing import Any
 
@@ -22,6 +23,9 @@ ALLOWED_ROOTS = [
 ]
 DEFAULT_CMD_TIMEOUT = int(os.getenv("READ_CMD_TIMEOUT", "10"))
 DEFAULT_MAX_FILE_BYTES = int(os.getenv("MAX_FILE_BYTES", "200000"))
+TRANSPORT = os.getenv("MCP_TRANSPORT", "stdio").strip().lower()
+HTTP_HOST = os.getenv("MCP_HTTP_HOST", "0.0.0.0")
+HTTP_PORT = int(os.getenv("MCP_HTTP_PORT", "8765"))
 
 SAFE_COMMANDS = {
   "cat",
@@ -225,6 +229,61 @@ def _handle_rpc(message: dict[str, Any]) -> dict[str, Any] | None:
   return _error_response(request_id, -32601, f"Método não suportado: {method}")
 
 
+class _McpHttpHandler(BaseHTTPRequestHandler):
+  def do_GET(self) -> None:
+    if self.path.rstrip("/") == "/health":
+      payload = {"status": "ok", "transport": "http", "server": SERVER_NAME, "version": SERVER_VERSION}
+      body = json.dumps(payload, ensure_ascii=False).encode("utf-8")
+      self.send_response(200)
+      self.send_header("Content-Type", "application/json; charset=utf-8")
+      self.send_header("Content-Length", str(len(body)))
+      self.end_headers()
+      self.wfile.write(body)
+      return
+
+    self.send_error(404, "Use POST /mcp para JSON-RPC.")
+
+  def do_POST(self) -> None:
+    if self.path.rstrip("/") != "/mcp":
+      self.send_error(404, "Endpoint MCP inválido.")
+      return
+
+    content_length = int(self.headers.get("Content-Length", "0"))
+    if content_length <= 0:
+      self._send_json(_error_response(None, -32600, "Body ausente"), status=400)
+      return
+
+    try:
+      raw = self.rfile.read(content_length)
+      message = json.loads(raw.decode("utf-8"))
+    except json.JSONDecodeError as exc:
+      self._send_json(_error_response(None, -32700, "JSON inválido", data=str(exc)), status=400)
+      return
+
+    if not isinstance(message, dict):
+      self._send_json(_error_response(None, -32600, "Mensagem JSON-RPC inválida"), status=400)
+      return
+
+    response = _handle_rpc(message)
+    if response is None:
+      self.send_response(204)
+      self.end_headers()
+      return
+
+    self._send_json(response)
+
+  def log_message(self, fmt: str, *args: Any) -> None:
+    sys.stderr.write(f"[mcp-http] {self.client_address[0]} - {fmt % args}\n")
+
+  def _send_json(self, payload: dict[str, Any], *, status: int = 200) -> None:
+    body = json.dumps(payload, ensure_ascii=False).encode("utf-8")
+    self.send_response(status)
+    self.send_header("Content-Type", "application/json; charset=utf-8")
+    self.send_header("Content-Length", str(len(body)))
+    self.end_headers()
+    self.wfile.write(body)
+
+
 def _read_message() -> dict[str, Any] | None:
   headers: dict[str, str] = {}
   while True:
@@ -255,6 +314,12 @@ def _send_message(payload: dict[str, Any]) -> None:
 
 
 def main() -> int:
+  if TRANSPORT == "http":
+    server = ThreadingHTTPServer((HTTP_HOST, HTTP_PORT), _McpHttpHandler)
+    print(f"MCP HTTP ativo em http://{HTTP_HOST}:{HTTP_PORT}/mcp", file=sys.stderr)
+    server.serve_forever()
+    return 0
+
   while True:
     try:
       message = _read_message()
