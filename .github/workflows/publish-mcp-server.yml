@@ -1,0 +1,69 @@
+name: Publicar MCP Bedrock no servidor VPS
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - work
+      - main
+    paths:
+      - 'infra/mcp-bedrock-readonly/**'
+      - 'docker-compose.mcp-bedrock-readonly.yml'
+      - '.github/workflows/publish-mcp-server.yml'
+
+jobs:
+  deploy-mcp:
+    runs-on: ubuntu-latest
+    env:
+      VPS_HOST: 186.202.209.206
+      VPS_USER: root
+      VPS_PORT: 22
+      REMOTE_DIR: ${{ vars.VPS_DESTINO || '/root/MinecraftAddOn' }}
+
+    steps:
+      - name: Checkout do repositório
+        uses: actions/checkout@v4
+
+      - name: Instalar dependência (rsync)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y rsync
+
+      - name: Configurar chave SSH
+        env:
+          VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+        run: |
+          mkdir -p ~/.ssh
+          printf '%s\n' "$VPS_SSH_KEY" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          ssh-keyscan -p "$VPS_PORT" "$VPS_HOST" >> ~/.ssh/known_hosts
+
+      - name: Preparar pasta remota
+        run: |
+          ssh -i ~/.ssh/id_ed25519 -p "$VPS_PORT" "$VPS_USER@$VPS_HOST" \
+            "mkdir -p '$REMOTE_DIR/infra/mcp-bedrock-readonly'"
+
+      - name: Publicar MCP no servidor
+        run: |
+          rsync -az --delete \
+            -e "ssh -i ~/.ssh/id_ed25519 -p $VPS_PORT" \
+            infra/mcp-bedrock-readonly/ "$VPS_USER@$VPS_HOST:$REMOTE_DIR/infra/mcp-bedrock-readonly/"
+
+          rsync -az \
+            -e "ssh -i ~/.ssh/id_ed25519 -p $VPS_PORT" \
+            docker-compose.mcp-bedrock-readonly.yml "$VPS_USER@$VPS_HOST:$REMOTE_DIR/docker-compose.mcp-bedrock-readonly.yml"
+
+      - name: Publicar MCP via Docker (sem comandos manuais no VPS)
+        run: |
+          ssh -i ~/.ssh/id_ed25519 -p "$VPS_PORT" "$VPS_USER@$VPS_HOST" \
+            "cd '$REMOTE_DIR' && \
+             BEDROCK_ROOT='/opt/bedrock-server' \
+             HOST_LOG_DIR='/var/log' \
+             HOST_REPO_DIR='$REMOTE_DIR' \
+             docker compose -f docker-compose.mcp-bedrock-readonly.yml up -d --build --remove-orphans && \
+             docker ps --filter name=bedrock-mcp-readonly --format 'table {{.Names}}\t{{.Status}}\t{{.Ports}}'"
+
+      - name: Validar container MCP
+        run: |
+          ssh -i ~/.ssh/id_ed25519 -p "$VPS_PORT" "$VPS_USER@$VPS_HOST" \
+            "docker ps --filter name=bedrock-mcp-readonly --format 'table {{.Names}}\t{{.Image}}\t{{.Status}}'"
