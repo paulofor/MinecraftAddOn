@@ -29,6 +29,16 @@ Ele suporta transporte via **HTTP** (padrão atual) e também **STDIO** (modo le
 - Sem comandos arbitrários: apenas allowlist.
 - Timeout configurável para comandos shell.
 
+## Caminhos padrão dentro do container
+
+Para evitar problemas de permissão ao rodar com usuário não-root, o compose monta os diretórios do host em caminhos acessíveis no container:
+
+- Bedrock root: `/data/minecraftserver`
+- Logs: `/data/logging`
+- Repositório: `/data/repo`
+
+Use esses caminhos nas chamadas MCP (`list_directory`, `read_file`, `run_read_command` com `cwd`).
+
 ## Deploy no host Bedrock
 
 No servidor Linux onde roda o Bedrock:
@@ -78,7 +88,7 @@ Use um comando equivalente ao abaixo no arquivo de configuração de MCP do clie
 
 ## Variáveis de ambiente principais
 
-- `ALLOWED_ROOTS` (padrão: `/root/MinecraftServer,/var/log,/root/MinecraftAddOn`)
+- `ALLOWED_ROOTS` (padrão: `/data/minecraftserver,/data/logging,/data/repo`)
 - `READ_CMD_TIMEOUT` (padrão: `10`)
 - `MAX_FILE_BYTES` (padrão: `200000`)
 - `MCP_TRANSPORT` (`http` ou `stdio`; padrão: `http`)
