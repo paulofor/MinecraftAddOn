@@ -15,7 +15,10 @@ SERVER_NAME = "bedrock-readonly"
 SERVER_VERSION = "0.1.0"
 PROTOCOL_VERSION = "2024-11-05"
 
-DEFAULT_ALLOWED_ROOTS = "/root/MinecraftServer,/root/MinecraftServer/logging,/root/MinecraftAddOn"
+DEFAULT_ALLOWED_ROOTS = (
+  "/data/minecraftserver,/data/logging,/data/repo,"
+  "/root/MinecraftServer,/root/MinecraftServer/logging,/root/MinecraftAddOn"
+)
 ALLOWED_ROOTS = [
   Path(part.strip()).resolve()
   for part in os.getenv("ALLOWED_ROOTS", DEFAULT_ALLOWED_ROOTS).split(",")
@@ -105,7 +108,7 @@ def _run_read_command(
   argv = [command] + [str(arg) for arg in (args or [])]
   timeout = timeout_seconds if isinstance(timeout_seconds, int) and timeout_seconds > 0 else DEFAULT_CMD_TIMEOUT
 
-  effective_cwd = cwd or "/root/MinecraftServer"
+  effective_cwd = cwd or "/data/minecraftserver"
   ok, resolved_cwd = _is_path_allowed(effective_cwd)
   if not ok:
     raise ValueError(f"cwd fora do escopo permitido: {resolved_cwd}")

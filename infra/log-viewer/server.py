@@ -14,6 +14,7 @@ from pathlib import Path
 from urllib.parse import parse_qs, urlparse
 
 LOG_PATH = Path(os.getenv("LOG_PATH", "/logs/bedrock.log"))
+LOG_FALLBACK_FILENAME = os.getenv("LOG_FALLBACK_FILENAME", "bedrock.log")
 HOST = os.getenv("HOST", "0.0.0.0")
 PORT = int(os.getenv("PORT", "8081"))
 DEFAULT_LINES = int(os.getenv("DEFAULT_LINES", "300"))
@@ -134,16 +135,31 @@ code {
 """
 
 
-def read_last_lines(path: Path, num_lines: int) -> list[str]:
+def resolve_log_path(path: Path) -> Path | None:
   if not path.exists():
-    return [f"Arquivo de log não encontrado: {path}"]
+    return None
   if path.is_dir():
+    fallback_file = path / LOG_FALLBACK_FILENAME
+    if fallback_file.exists() and fallback_file.is_file():
+      return fallback_file
+  return path
+
+
+def read_last_lines(path: Path, num_lines: int) -> list[str]:
+  resolved_path = resolve_log_path(path)
+  if resolved_path is None:
+    return [f"Arquivo de log não encontrado: {path}"]
+  if resolved_path.is_dir():
     return [
-      f"LOG_PATH aponta para diretório, não arquivo: {path}",
-      "Defina LOG_PATH para o arquivo completo (ex.: /logs/bedrock.log).",
+      f"LOG_PATH aponta para diretório, não arquivo: {resolved_path}",
+      (
+        "Defina LOG_PATH para o arquivo completo "
+        f"(ex.: {resolved_path / LOG_FALLBACK_FILENAME}) "
+        "ou ajuste LOG_FALLBACK_FILENAME."
+      ),
     ]
 
-  with path.open("rb") as fp:
+  with resolved_path.open("rb") as fp:
     fp.seek(0, os.SEEK_END)
     pos = fp.tell()
     chunk = bytearray()
@@ -353,6 +369,8 @@ class LogHandler(BaseHTTPRequestHandler):
         '<div class="meta">Nenhum pack encontrado nos caminhos configurados.</div></div>'
       )
 
+    display_log_path = resolve_log_path(LOG_PATH) or LOG_PATH
+
     html_doc = f"""<!doctype html>
 <html lang=\"pt-BR\">
 <head>
@@ -377,7 +395,7 @@ class LogHandler(BaseHTTPRequestHandler):
         <button type=\"submit\">Atualizar</button>
       </form>
       <div class=\"meta\">
-        Arquivo: {LOG_PATH} | exibindo {len(filtered)} linha(s) | snapshot: {now} |
+        Arquivo: {display_log_path} | exibindo {len(filtered)} linha(s) | snapshot: {now} |
         atualização automática: desativada | versão do viewer: {VIEWER_VERSION}
       </div>
       {addons_html}
@@ -464,7 +482,7 @@ def main() -> None:
     )
 
   server = ThreadingHTTPServer((HOST, PORT), LogHandler)
-  print(f"Log viewer em http://{HOST}:{PORT} lendo {LOG_PATH}")
+  print(f"Log viewer em http://{HOST}:{PORT} lendo {resolve_log_path(LOG_PATH) or LOG_PATH}")
   server.serve_forever()
 
 

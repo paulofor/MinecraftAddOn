@@ -444,6 +444,11 @@ Para facilitar diagnóstico rápido de erros, este repositório inclui um **log 
 docker compose -f docker-compose.log-viewer.yml up -d --build
 ```
 
+> Se `BEDROCK_LOG_PATH` for definido para um **diretório** (por exemplo `/root/MinecraftServer/logging`),
+> o viewer tenta automaticamente abrir `${BEDROCK_LOG_PATH}/bedrock.log`.  
+> Se o arquivo tiver outro nome, ajuste `LOG_PATH` para o caminho completo do arquivo ou defina
+> `LOG_FALLBACK_FILENAME` no container.
+
 3. Acesse localmente:
 
 ```text
@@ -470,6 +475,8 @@ Como logs podem conter informações sensíveis, **não exponha a porta 8081 dir
 Foi adicionado um módulo MCP containerizado para permitir que o Codex execute leituras no host Linux do servidor Bedrock com segurança (escopo restrito e comandos em allowlist).
 
 Por padrão, o compose publica o endpoint MCP na porta `80` do host (`http://SEU_HOST/mcp`) e mantém o servidor interno no container em `8765` (healthcheck em `/health`), com opção de voltar para `stdio` via variável de ambiente.
+
+Por padrão, os volumes do host são montados no container em `/data/minecraftserver`, `/data/logging` e `/data/repo` para evitar falhas de permissão com usuário não-root.
 
 - Compose: `docker-compose.mcp-bedrock-readonly.yml`
 - Código: `infra/mcp-bedrock-readonly/server.py`
