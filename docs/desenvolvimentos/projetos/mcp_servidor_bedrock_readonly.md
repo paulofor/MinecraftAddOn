@@ -38,12 +38,12 @@ docker compose -f docker-compose.mcp-bedrock-readonly.yml build
 docker compose -f docker-compose.mcp-bedrock-readonly.yml up -d
 
 # validação rápida
-curl -s http://SEU_HOST:8765/health
+curl -s http://SEU_HOST/health
 ```
 
 Com a configuração padrão do compose, o endpoint MCP fica em:
 
-- `http://SEU_HOST:8765/mcp`
+- `http://SEU_HOST/mcp`
 
 ## Exemplo de configuração no cliente Codex (MCP remoto por HTTP)
 
@@ -53,7 +53,7 @@ Use a URL HTTP do container:
 {
   "mcpServers": {
     "bedrock-readonly-http": {
-      "url": "http://SEU_HOST:8765/mcp"
+      "url": "http://SEU_HOST/mcp"
     }
   }
 }
@@ -83,4 +83,5 @@ Use um comando equivalente ao abaixo no arquivo de configuração de MCP do clie
 - `MAX_FILE_BYTES` (padrão: `200000`)
 - `MCP_TRANSPORT` (`http` ou `stdio`; padrão: `http`)
 - `MCP_HTTP_HOST` (padrão: `0.0.0.0`)
-- `MCP_HTTP_PORT` (padrão: `8765`)
+- `MCP_HOST_PORT` (padrão: `80`, porta publicada no host)
+- `MCP_HTTP_PORT` (padrão: `8765`, porta interna do serviço no container)
