@@ -6,7 +6,7 @@ on:
       world_dir:
         description: "Diretório do mundo Bedrock no servidor remoto"
         required: true
-        default: "/opt/bedrock-server/worlds/Bedrock level"
+        default: "/root/MinecraftServer/worlds/Bedrock level"
       repo_dir:
         description: "Diretório remoto do repositório"
         required: true
