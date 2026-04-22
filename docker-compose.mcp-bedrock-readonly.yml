@@ -14,7 +14,7 @@ services:
       - MCP_HTTP_HOST=${MCP_HTTP_HOST:-0.0.0.0}
       - MCP_HTTP_PORT=${MCP_HTTP_PORT:-8765}
     ports:
-      - ${MCP_HTTP_PORT:-8765}:${MCP_HTTP_PORT:-8765}
+      - ${MCP_HOST_PORT:-80}:${MCP_HTTP_PORT:-8765}
     volumes:
       - ${BEDROCK_ROOT:-/opt/bedrock-server}:/opt/bedrock-server:ro
       - ${HOST_LOG_DIR:-/var/log}:/var/log:ro
