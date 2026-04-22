@@ -15,7 +15,7 @@ SERVER_NAME = "bedrock-readonly"
 SERVER_VERSION = "0.1.0"
 PROTOCOL_VERSION = "2024-11-05"
 
-DEFAULT_ALLOWED_ROOTS = "/root/MinecraftServer,/var/log,/root/MinecraftAddOn"
+DEFAULT_ALLOWED_ROOTS = "/root/MinecraftServer,/root/MinecraftServer/logging,/root/MinecraftAddOn"
 ALLOWED_ROOTS = [
   Path(part.strip()).resolve()
   for part in os.getenv("ALLOWED_ROOTS", DEFAULT_ALLOWED_ROOTS).split(",")

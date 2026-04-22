@@ -61,8 +61,8 @@ jobs:
         run: |
           ssh -i ~/.ssh/id_ed25519 -p "$VPS_PORT" "$VPS_USER@$VPS_HOST" \
             "cd '$REMOTE_DIR' && \
-             BEDROCK_ROOT='/opt/bedrock-server' \
-             HOST_LOG_DIR='/var/log' \
+             BEDROCK_ROOT='/root/MinecraftServer' \
+             HOST_LOG_DIR='/root/MinecraftServer/logging' \
              HOST_REPO_DIR='$REMOTE_DIR' \
              docker compose -f docker-compose.mcp-bedrock-readonly.yml config >/dev/null && \
              docker compose -f docker-compose.mcp-bedrock-readonly.yml up -d --build && \
