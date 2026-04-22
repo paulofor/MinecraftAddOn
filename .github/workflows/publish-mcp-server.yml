@@ -7,9 +7,13 @@ on:
       - work
       - main
     paths:
-      - 'infra/mcp-bedrock-readonly/**'
+      - 'infra/**'
       - 'docker-compose.mcp-bedrock-readonly.yml'
       - '.github/workflows/publish-mcp-server.yml'
+
+concurrency:
+  group: publish-mcp-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   deploy-mcp:
@@ -60,6 +64,7 @@ jobs:
              BEDROCK_ROOT='/opt/bedrock-server' \
              HOST_LOG_DIR='/var/log' \
              HOST_REPO_DIR='$REMOTE_DIR' \
+             docker compose -f docker-compose.mcp-bedrock-readonly.yml config >/dev/null && \
              docker compose -f docker-compose.mcp-bedrock-readonly.yml up -d --build --remove-orphans && \
              docker ps --filter name=bedrock-mcp-readonly --format 'table {{.Names}}\t{{.Status}}\t{{.Ports}}'"
 
