@@ -16,7 +16,7 @@ services:
       - WORLD_RESOURCE_BINDINGS_PATH=/data/world_resource_packs.json
     volumes:
       # Monte aqui o arquivo de log exportado pelo host.
-      - ${BEDROCK_LOG_PATH:-/root/MinecraftServer/bedrock.log}:/logs/bedrock.log:ro
+      - ${BEDROCK_LOG_PATH:-/root/MinecraftServer/logging/bedrock.log}:/logs/bedrock.log:ro
       # Pastas/arquivos do mundo para listar packs instalados e vinculados.
       - ${WORLD_BP_DIR:-/root/MinecraftServer/worlds/Bedrock level/behavior_packs}:/data/behavior_packs:ro
       - ${WORLD_RP_DIR:-/root/MinecraftServer/worlds/Bedrock level/resource_packs}:/data/resource_packs:ro

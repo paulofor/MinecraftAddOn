@@ -2,7 +2,7 @@
 set -euo pipefail
 
 SERVICE_NAME="${1:-bedrock.service}"
-OUT_FILE="${2:-/root/MinecraftServer/bedrock.log}"
+OUT_FILE="${2:-/root/MinecraftServer/logging/bedrock.log}"
 
 mkdir -p "$(dirname "$OUT_FILE")"
 touch "$OUT_FILE"
