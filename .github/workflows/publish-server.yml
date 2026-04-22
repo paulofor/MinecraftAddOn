@@ -11,6 +11,7 @@ on:
       - 'infra/**'
       - 'tools/**'
       - 'docker-compose.log-viewer.yml'
+      - 'docker-compose.mcp-bedrock-readonly.yml'
       - '.github/workflows/publish-server.yml'
 
 jobs:
@@ -46,7 +47,7 @@ jobs:
       - name: Preparar pasta remota
         run: |
           ssh -i ~/.ssh/id_ed25519 -p "$VPS_PORT" "$VPS_USER@$VPS_HOST" \
-            "mkdir -p '$REMOTE_DIR/packs' '$REMOTE_DIR/infra/log-viewer' '$REMOTE_DIR/tools' '$WORLD_BP_DIR' '$WORLD_RP_DIR'"
+            "mkdir -p '$REMOTE_DIR/packs' '$REMOTE_DIR/infra/log-viewer' '$REMOTE_DIR/infra/mcp-bedrock-readonly' '$REMOTE_DIR/tools' '$WORLD_BP_DIR' '$WORLD_RP_DIR'"
 
       - name: Publicar packs no servidor
         run: |
@@ -63,6 +64,14 @@ jobs:
           rsync -az \
             -e "ssh -i ~/.ssh/id_ed25519 -p $VPS_PORT" \
             docker-compose.log-viewer.yml "$VPS_USER@$VPS_HOST:$REMOTE_DIR/docker-compose.log-viewer.yml"
+
+          rsync -az --delete \
+            -e "ssh -i ~/.ssh/id_ed25519 -p $VPS_PORT" \
+            infra/mcp-bedrock-readonly/ "$VPS_USER@$VPS_HOST:$REMOTE_DIR/infra/mcp-bedrock-readonly/"
+
+          rsync -az \
+            -e "ssh -i ~/.ssh/id_ed25519 -p $VPS_PORT" \
+            docker-compose.mcp-bedrock-readonly.yml "$VPS_USER@$VPS_HOST:$REMOTE_DIR/docker-compose.mcp-bedrock-readonly.yml"
 
           rsync -az --delete \
             -e "ssh -i ~/.ssh/id_ed25519 -p $VPS_PORT" \
@@ -156,7 +165,7 @@ jobs:
           PY
 
 
-      - name: Publicar log viewer via Docker (sem comandos manuais no VPS)
+      - name: Publicar log viewer + MCP via Docker no mesmo host
         run: |
           ssh -i ~/.ssh/id_ed25519 -p "$VPS_PORT" "$VPS_USER@$VPS_HOST" \
             "cd '$REMOTE_DIR' && \
@@ -165,8 +174,13 @@ jobs:
              WORLD_DIR='$WORLD_DIR' \
              WORLD_BP_DIR='$WORLD_BP_DIR' \
              WORLD_RP_DIR='$WORLD_RP_DIR' \
-             docker compose -f docker-compose.log-viewer.yml up -d --build --remove-orphans && \
-             docker ps --filter name=bedrock-log-viewer --format 'table {{.Names}}\t{{.Status}}\t{{.Ports}}'"
+             BEDROCK_ROOT='/opt/bedrock-server' \
+             HOST_LOG_DIR='/var/log' \
+             HOST_REPO_DIR='$REMOTE_DIR' \
+             docker compose -f docker-compose.log-viewer.yml -f docker-compose.mcp-bedrock-readonly.yml config >/dev/null && \
+             docker compose -f docker-compose.log-viewer.yml -f docker-compose.mcp-bedrock-readonly.yml up -d --build --remove-orphans && \
+             docker ps --filter name=bedrock-log-viewer --format 'table {{.Names}}\t{{.Status}}\t{{.Ports}}' && \
+             docker ps --filter name=bedrock-mcp-readonly --format 'table {{.Names}}\t{{.Status}}\t{{.Ports}}'"
 
       - name: Validar publicação remota (diretórios finais do mundo)
         run: |

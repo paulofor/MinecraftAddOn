@@ -358,19 +358,26 @@ Backups são salvos por padrão em `backups/worlds/` e a retenção padrão é d
 
 ### Publicação automática no servidor (GitHub Actions)
 
-Foi adicionado o workflow `.github/workflows/publish-server.yml` para publicar a pasta `packs/` no servidor.
+> **Documento canônico**: a publicação oficial é feita pelo workflow `.github/workflows/publish-server.yml`.
+> Ele publica **os dois serviços no mesmo host** (log viewer + MCP) e também sincroniza os packs do mundo.
 
-Além dos packs, o workflow também publica e atualiza automaticamente o log viewer (`infra/log-viewer/server.py`) e sobe/reinicia o container `bedrock-log-viewer` via `docker compose`, deixando a URL `http://SEU_IP:8081` ativa sem setup manual no host.
+O workflow `publish-server.yml` agora realiza, em uma execução única:
+- sincronização de `packs/` para o host;
+- atualização de `infra/log-viewer/` e `infra/mcp-bedrock-readonly/`;
+- publicação dos arquivos `docker-compose.log-viewer.yml` e `docker-compose.mcp-bedrock-readonly.yml`;
+- `docker compose up` conjunto para garantir que **`bedrock-log-viewer` e `bedrock-mcp-readonly`** subam juntos no mesmo host.
 
 - Host: `186.202.209.206`
 - Usuário: `root`
-- Senha: secret `VPS_SENHA`
+- Chave SSH: secret `VPS_SSH_KEY`
 
 Configuração recomendada no GitHub:
 
-1. Criar o secret **`VPS_SENHA`** em *Settings > Secrets and variables > Actions*;
-2. (Opcional) Criar a variável **`VPS_DESTINO`** com o diretório remoto desejado (padrão: `/root/MinecraftAddOn`);
+1. Criar o secret **`VPS_SSH_KEY`** em *Settings > Secrets and variables > Actions*;
+2. (Opcional) Criar as variáveis **`VPS_DESTINO`** e **`BEDROCK_WORLD_DIR`** (se quiser sobrescrever os padrões);
 3. Fazer push na branch `work` ou `main`, ou rodar manualmente via `workflow_dispatch`.
+
+O workflow `.github/workflows/publish-mcp-server.yml` pode continuar sendo usado de forma manual para manutenção isolada do MCP, mas o fluxo principal recomendado é o `publish-server.yml`.
 
 Também foi adicionado o workflow `.github/workflows/validate-world-bindings.yml` para
 rodar a validação de vínculos diretamente no servidor via `workflow_dispatch`.

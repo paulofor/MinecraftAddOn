@@ -65,7 +65,7 @@ jobs:
              HOST_LOG_DIR='/var/log' \
              HOST_REPO_DIR='$REMOTE_DIR' \
              docker compose -f docker-compose.mcp-bedrock-readonly.yml config >/dev/null && \
-             docker compose -f docker-compose.mcp-bedrock-readonly.yml up -d --build --remove-orphans && \
+             docker compose -f docker-compose.mcp-bedrock-readonly.yml up -d --build && \
              docker ps --filter name=bedrock-mcp-readonly --format 'table {{.Names}}\t{{.Status}}\t{{.Ports}}'"
 
       - name: Validar container MCP
