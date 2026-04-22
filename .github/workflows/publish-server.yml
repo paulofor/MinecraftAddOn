@@ -186,24 +186,54 @@ jobs:
         run: |
           ssh -i ~/.ssh/id_ed25519 -p "$VPS_PORT" "$VPS_USER@$VPS_HOST" \
             "set -euo pipefail && \
-             if systemctl list-unit-files | grep -q '^bedrock\.service'; then \
+             if command -v systemctl >/dev/null 2>&1; then \
                echo '[info] Reiniciando bedrock.service via systemd'; \
-               systemctl restart bedrock && \
-               systemctl is-active --quiet bedrock; \
-             elif docker ps -a --format '{{.Names}}' | grep -q '^bedrock$'; then \
-               echo '[info] Reiniciando container bedrock via docker'; \
-               docker restart bedrock >/dev/null; \
-             elif [ -x '/opt/bedrock-server/bedrock_server' ]; then \
-               echo '[info] Reiniciando binário bedrock_server manualmente'; \
-               pkill -f '/opt/bedrock-server/bedrock_server' || true; \
-               cd /opt/bedrock-server && \
-               nohup ./bedrock_server > logs/bedrock.log 2>&1 < /dev/null & \
-               sleep 2; \
-             else \
+               if (command -v sudo >/dev/null 2>&1 && sudo -n systemctl restart bedrock.service && sudo -n systemctl is-active --quiet bedrock.service) || \
+                  (systemctl restart bedrock.service && systemctl is-active --quiet bedrock.service); then \
+                 restarted=1; \
+               fi; \
+             fi; \
+             if [ \"\${restarted:-0}\" -ne 1 ] && command -v docker >/dev/null 2>&1; then \
+               container_name=\$(docker ps -a --format '{{.Names}}' | grep -E '^bedrock$|bedrock-server|minecraft.*bedrock' | head -n 1 || true); \
+               if [ -n \"\$container_name\" ]; then \
+                 echo \"[info] Reiniciando container \$container_name via docker\"; \
+                 docker restart \"\$container_name\" >/dev/null; \
+                 restarted=1; \
+               fi; \
+             fi; \
+             if [ \"\${restarted:-0}\" -ne 1 ]; then \
+               bedrock_root=''; \
+               for candidate in /opt/bedrock-server /root/MinecraftServer; do \
+                 if [ -x \"\$candidate/bedrock_server\" ]; then \
+                   bedrock_root=\"\$candidate\"; \
+                   break; \
+                 fi; \
+               done; \
+               if [ -n \"\$bedrock_root\" ]; then \
+                 echo \"[info] Reiniciando binário bedrock_server manualmente em \$bedrock_root\"; \
+                 pkill -f '/opt/bedrock-server/bedrock_server|/root/MinecraftServer/bedrock_server' || true; \
+                 cd \"\$bedrock_root\" && \
+                 mkdir -p logs && \
+                 nohup ./bedrock_server > logs/bedrock.log 2>&1 < /dev/null & \
+                 sleep 2; \
+                 restarted=1; \
+               fi; \
+             fi; \
+             if [ \"\${restarted:-0}\" -ne 1 ]; then \
+               echo '[info] Diagnóstico: serviços systemd candidatos'; \
+               systemctl list-unit-files --type=service --all | grep -Ei 'bedrock|minecraft' || true; \
+               echo '[info] Diagnóstico: containers docker candidatos'; \
+               docker ps -a --format '{{.Names}}' | grep -Ei 'bedrock|minecraft' || true; \
                echo '[erro] Não foi possível identificar como reiniciar o Bedrock.' >&2; \
                exit 1; \
              fi && \
-             tail -n 50 /opt/bedrock-server/logs/bedrock.log"
+             if [ -f /opt/bedrock-server/logs/bedrock.log ]; then \
+               tail -n 50 /opt/bedrock-server/logs/bedrock.log; \
+             elif [ -f /root/MinecraftServer/logging/bedrock.log ]; then \
+               tail -n 50 /root/MinecraftServer/logging/bedrock.log; \
+             else \
+               echo '[warn] Log bedrock.log não encontrado em /opt/bedrock-server/logs nem /root/MinecraftServer/logging'; \
+             fi"
 
       - name: Validar publicação remota (diretórios finais do mundo)
         run: |
