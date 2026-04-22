@@ -44,3 +44,17 @@ Containers auxiliares observados no host:
 minecraftaddon-bedrock-log-viewer-1   -> 0.0.0.0:8081->8081/tcp
 minecraftaddon-bedrock-mcp-readonly-1 -> 0.0.0.0:8765->8765/tcp
 ```
+
+## Host/IP correto para acesso remoto (conforme deploy)
+De acordo com os arquivos de deploy/workflow, o host remoto correto é:
+
+```text
+186.202.209.206
+```
+
+URLs externas esperadas:
+
+```text
+Log Viewer: http://186.202.209.206:8081
+MCP Readonly: http://186.202.209.206:8765
+```
