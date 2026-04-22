@@ -177,6 +177,18 @@ jobs:
              BEDROCK_ROOT='/root/MinecraftServer' \
              HOST_LOG_DIR='/root/MinecraftServer/logging' \
              HOST_REPO_DIR='$REMOTE_DIR' \
+             mkdir -p \"\$HOST_LOG_DIR\" && \
+             if [ -d \"\$BEDROCK_LOG_PATH\" ]; then \
+               ts=\$(date +%Y%m%d%H%M%S); \
+               mv \"\$BEDROCK_LOG_PATH\" \"\${BEDROCK_LOG_PATH}.dir.\$ts\"; \
+             fi && \
+             if [ ! -e \"\$BEDROCK_LOG_PATH\" ]; then \
+               touch \"\$BEDROCK_LOG_PATH\"; \
+             fi && \
+             if [ ! -f \"\$BEDROCK_LOG_PATH\" ]; then \
+               echo '[erro] BEDROCK_LOG_PATH não é um arquivo regular.' >&2; \
+               exit 1; \
+             fi && \
              docker compose -f docker-compose.log-viewer.yml -f docker-compose.mcp-bedrock-readonly.yml config >/dev/null && \
              docker compose -f docker-compose.log-viewer.yml -f docker-compose.mcp-bedrock-readonly.yml up -d --build --remove-orphans && \
              docker ps --filter name=bedrock-log-viewer --format 'table {{.Names}}\t{{.Status}}\t{{.Ports}}' && \
