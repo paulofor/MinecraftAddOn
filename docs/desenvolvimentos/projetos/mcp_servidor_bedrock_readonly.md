@@ -68,7 +68,7 @@ Use um comando equivalente ao abaixo no arquivo de configuração de MCP do clie
   "mcpServers": {
     "bedrock-readonly": {
       "command": "docker",
-      "args": ["exec", "-i", "bedrock-mcp-readonly", "python", "/app/server.py"]
+      "args": ["compose", "-f", "/root/MinecraftAddOn/docker-compose.mcp-bedrock-readonly.yml", "exec", "-T", "bedrock-mcp-readonly", "python", "/app/server.py"]
     }
   }
 }
