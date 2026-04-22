@@ -248,13 +248,12 @@ class _McpHttpHandler(BaseHTTPRequestHandler):
       self.send_error(404, "Endpoint MCP inválido.")
       return
 
-    content_length = int(self.headers.get("Content-Length", "0"))
-    if content_length <= 0:
+    raw = self._read_request_body()
+    if not raw:
       self._send_json(_error_response(None, -32600, "Body ausente"), status=400)
       return
 
     try:
-      raw = self.rfile.read(content_length)
       message = json.loads(raw.decode("utf-8"))
     except json.JSONDecodeError as exc:
       self._send_json(_error_response(None, -32700, "JSON inválido", data=str(exc)), status=400)
@@ -282,6 +281,40 @@ class _McpHttpHandler(BaseHTTPRequestHandler):
     self.send_header("Content-Length", str(len(body)))
     self.end_headers()
     self.wfile.write(body)
+
+  def _read_request_body(self) -> bytes:
+    content_length = self.headers.get("Content-Length")
+    if content_length:
+      try:
+        length = int(content_length)
+      except ValueError:
+        return b""
+      if length <= 0:
+        return b""
+      return self.rfile.read(length)
+
+    transfer_encoding = self.headers.get("Transfer-Encoding", "")
+    if "chunked" in transfer_encoding.lower():
+      chunks: list[bytes] = []
+      while True:
+        size_line = self.rfile.readline().strip()
+        if not size_line:
+          return b""
+        try:
+          chunk_size = int(size_line.split(b";", 1)[0], 16)
+        except ValueError:
+          return b""
+        if chunk_size == 0:
+          # Consome o CRLF final após o chunk terminador.
+          self.rfile.readline()
+          break
+        chunk = self.rfile.read(chunk_size)
+        chunks.append(chunk)
+        # Consome o CRLF após cada chunk.
+        self.rfile.read(2)
+      return b"".join(chunks)
+
+    return b""
 
 
 def _read_message() -> dict[str, Any] | None:
