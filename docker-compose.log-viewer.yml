@@ -3,7 +3,6 @@ services:
     build:
       context: .
       dockerfile: infra/log-viewer/Dockerfile
-    container_name: bedrock-log-viewer
     restart: unless-stopped
     ports:
       - "${VIEWER_PORT:-8081}:8081"

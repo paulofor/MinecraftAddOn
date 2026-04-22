@@ -3,7 +3,6 @@ services:
     build:
       context: .
       dockerfile: infra/mcp-bedrock-readonly/Dockerfile
-    container_name: bedrock-mcp-readonly
     restart: unless-stopped
     stdin_open: true
     tty: true
