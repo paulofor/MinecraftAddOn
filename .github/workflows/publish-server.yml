@@ -182,6 +182,29 @@ jobs:
              docker ps --filter name=bedrock-log-viewer --format 'table {{.Names}}\t{{.Status}}\t{{.Ports}}' && \
              docker ps --filter name=bedrock-mcp-readonly --format 'table {{.Names}}\t{{.Status}}\t{{.Ports}}'"
 
+      - name: Reiniciar servidor Bedrock no host remoto
+        run: |
+          ssh -i ~/.ssh/id_ed25519 -p "$VPS_PORT" "$VPS_USER@$VPS_HOST" \
+            "set -euo pipefail && \
+             if systemctl list-unit-files | grep -q '^bedrock\.service'; then \
+               echo '[info] Reiniciando bedrock.service via systemd'; \
+               systemctl restart bedrock && \
+               systemctl is-active --quiet bedrock; \
+             elif docker ps -a --format '{{.Names}}' | grep -q '^bedrock$'; then \
+               echo '[info] Reiniciando container bedrock via docker'; \
+               docker restart bedrock >/dev/null; \
+             elif [ -x '/opt/bedrock-server/bedrock_server' ]; then \
+               echo '[info] Reiniciando binário bedrock_server manualmente'; \
+               pkill -f '/opt/bedrock-server/bedrock_server' || true; \
+               cd /opt/bedrock-server && \
+               nohup ./bedrock_server > logs/bedrock.log 2>&1 < /dev/null & \
+               sleep 2; \
+             else \
+               echo '[erro] Não foi possível identificar como reiniciar o Bedrock.' >&2; \
+               exit 1; \
+             fi && \
+             tail -n 50 /opt/bedrock-server/logs/bedrock.log"
+
       - name: Validar publicação remota (diretórios finais do mundo)
         run: |
           ssh -i ~/.ssh/id_ed25519 -p "$VPS_PORT" "$VPS_USER@$VPS_HOST" \
