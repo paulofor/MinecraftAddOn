@@ -137,6 +137,11 @@ code {
 def read_last_lines(path: Path, num_lines: int) -> list[str]:
   if not path.exists():
     return [f"Arquivo de log não encontrado: {path}"]
+  if path.is_dir():
+    return [
+      f"LOG_PATH aponta para diretório, não arquivo: {path}",
+      "Defina LOG_PATH para o arquivo completo (ex.: /logs/bedrock.log).",
+    ]
 
   with path.open("rb") as fp:
     fp.seek(0, os.SEEK_END)
