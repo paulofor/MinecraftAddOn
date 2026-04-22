@@ -7,7 +7,7 @@ services:
     stdin_open: true
     tty: true
     environment:
-      - ALLOWED_ROOTS=${ALLOWED_ROOTS:-/opt/bedrock-server,/var/log,/root/MinecraftAddOn}
+      - ALLOWED_ROOTS=${ALLOWED_ROOTS:-/root/MinecraftServer,/var/log,/root/MinecraftAddOn}
       - READ_CMD_TIMEOUT=${READ_CMD_TIMEOUT:-10}
       - MAX_FILE_BYTES=${MAX_FILE_BYTES:-200000}
       - MCP_TRANSPORT=${MCP_TRANSPORT:-http}
@@ -16,6 +16,6 @@ services:
     ports:
       - ${MCP_HOST_PORT:-80}:${MCP_HTTP_PORT:-8765}
     volumes:
-      - ${BEDROCK_ROOT:-/opt/bedrock-server}:/opt/bedrock-server:ro
+      - ${BEDROCK_ROOT:-/root/MinecraftServer}:/root/MinecraftServer:ro
       - ${HOST_LOG_DIR:-/var/log}:/var/log:ro
       - ${HOST_REPO_DIR:-/root/MinecraftAddOn}:/root/MinecraftAddOn:ro
