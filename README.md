@@ -146,6 +146,8 @@ No `docker-compose.log-viewer.yml`, já estão mapeados:
 
 Ao subir o container, o servidor também imprime no log a lista de add-ons detectados.
 
+> No ambiente atual de produção, o mundo fica em `/root/MinecraftServer/worlds/Bedrock level` e os logs em `/opt/bedrock-server/logs/bedrock.log`.
+
 ### Validação dos vínculos do mundo (UUID + versão)
 
 Para validar no servidor se os arquivos `world_behavior_packs.json` e
@@ -431,7 +433,7 @@ Para facilitar diagnóstico rápido de erros, este repositório inclui um **log 
 1. Exporte o journal do serviço Bedrock para um arquivo contínuo:
 
 ```bash
-./tools/export_bedrock_journal.sh bedrock.service /root/MinecraftServer/logs/bedrock.log
+./tools/export_bedrock_journal.sh bedrock.service /opt/bedrock-server/logs/bedrock.log
 ```
 
 > Dica: rode esse comando via `systemd`/`screen`/`tmux`, pois ele fica em modo contínuo (`-f`).
