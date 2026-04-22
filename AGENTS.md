@@ -63,13 +63,13 @@ MCP Readonly (atual): http://186.202.209.206/mcp
 Conforme verificado no servidor, os logs do Bedrock estão em:
 
 ```text
-/opt/bedrock-server/logs/
+/root/MinecraftServer/logging/
 ```
 
 Arquivo principal observado:
 
 ```text
-/opt/bedrock-server/logs/bedrock.log
+/root/MinecraftServer/logging/bedrock.log
 ```
 
-> Observação: para MCP readonly, use este caminho de logs em vez de `/root/MinecraftServer/logging` quando houver restrição de escopo de diretórios.
+> Observação: o MCP readonly também deve usar `/root/MinecraftServer/logging` para manter o padrão único de diretórios.

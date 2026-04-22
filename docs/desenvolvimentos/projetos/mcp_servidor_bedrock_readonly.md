@@ -78,7 +78,7 @@ Use um comando equivalente ao abaixo no arquivo de configuração de MCP do clie
 
 ## Variáveis de ambiente principais
 
-- `ALLOWED_ROOTS` (padrão: `/opt/bedrock-server,/var/log,/root/MinecraftAddOn`)
+- `ALLOWED_ROOTS` (padrão: `/root/MinecraftServer,/var/log,/root/MinecraftAddOn`)
 - `READ_CMD_TIMEOUT` (padrão: `10`)
 - `MAX_FILE_BYTES` (padrão: `200000`)
 - `MCP_TRANSPORT` (`http` ou `stdio`; padrão: `http`)
