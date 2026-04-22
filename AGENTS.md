@@ -58,3 +58,18 @@ URLs externas esperadas:
 Log Viewer: http://186.202.209.206:8081
 MCP Readonly: http://186.202.209.206:8765
 ```
+
+## Local real dos logs do Bedrock (validado em ambiente)
+Conforme verificado no servidor, os logs do Bedrock estão em:
+
+```text
+/opt/bedrock-server/logs/
+```
+
+Arquivo principal observado:
+
+```text
+/opt/bedrock-server/logs/bedrock.log
+```
+
+> Observação: para MCP readonly, use este caminho de logs em vez de `/root/MinecraftServer/logging` quando houver restrição de escopo de diretórios.
