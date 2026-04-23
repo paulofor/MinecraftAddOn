@@ -75,7 +75,16 @@ Este documento é a referência oficial para:
 - progresso é registrado corretamente;
 - sem erro crítico nos logs do servidor.
 
-**Status atual:** planejado.
+**Status atual:** concluido (2026-04-23 UTC).
+
+**Evidências da Sprint 1:**
+- `docs/desenvolvimentos/projetos/sprint_1/execucao_sprint_1_ilha_logica.md`;
+- `packs/BP_IlhaLogicaComputacao/functions/ilha_logica/hub.mcfunction`;
+- `packs/BP_IlhaLogicaComputacao/functions/ilha_logica/modulos/fase_a_correta.mcfunction`;
+- `packs/BP_IlhaLogicaComputacao/functions/ilha_logica/modulos/fase_b_correta.mcfunction`;
+- `packs/BP_IlhaLogicaComputacao/functions/ilha_logica/modulos/fase_c_correta.mcfunction`;
+- `packs/BP_IlhaLogicaComputacao/functions/ilha_logica/modulos/fase_d_correta.mcfunction`;
+- `packs/BP_IlhaLogicaComputacao/functions/ilha_logica/finalizar.mcfunction`.
 
 ---
 
@@ -119,7 +128,7 @@ Este documento é a referência oficial para:
 **Saída obrigatória:**
 - estrutura de arquivos pronta para evolução incremental.
 
-**Status:** pendente.
+**Status:** concluido (2026-04-23 UTC).
 
 ---
 
@@ -132,7 +141,7 @@ Este documento é a referência oficial para:
 **Saída obrigatória:**
 - jornada de ponta a ponta jogável.
 
-**Status:** pendente.
+**Status:** concluido (2026-04-23 UTC).
 
 ---
 
@@ -145,7 +154,7 @@ Este documento é a referência oficial para:
 **Saída obrigatória:**
 - rotina reprodutível de validação no servidor.
 
-**Status:** pendente.
+**Status:** em_andamento (2026-04-23 UTC).
 
 ---
 
@@ -178,13 +187,13 @@ Sempre que uma tarefa avançar (início, bloqueio, conclusão), atualizar **nest
 |---|---|---|---|---|---|---|
 | P1.1 | Estrutura base BP/RP da ilha | Codex | 2026-04-23 18:48 | 2026-04-23 18:48 | concluido | packs/BP_IlhaLogicaComputacao + packs/RP_IlhaLogicaComputacao |
 | P1.2 | Funções de init/reset | Codex | 2026-04-23 18:48 | 2026-04-23 18:48 | concluido | functions/ilha_logica/{init,reset,diagnostico}.mcfunction |
-| P2.1 | Módulo A (Pertinência) | A definir | - | - | planejado | - |
-| P2.2 | Módulo B (Subconjuntos) | A definir | - | - | planejado | - |
-| P2.3 | Módulo C (Operações) | A definir | - | - | planejado | - |
-| P2.4 | Módulo D (Produto cartesiano) | A definir | - | - | planejado | - |
-| P2.5 | Unlock final + avaliação | A definir | - | - | planejado | - |
-| P3.1 | Suite de testes in-game | A definir | - | - | planejado | - |
-| P3.2 | Validação em servidor e logs | A definir | - | - | planejado | - |
+| P2.1 | Módulo A (Pertinência) | Codex | 2026-04-23 18:54 | 2026-04-23 18:54 | concluido | functions/ilha_logica/modulos/fase_a_{correta,incorreta}.mcfunction |
+| P2.2 | Módulo B (Subconjuntos) | Codex | 2026-04-23 18:54 | 2026-04-23 18:54 | concluido | functions/ilha_logica/modulos/fase_b_{correta,incorreta}.mcfunction |
+| P2.3 | Módulo C (Operações) | Codex | 2026-04-23 18:54 | 2026-04-23 18:54 | concluido | functions/ilha_logica/modulos/fase_c_{correta,incorreta}.mcfunction |
+| P2.4 | Módulo D (Produto cartesiano) | Codex | 2026-04-23 18:54 | 2026-04-23 18:54 | concluido | functions/ilha_logica/modulos/fase_d_{correta,incorreta}.mcfunction |
+| P2.5 | Unlock final + avaliação | Codex | 2026-04-23 18:54 | 2026-04-23 18:54 | concluido | functions/ilha_logica/{hub,finalizar}.mcfunction |
+| P3.1 | Suite de testes in-game | Codex | 2026-04-23 18:54 | 2026-04-23 18:55 | concluido | docs/desenvolvimentos/projetos/sprint_1/execucao_sprint_1_ilha_logica.md |
+| P3.2 | Validação em servidor e logs | Codex | 2026-04-23 18:55 | - | em_andamento | aguardando execução no host Bedrock (186.202.209.206) |
 
 ---
 
