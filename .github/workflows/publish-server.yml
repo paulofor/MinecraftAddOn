@@ -218,7 +218,7 @@ jobs:
              fi; \
              if [ \"\${restarted:-0}\" -ne 1 ]; then \
                bedrock_root=''; \
-               for candidate in /opt/bedrock-server /root/MinecraftServer; do \
+               for candidate in /root/MinecraftServer; do \
                  if [ -x \"\$candidate/bedrock_server\" ]; then \
                    bedrock_root=\"\$candidate\"; \
                    break; \
@@ -226,7 +226,7 @@ jobs:
                done; \
                if [ -n \"\$bedrock_root\" ]; then \
                  echo \"[info] Reiniciando binário bedrock_server manualmente em \$bedrock_root\"; \
-                 pkill -f '/opt/bedrock-server/bedrock_server|/root/MinecraftServer/bedrock_server' || true; \
+                 pkill -f '/root/MinecraftServer/bedrock_server' || true; \
                  cd \"\$bedrock_root\" && \
                  mkdir -p logging && \
                  nohup ./bedrock_server > logging/bedrock.log 2>&1 < /dev/null & \
@@ -242,12 +242,10 @@ jobs:
                echo '[erro] Não foi possível identificar como reiniciar o Bedrock.' >&2; \
                exit 1; \
              fi && \
-             if [ -f /opt/bedrock-server/logs/bedrock.log ]; then \
-               tail -n 50 /opt/bedrock-server/logs/bedrock.log; \
-             elif [ -f /root/MinecraftServer/logging/bedrock.log ]; then \
+             if [ -f /root/MinecraftServer/logging/bedrock.log ]; then \
                tail -n 50 /root/MinecraftServer/logging/bedrock.log; \
              else \
-               echo '[warn] Log bedrock.log não encontrado em /opt/bedrock-server/logs nem /root/MinecraftServer/logging'; \
+               echo '[warn] Log bedrock.log não encontrado em /root/MinecraftServer/logging'; \
              fi"
 
       - name: Validar publicação remota (diretórios finais do mundo)

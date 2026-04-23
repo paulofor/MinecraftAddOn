@@ -9,6 +9,12 @@ Este documento é a referência oficial para:
 - execução incremental;
 - atualização contínua de status.
 
+> [!IMPORTANT]
+> **Diretório/arquivo canônico de log do Bedrock (único padrão):**
+> `/root/MinecraftServer/logging/bedrock.log`
+>
+> Toda automação, validação, diagnóstico e observabilidade deste projeto deve usar exclusivamente esse caminho.
+
 ---
 
 ## 2) Escopo da versão inicial (MVP)
