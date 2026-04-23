@@ -101,7 +101,16 @@ Este documento é a referência oficial para:
 - pelo menos 1 sessão de teste com usuário-alvo (16–20 anos);
 - taxa de conclusão do percurso inicial >= 80%.
 
-**Status atual:** planejado.
+**Status atual:** em_andamento (2026-04-23 UTC).
+
+**Evidências parciais da Sprint 2:**
+- `docs/desenvolvimentos/projetos/sprint_2/execucao_sprint_2_ilha_logica.md`;
+- `packs/BP_IlhaLogicaComputacao/functions/ilha_logica/hub.mcfunction`;
+- `packs/BP_IlhaLogicaComputacao/functions/ilha_logica/modulos/fase_a_incorreta.mcfunction`;
+- `packs/BP_IlhaLogicaComputacao/functions/ilha_logica/modulos/fase_b_incorreta.mcfunction`;
+- `packs/BP_IlhaLogicaComputacao/functions/ilha_logica/modulos/fase_c_incorreta.mcfunction`;
+- `packs/BP_IlhaLogicaComputacao/functions/ilha_logica/modulos/fase_d_incorreta.mcfunction`;
+- `packs/BP_IlhaLogicaComputacao/functions/ilha_logica/finalizar.mcfunction`.
 
 ---
 
@@ -194,6 +203,9 @@ Sempre que uma tarefa avançar (início, bloqueio, conclusão), atualizar **nest
 | P2.5 | Unlock final + avaliação | Codex | 2026-04-23 18:54 | 2026-04-23 18:54 | concluido | functions/ilha_logica/{hub,finalizar}.mcfunction |
 | P3.1 | Suite de testes in-game | Codex | 2026-04-23 18:54 | 2026-04-23 18:55 | concluido | docs/desenvolvimentos/projetos/sprint_1/execucao_sprint_1_ilha_logica.md |
 | P3.2 | Validação em servidor e logs | Codex | 2026-04-23 18:55 | - | em_andamento | aguardando execução no host Bedrock (186.202.209.206) |
+| S2.1 | Feedback explicativo nas respostas incorretas | Codex | 2026-04-23 19:05 | 2026-04-23 19:10 | concluido | modulos/fase_{a,b,c,d}_incorreta.mcfunction (refino didático) |
+| S2.2 | Balanceamento por meta de >= 80% | Codex | 2026-04-23 19:10 | 2026-04-23 19:12 | concluido | hub.mcfunction + finalizar.mcfunction (mensagem por desempenho) |
+| S2.3 | Sessão piloto com usuário-alvo (16–20) | Codex | 2026-04-23 19:12 | - | em_andamento | pendente execução em ambiente de jogo com evidência operacional |
 
 ---
 
@@ -241,13 +253,14 @@ Um item só pode ser marcado como `concluido` quando houver:
 ---
 
 ## 11) Próximos passos imediatos
-1. aprovar este plano canônico;
-2. abrir execução da Fase P1;
-3. iniciar atualização contínua do quadro da seção 7 a cada sessão;
-4. após concluir Sprint 1, iniciar implementação do módulo de Lógica Proposicional.
+1. executar sessão piloto da Sprint 2 com usuário-alvo (16–20);
+2. registrar taxa de conclusão da trilha inicial (meta >= 80%);
+3. concluir P3.2 com validação em host Bedrock + inspeção de logs;
+4. iniciar Sprint 3 (módulo introdutório de Lógica Proposicional).
 
 ---
 
 ## 12) Histórico de revisões
 - **2026-04-23 (UTC)** — criação da versão inicial canônica deste plano pós-sprint.
 - **2026-04-23 (UTC)** — Sprint 0 executada e concluída com baseline BP/RP, funções operacionais e checklist formal de validação.
+- **2026-04-23 (UTC)** — Sprint 2 iniciada com refino pedagógico, feedback explicativo, ajuste de usabilidade e critérios de desempenho (>= 80%).
