@@ -206,10 +206,48 @@ Sempre que uma tarefa avançar (início, bloqueio, conclusão), atualizar **nest
 | S2.1 | Feedback explicativo nas respostas incorretas | Codex | 2026-04-23 19:05 | 2026-04-23 19:10 | concluido | modulos/fase_{a,b,c,d}_incorreta.mcfunction (refino didático) |
 | S2.2 | Balanceamento por meta de >= 80% | Codex | 2026-04-23 19:10 | 2026-04-23 19:12 | concluido | hub.mcfunction + finalizar.mcfunction (mensagem por desempenho) |
 | S2.3 | Sessão piloto com usuário-alvo (16–20) | Codex | 2026-04-23 19:12 | - | em_andamento | pendente execução em ambiente de jogo com evidência operacional |
+| S2.4 | Protocolo da sessão piloto + formulário de observação | Codex | 2026-04-23 19:20 | 2026-04-23 19:24 | concluido | docs/desenvolvimentos/projetos/sprint_2/execucao_sprint_2_ilha_logica.md (suite + critérios) |
+| S2.5 | Execução da sessão piloto em servidor Bedrock | Codex | 2026-04-23 19:24 | - | em_andamento | dependente de janela com usuário-alvo no host 186.202.209.206 |
+| S2.6 | Consolidação da taxa de conclusão (>= 80%) | Codex | 2026-04-23 19:24 | - | em_andamento | pendente evidência quantitativa da sessão piloto |
+| S2.7 | Encerramento formal da Sprint 2 | Codex | - | - | planejado | atualizar status macro da Sprint 2 para concluido após S2.5/S2.6 |
 
 ---
 
-## 8) Template de atualização (copiar e preencher)
+## 8) Continuação operacional da Sprint 2 (próxima sessão)
+
+### Objetivo da continuação
+Fechar os itens pendentes de validação com usuário real e transformar os resultados em decisão objetiva de conclusão da sprint.
+
+### Plano de execução (checklist)
+1. **Preparação de ambiente (10 min):**
+   - resetar trilha e validar placar inicial (`ilhlog_progresso`, `ilhlog_erros`);
+   - confirmar disponibilidade de logs em `/root/MinecraftServer/logging/bedrock.log`.
+2. **Sessão piloto monitorada (20–30 min):**
+   - 1 participante de 16–20 anos percorre a trilha sem intervenção técnica direta;
+   - operador só registra dúvidas, erros recorrentes e tempo de conclusão.
+3. **Fechamento quantitativo (10 min):**
+   - contabilizar conclusão total, erros por fase e taxa de conclusão da rota principal;
+   - classificar resultado como `aprovado` (>=80%) ou `ajuste_necessario` (<80%).
+4. **Atualização documental (10 min):**
+   - atualizar quadro canônico (Seção 7) para S2.5/S2.6/S2.7;
+   - registrar evidências (comandos + trechos de log + data UTC).
+
+### Evidências mínimas obrigatórias para fechar Sprint 2
+- comando de preparação executado (`/function ilha_logica/reset` + `/function ilha_logica/init`);
+- comando de encerramento executado (`/function ilha_logica/finalizar`);
+- verificação de placar (`/scoreboard players list @s`) com estado final do participante;
+- referência ao arquivo de log do servidor (`/root/MinecraftServer/logging/bedrock.log`) com timestamp da sessão.
+
+### Condição de encerramento da Sprint 2
+A Sprint 2 muda de `em_andamento` para `concluido` quando **todos** os itens abaixo forem verdadeiros:
+- S2.5 concluído com sessão piloto registrada;
+- S2.6 concluído com taxa de conclusão >= 80%;
+- nenhum erro crítico novo em log durante a sessão;
+- histórico de revisões atualizado com data UTC da conclusão.
+
+---
+
+## 9) Template de atualização (copiar e preencher)
 
 ```text
 ### Atualização de execução
@@ -232,7 +270,7 @@ Sempre que uma tarefa avançar (início, bloqueio, conclusão), atualizar **nest
 
 ---
 
-## 9) Critérios de pronto (Definition of Done)
+## 10) Critérios de pronto (Definition of Done)
 Um item só pode ser marcado como `concluido` quando houver:
 1. implementação registrada no repositório;
 2. teste executado com comando explícito;
@@ -242,7 +280,7 @@ Um item só pode ser marcado como `concluido` quando houver:
 
 ---
 
-## 10) Riscos e mitigação
+## 11) Riscos e mitigação
 - **Risco:** escopo crescer cedo demais.
   - **Mitigação:** manter foco no MVP de conjuntos até fechamento da Sprint 1.
 - **Risco:** validações manuais inconsistentes.
@@ -252,15 +290,17 @@ Um item só pode ser marcado como `concluido` quando houver:
 
 ---
 
-## 11) Próximos passos imediatos
-1. executar sessão piloto da Sprint 2 com usuário-alvo (16–20);
-2. registrar taxa de conclusão da trilha inicial (meta >= 80%);
-3. concluir P3.2 com validação em host Bedrock + inspeção de logs;
-4. iniciar Sprint 3 (módulo introdutório de Lógica Proposicional).
+## 12) Próximos passos imediatos
+1. agendar e executar S2.5 no host Bedrock `186.202.209.206` com roteiro da seção 8;
+2. consolidar S2.6 com taxa de conclusão observada e classificação (`aprovado`/`ajuste_necessario`);
+3. concluir P3.2 com inspeção de `/root/MinecraftServer/logging/bedrock.log`;
+4. fechar S2.7 e atualizar status macro da Sprint 2 para `concluido` quando critérios forem atendidos;
+5. iniciar Sprint 3 (módulo introdutório de Lógica Proposicional) após encerramento formal da Sprint 2.
 
 ---
 
-## 12) Histórico de revisões
+## 13) Histórico de revisões
 - **2026-04-23 (UTC)** — criação da versão inicial canônica deste plano pós-sprint.
 - **2026-04-23 (UTC)** — Sprint 0 executada e concluída com baseline BP/RP, funções operacionais e checklist formal de validação.
 - **2026-04-23 (UTC)** — Sprint 2 iniciada com refino pedagógico, feedback explicativo, ajuste de usabilidade e critérios de desempenho (>= 80%).
+- **2026-04-23 (UTC)** — continuação da Sprint 2 formalizada com plano operacional (seção 8), novos itens S2.4–S2.7 e critérios de encerramento.
