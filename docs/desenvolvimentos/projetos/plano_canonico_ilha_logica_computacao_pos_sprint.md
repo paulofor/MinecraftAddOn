@@ -1,0 +1,238 @@
+# Plano Canônico — Ilha de Lógica e Computação (Pós-Sprint)
+
+## 1) Objetivo canônico
+Construir e evoluir, em ciclos curtos, uma **ilha educativa de Lógica e Computação** no Minecraft Bedrock com foco em jovens de 16 a 20 anos, iniciando por **Teoria de Conjuntos** e avançando para Lógica Proposicional e fundamentos de Computação.
+
+Este documento é a referência oficial para:
+- planejamento pós-sprint;
+- critérios de pronto;
+- execução incremental;
+- atualização contínua de status.
+
+---
+
+## 2) Escopo da versão inicial (MVP)
+
+### Incluído no MVP
+- Hub inicial da ilha com trilha guiada;
+- 4 módulos jogáveis de Teoria de Conjuntos:
+  1. pertinência (∈ / ∉);
+  2. subconjuntos (⊆);
+  3. operações (∪, ∩, \\);
+  4. produto cartesiano (A×B);
+- sistema básico de progresso (scoreboard/tags);
+- validação mínima por fase (acerto/erro);
+- documentação operacional de teste em jogo.
+
+### Fora do MVP (backlog)
+- interface avançada de UI;
+- persistência sofisticada de dados;
+- múltiplos perfis por jogador;
+- analytics detalhado de aprendizagem;
+- integração externa com dashboards.
+
+---
+
+## 3) Princípios de execução
+1. **Aprendizado antes de complexidade técnica**: cada fase deve ensinar um conceito mensurável.
+2. **Nada concluído sem teste no jogo**.
+3. **Entregas pequenas e frequentes**: no máximo 1 a 2 objetivos técnicos por ciclo.
+4. **Logs e evidências**: toda validação deve citar comando, resultado e data.
+5. **Documentação viva**: este plano deve ser atualizado conforme execução real.
+
+---
+
+## 4) Roadmap pós-sprint (macro)
+
+## Sprint 0 — Preparação e baseline (curta)
+**Objetivo:** garantir base técnica e pedagógica para implementação.
+
+**Entregas esperadas:**
+- estrutura de pastas definida para BP/RP da ilha;
+- definição formal das fases do MVP;
+- checklist de comandos de validação;
+- critérios de aceite por fase.
+
+**Status atual:** planejado.
+
+---
+
+## Sprint 1 — Núcleo de Teoria de Conjuntos (MVP funcional)
+**Objetivo:** disponibilizar a primeira experiência completa da trilha.
+
+**Entregas esperadas:**
+- Hub + Fase A + Fase B + Fase C + Fase D;
+- desbloqueio final por progresso;
+- mensagens educativas curtas por módulo.
+
+**Critério de aceite:**
+- jogador completa as 4 fases sem intervenção manual do operador;
+- progresso é registrado corretamente;
+- sem erro crítico nos logs do servidor.
+
+**Status atual:** planejado.
+
+---
+
+## Sprint 2 — Refino pedagógico e usabilidade
+**Objetivo:** melhorar clareza didática e experiência de jogo.
+
+**Entregas esperadas:**
+- feedback de erro mais explicativo;
+- balanceamento de dificuldade;
+- melhorias visuais da ilha;
+- revisão de textos didáticos.
+
+**Critério de aceite:**
+- pelo menos 1 sessão de teste com usuário-alvo (16–20 anos);
+- taxa de conclusão do percurso inicial >= 80%.
+
+**Status atual:** planejado.
+
+---
+
+## Sprint 3 — Ponte para Lógica Proposicional
+**Objetivo:** iniciar segundo bloco de conteúdo.
+
+**Entregas esperadas:**
+- módulo introdutório de proposições e conectivos;
+- puzzle simples de tabela-verdade;
+- integração de progresso com trilha anterior.
+
+**Status atual:** backlog priorizado.
+
+---
+
+## 5) Plano de implementação detalhado (pós-sprint)
+
+## Fase P1 — Arquitetura técnica da ilha
+**Tarefas:**
+- definir namespace e nomes canônicos de entidades/blocos/funções;
+- criar pacote base do projeto da ilha;
+- configurar funções de inicialização (`init`, reset e diagnóstico).
+
+**Saída obrigatória:**
+- estrutura de arquivos pronta para evolução incremental.
+
+**Status:** pendente.
+
+---
+
+## Fase P2 — Implementação dos módulos de conjuntos
+**Tarefas:**
+- implementar lógica de validação de cada módulo A–D;
+- criar fluxo de desbloqueio por chaves/progresso;
+- inserir texto pedagógico por NPC/placas/ação equivalente.
+
+**Saída obrigatória:**
+- jornada de ponta a ponta jogável.
+
+**Status:** pendente.
+
+---
+
+## Fase P3 — Observabilidade e operação
+**Tarefas:**
+- padronizar comandos de teste;
+- registrar resultados dos testes com data;
+- consolidar critérios de falha e rollback.
+
+**Saída obrigatória:**
+- rotina reprodutível de validação no servidor.
+
+**Status:** pendente.
+
+---
+
+## 6) Governança de atualização contínua
+
+## Regra obrigatória de atualização
+Sempre que uma tarefa avançar (início, bloqueio, conclusão), atualizar **neste documento**:
+1. data (UTC);
+2. responsável;
+3. item alterado;
+4. status;
+5. evidência (comando/log/arquivo).
+
+## Status válidos
+- `planejado`
+- `em_andamento`
+- `bloqueado`
+- `concluido`
+- `cancelado`
+
+## Frequência mínima
+- atualização ao final de cada sessão de trabalho;
+- atualização imediata em caso de bloqueio.
+
+---
+
+## 7) Quadro canônico de execução (atualizável)
+
+| ID | Item | Responsável | Início (UTC) | Fim (UTC) | Status | Evidência |
+|---|---|---|---|---|---|---|
+| P1.1 | Estrutura base BP/RP da ilha | A definir | - | - | planejado | - |
+| P1.2 | Funções de init/reset | A definir | - | - | planejado | - |
+| P2.1 | Módulo A (Pertinência) | A definir | - | - | planejado | - |
+| P2.2 | Módulo B (Subconjuntos) | A definir | - | - | planejado | - |
+| P2.3 | Módulo C (Operações) | A definir | - | - | planejado | - |
+| P2.4 | Módulo D (Produto cartesiano) | A definir | - | - | planejado | - |
+| P2.5 | Unlock final + avaliação | A definir | - | - | planejado | - |
+| P3.1 | Suite de testes in-game | A definir | - | - | planejado | - |
+| P3.2 | Validação em servidor e logs | A definir | - | - | planejado | - |
+
+---
+
+## 8) Template de atualização (copiar e preencher)
+
+```text
+### Atualização de execução
+- Data (UTC): YYYY-MM-DD HH:MM
+- Responsável: <nome>
+- Item: <ID + descrição>
+- Status anterior: <status>
+- Novo status: <status>
+- Mudanças realizadas:
+  - ...
+- Evidências:
+  - Comando(s): ...
+  - Arquivo(s): ...
+  - Log(s): ...
+- Próximo passo:
+  - ...
+- Bloqueios (se houver):
+  - ...
+```
+
+---
+
+## 9) Critérios de pronto (Definition of Done)
+Um item só pode ser marcado como `concluido` quando houver:
+1. implementação registrada no repositório;
+2. teste executado com comando explícito;
+3. resultado esperado observado no jogo;
+4. ausência de erro crítico em log relevante;
+5. atualização do quadro canônico (seção 7).
+
+---
+
+## 10) Riscos e mitigação
+- **Risco:** escopo crescer cedo demais.
+  - **Mitigação:** manter foco no MVP de conjuntos até fechamento da Sprint 1.
+- **Risco:** validações manuais inconsistentes.
+  - **Mitigação:** checklist fixo de testes e evidências.
+- **Risco:** dificuldade pedagógica acima do público.
+  - **Mitigação:** ajustar linguagem e puzzles com sessão piloto.
+
+---
+
+## 11) Próximos passos imediatos
+1. aprovar este plano canônico;
+2. abrir execução da Fase P1;
+3. iniciar atualização contínua do quadro da seção 7 a cada sessão;
+4. após concluir Sprint 1, iniciar implementação do módulo de Lógica Proposicional.
+
+---
+
+## 12) Histórico de revisões
+- **2026-04-23 (UTC)** — criação da versão inicial canônica deste plano pós-sprint.
