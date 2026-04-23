@@ -37,6 +37,13 @@ Foram adicionadas mensagens em `title/subtitle/actionbar` para reforçar:
 - foco didático por fase;
 - status de conclusão com orientação de continuidade.
 
+Também foi adicionada a função `visual_hub` para criar uma ilha-hub visível ao redor do jogador ativo (base, praça central, iluminação e pontos de interesse didático), executada automaticamente no `init` e disponível para reconstrução manual.
+
+**Arquivos:**
+- `packs/BP_IlhaLogicaComputacao/functions/ilha_logica/visual_hub.mcfunction`
+- `packs/BP_IlhaLogicaComputacao/functions/ilha_logica/init.mcfunction`
+- `packs/BP_IlhaLogicaComputacao/functions/ilha_logica/hub.mcfunction`
+
 ## Entrega 4 — Revisão de textos didáticos
 
 Mensagens revisadas para uma linguagem mais direta, com microexemplos alinhados ao público de 16–20 anos.
@@ -52,11 +59,12 @@ Mensagens revisadas para uma linguagem mais direta, com microexemplos alinhados 
 1. `/function ilha_logica/reset`
 2. `/function ilha_logica/init`
 3. `/function ilha_logica/hub`
-4. Simular trajetória com 0 ou 1 erro total:
+4. Confirmar presença do hub visual ao redor do jogador.
+5. Simular trajetória com 0 ou 1 erro total:
    - executar uma função `*_incorreta` opcional;
    - concluir fases com `fase_a_correta` → `fase_d_correta`.
-5. `/function ilha_logica/finalizar`
-6. Validar:
+6. `/function ilha_logica/finalizar`
+7. Validar:
    - `/scoreboard players list @s`
    - `/tag @s list`
 

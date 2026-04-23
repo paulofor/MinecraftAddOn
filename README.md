@@ -159,8 +159,8 @@ python3 tools/validate_world_bindings.py --world-dir "/root/MinecraftServer/worl
 ```
 
 Regras validadas automaticamente:
-- BP UUID: `068c529a-0932-4d6b-95ee-da0af9fb8e23`;
-- RP UUID: `99378e84-5b66-408a-b77c-1cc7b33f2b0b`;
+- BP UUID: `35b76ace-b514-401c-8994-0678e4e6f68c`;
+- RP UUID: `66900c78-d108-4a3f-9433-4f8daf304c9b`;
 - versão em `world_*_packs.json` igual à versão dos manifests (ex.: `[0,1,0]`).
 
 Para executar essa checagem remotamente via SSH (sem login interativo):
@@ -201,6 +201,10 @@ Opções úteis:
 - `--no-restart`: publica sem reiniciar o `bedrock.service`;
 - `--bp-name` / `--rp-name`: troca o nome das pastas dos packs, se necessário;
 - `--repo-dir`: caminho do repositório no servidor remoto (padrão: `/root/MinecraftAddOn`).
+
+Padrões atuais do script:
+- `--bp-name BP_IlhaLogicaComputacao`
+- `--rp-name RP_IlhaLogicaComputacao`
 
 ### Checklist de runtime do mundo (Script API / Experimentos)
 
