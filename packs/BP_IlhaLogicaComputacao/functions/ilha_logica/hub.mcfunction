@@ -12,3 +12,4 @@ execute as @a[tag=!ilhlog_final] run tellraw @s {"rawtext":[{"text":"[IlhaLogica
 execute as @a[tag=ilhlog_final,tag=!ilhlog_lp_final] run tellraw @s {"rawtext":[{"text":"[IlhaLogica] Bloco de Logica Proposicional liberado: Intro + Tabela-Verdade."}]}
 execute as @a[tag=ilhlog_final,tag=!ilhlog_lp_final] run tellraw @s {"rawtext":[{"text":"[IlhaLogica] Use as funcoes do bloco LP para treinar proposicoes, conectivos e avaliacao logica."}]}
 execute as @a[tag=ilhlog_lp_final] run tellraw @s {"rawtext":[{"text":"[IlhaLogica] Excelente! Voce concluiu Conjuntos + Intro de Logica Proposicional."}]}
+execute as @a run tellraw @s {"rawtext":[{"text":"[IlhaLogica] Se precisar reconstruir a area visual, execute: /function ilha_logica/visual_hub"}]}

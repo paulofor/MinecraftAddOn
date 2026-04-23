@@ -16,8 +16,8 @@ Opções:
   --user USER             Usuário SSH
   --world-dir PATH        Caminho da pasta do mundo remoto
   --repo-dir PATH         Caminho do repositório remoto (padrão: /root/MinecraftAddOn)
-  --bp-name NOME          Nome da pasta do BP em packs/ (padrão: BP_QuadroIdeias)
-  --rp-name NOME          Nome da pasta do RP em packs/ (padrão: RP_QuadroIdeias)
+  --bp-name NOME          Nome da pasta do BP em packs/ (padrão: BP_IlhaLogicaComputacao)
+  --rp-name NOME          Nome da pasta do RP em packs/ (padrão: RP_IlhaLogicaComputacao)
   --service NAME          Serviço systemd para reinício (padrão: bedrock.service)
   --no-restart            Não reinicia o serviço após deploy
   --dry-run               Mostra o que seria copiado, sem alterar arquivos
@@ -31,8 +31,8 @@ HOST=""
 USER_NAME=""
 WORLD_DIR=""
 REPO_DIR="/root/MinecraftAddOn"
-BP_NAME="BP_QuadroIdeias"
-RP_NAME="RP_QuadroIdeias"
+BP_NAME="BP_IlhaLogicaComputacao"
+RP_NAME="RP_IlhaLogicaComputacao"
 SERVICE_NAME="bedrock.service"
 PORT="22"
 IDENTITY=""

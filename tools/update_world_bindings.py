@@ -10,8 +10,8 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[1]
-DEFAULT_BP_MANIFEST = ROOT / "packs" / "BP_QuadroIdeias" / "manifest.json"
-DEFAULT_RP_MANIFEST = ROOT / "packs" / "RP_QuadroIdeias" / "manifest.json"
+DEFAULT_BP_MANIFEST = ROOT / "packs" / "BP_IlhaLogicaComputacao" / "manifest.json"
+DEFAULT_RP_MANIFEST = ROOT / "packs" / "RP_IlhaLogicaComputacao" / "manifest.json"
 
 
 def load_manifest(path: Path, *, label: str) -> tuple[str, list[int]]:

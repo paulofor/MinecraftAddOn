@@ -10,8 +10,8 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[1]
-DEFAULT_BP_MANIFEST = ROOT / "packs" / "BP_QuadroIdeias" / "manifest.json"
-DEFAULT_RP_MANIFEST = ROOT / "packs" / "RP_QuadroIdeias" / "manifest.json"
+DEFAULT_BP_MANIFEST = ROOT / "packs" / "BP_IlhaLogicaComputacao" / "manifest.json"
+DEFAULT_RP_MANIFEST = ROOT / "packs" / "RP_IlhaLogicaComputacao" / "manifest.json"
 
 
 def load_json(path: Path) -> dict | list:
@@ -69,12 +69,12 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--rp-manifest", default=str(DEFAULT_RP_MANIFEST), help="Caminho do manifest RP")
     parser.add_argument(
         "--expected-bp-uuid",
-        default="068c529a-0932-4d6b-95ee-da0af9fb8e23",
+        default="35b76ace-b514-401c-8994-0678e4e6f68c",
         help="UUID esperado do Behavior Pack",
     )
     parser.add_argument(
         "--expected-rp-uuid",
-        default="99378e84-5b66-408a-b77c-1cc7b33f2b0b",
+        default="66900c78-d108-4a3f-9433-4f8daf304c9b",
         help="UUID esperado do Resource Pack",
     )
     return parser.parse_args()
