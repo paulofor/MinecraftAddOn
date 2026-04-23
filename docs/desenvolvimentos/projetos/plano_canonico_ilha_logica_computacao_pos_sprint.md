@@ -53,7 +53,12 @@ Este documento é a referência oficial para:
 - checklist de comandos de validação;
 - critérios de aceite por fase.
 
-**Status atual:** planejado.
+**Status atual:** concluido (2026-04-23 UTC).
+
+**Evidências da Sprint 0:**
+- `docs/desenvolvimentos/projetos/sprint_0/execucao_sprint_0_ilha_logica.md`;
+- `packs/BP_IlhaLogicaComputacao/manifest.json`;
+- `packs/RP_IlhaLogicaComputacao/manifest.json`.
 
 ---
 
@@ -171,8 +176,8 @@ Sempre que uma tarefa avançar (início, bloqueio, conclusão), atualizar **nest
 
 | ID | Item | Responsável | Início (UTC) | Fim (UTC) | Status | Evidência |
 |---|---|---|---|---|---|---|
-| P1.1 | Estrutura base BP/RP da ilha | A definir | - | - | planejado | - |
-| P1.2 | Funções de init/reset | A definir | - | - | planejado | - |
+| P1.1 | Estrutura base BP/RP da ilha | Codex | 2026-04-23 18:48 | 2026-04-23 18:48 | concluido | packs/BP_IlhaLogicaComputacao + packs/RP_IlhaLogicaComputacao |
+| P1.2 | Funções de init/reset | Codex | 2026-04-23 18:48 | 2026-04-23 18:48 | concluido | functions/ilha_logica/{init,reset,diagnostico}.mcfunction |
 | P2.1 | Módulo A (Pertinência) | A definir | - | - | planejado | - |
 | P2.2 | Módulo B (Subconjuntos) | A definir | - | - | planejado | - |
 | P2.3 | Módulo C (Operações) | A definir | - | - | planejado | - |
@@ -236,3 +241,4 @@ Um item só pode ser marcado como `concluido` quando houver:
 
 ## 12) Histórico de revisões
 - **2026-04-23 (UTC)** — criação da versão inicial canônica deste plano pós-sprint.
+- **2026-04-23 (UTC)** — Sprint 0 executada e concluída com baseline BP/RP, funções operacionais e checklist formal de validação.

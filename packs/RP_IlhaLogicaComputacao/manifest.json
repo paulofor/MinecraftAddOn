@@ -1,0 +1,21 @@
+{
+  "format_version": 2,
+  "header": {
+    "name": "RP Ilha Lógica e Computação",
+    "description": "Base canônica do Resource Pack para a trilha educativa de Teoria de Conjuntos.",
+    "uuid": "66900c78-d108-4a3f-9433-4f8daf304c9b",
+    "version": [0, 1, 0],
+    "min_engine_version": [1, 20, 0]
+  },
+  "modules": [
+    {
+      "type": "resources",
+      "uuid": "5a01369d-039a-4ef2-830a-c029d98191cc",
+      "version": [0, 1, 0]
+    }
+  ],
+  "metadata": {
+    "authors": ["MinecraftAddOn"],
+    "license": "MIT"
+  }
+}
