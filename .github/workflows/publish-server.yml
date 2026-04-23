@@ -228,8 +228,8 @@ jobs:
                  echo \"[info] Reiniciando binário bedrock_server manualmente em \$bedrock_root\"; \
                  pkill -f '/opt/bedrock-server/bedrock_server|/root/MinecraftServer/bedrock_server' || true; \
                  cd \"\$bedrock_root\" && \
-                 mkdir -p logs && \
-                 nohup ./bedrock_server > logs/bedrock.log 2>&1 < /dev/null & \
+                 mkdir -p logging && \
+                 nohup ./bedrock_server > logging/bedrock.log 2>&1 < /dev/null & \
                  sleep 2; \
                  restarted=1; \
                fi; \
