@@ -122,7 +122,15 @@ Este documento é a referência oficial para:
 - puzzle simples de tabela-verdade;
 - integração de progresso com trilha anterior.
 
-**Status atual:** backlog priorizado.
+**Status atual:** concluido (2026-04-23 UTC).
+
+**Evidencias da Sprint 3:**
+- `docs/desenvolvimentos/projetos/sprint_3/execucao_sprint_3_ilha_logica.md`;
+- `packs/BP_IlhaLogicaComputacao/functions/ilha_logica/modulos/lp_intro_correta.mcfunction`;
+- `packs/BP_IlhaLogicaComputacao/functions/ilha_logica/modulos/lp_intro_incorreta.mcfunction`;
+- `packs/BP_IlhaLogicaComputacao/functions/ilha_logica/modulos/lp_tabela_correta.mcfunction`;
+- `packs/BP_IlhaLogicaComputacao/functions/ilha_logica/modulos/lp_tabela_incorreta.mcfunction`;
+- `packs/BP_IlhaLogicaComputacao/functions/ilha_logica/{init,reset,hub,finalizar}.mcfunction`.
 
 ---
 
@@ -210,6 +218,10 @@ Sempre que uma tarefa avançar (início, bloqueio, conclusão), atualizar **nest
 | S2.5 | Execução da sessão piloto em servidor Bedrock | Codex | 2026-04-23 19:24 | - | em_andamento | dependente de janela com usuário-alvo no host 186.202.209.206 |
 | S2.6 | Consolidação da taxa de conclusão (>= 80%) | Codex | 2026-04-23 19:24 | - | em_andamento | pendente evidência quantitativa da sessão piloto |
 | S2.7 | Encerramento formal da Sprint 2 | Codex | - | - | planejado | atualizar status macro da Sprint 2 para concluido após S2.5/S2.6 |
+| S3.1 | Modulo introdutorio de proposicoes e conectivos | Codex | 2026-04-23 19:30 | 2026-04-23 19:36 | concluido | modulos/lp_intro_{correta,incorreta}.mcfunction |
+| S3.2 | Puzzle de tabela-verdade (basico) | Codex | 2026-04-23 19:36 | 2026-04-23 19:40 | concluido | modulos/lp_tabela_{correta,incorreta}.mcfunction |
+| S3.3 | Integracao de progresso com trilha anterior | Codex | 2026-04-23 19:40 | 2026-04-23 19:44 | concluido | functions/ilha_logica/{init,reset,hub,finalizar}.mcfunction |
+| S3.4 | Documentacao operacional da Sprint 3 | Codex | 2026-04-23 19:44 | 2026-04-23 19:47 | concluido | docs/desenvolvimentos/projetos/sprint_3/execucao_sprint_3_ilha_logica.md |
 
 ---
 
