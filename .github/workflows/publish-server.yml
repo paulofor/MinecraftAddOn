@@ -197,6 +197,22 @@ jobs:
              docker ps --filter name=bedrock-log-viewer --format 'table {{.Names}}\t{{.Status}}\t{{.Ports}}' && \
              docker ps --filter name=bedrock-mcp-readonly --format 'table {{.Names}}\t{{.Status}}\t{{.Ports}}'"
 
+      - name: Reconciliar exportação canônica de log (somente via workflow)
+        run: |
+          ssh -i ~/.ssh/id_ed25519 -p "$VPS_PORT" "$VPS_USER@$VPS_HOST" \
+            "set -euo pipefail && \
+             cd '$REMOTE_DIR' && \
+             bash tools/install_log_viewer_services.sh '$REMOTE_DIR' auto 8081 && \
+             systemctl is-active --quiet bedrock-log-export.service && \
+             systemctl is-active --quiet bedrock-log-viewer.service"
+
+      - name: Coletar diagnóstico pré-restart do Bedrock
+        run: |
+          ssh -i ~/.ssh/id_ed25519 -p "$VPS_PORT" "$VPS_USER@$VPS_HOST" \
+            "set -euo pipefail && \
+             cd '$REMOTE_DIR' && \
+             bash tools/diagnosticar_log_bedrock.sh auto /root/MinecraftServer/logging/bedrock.log | tee /tmp/bedrock_diag_pre.txt"
+
       - name: Reiniciar servidor Bedrock no host remoto
         run: |
           ssh -i ~/.ssh/id_ed25519 -p "$VPS_PORT" "$VPS_USER@$VPS_HOST" \
@@ -247,6 +263,27 @@ jobs:
              else \
                echo '[warn] Log bedrock.log não encontrado em /root/MinecraftServer/logging'; \
              fi"
+
+      - name: Coletar diagnóstico pós-restart do Bedrock
+        run: |
+          ssh -i ~/.ssh/id_ed25519 -p "$VPS_PORT" "$VPS_USER@$VPS_HOST" \
+            "set -euo pipefail && \
+             cd '$REMOTE_DIR' && \
+             bash tools/diagnosticar_log_bedrock.sh auto /root/MinecraftServer/logging/bedrock.log | tee /tmp/bedrock_diag_post.txt && \
+             stat -c '%n %s bytes' /root/MinecraftServer/logging/bedrock.log"
+
+      - name: Baixar artefatos de diagnóstico de log
+        run: |
+          mkdir -p artifacts
+          scp -i ~/.ssh/id_ed25519 -P "$VPS_PORT" "$VPS_USER@$VPS_HOST:/tmp/bedrock_diag_pre.txt" "artifacts/bedrock_diag_pre.txt"
+          scp -i ~/.ssh/id_ed25519 -P "$VPS_PORT" "$VPS_USER@$VPS_HOST:/tmp/bedrock_diag_post.txt" "artifacts/bedrock_diag_post.txt"
+
+      - name: Publicar artefatos de diagnóstico de log
+        uses: actions/upload-artifact@v4
+        with:
+          name: bedrock-log-diagnostics
+          path: artifacts/
+          if-no-files-found: error
 
       - name: Validar publicação remota (diretórios finais do mundo)
         run: |
