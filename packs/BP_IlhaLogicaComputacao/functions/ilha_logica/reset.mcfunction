@@ -13,4 +13,4 @@ tag @a remove ilhlog_lp_intro
 tag @a remove ilhlog_lp_tabela
 tag @a remove ilhlog_lp_final
 
-say [IlhaLogica] Progresso e tags resetados (Conjuntos + Logica Proposicional).
+tellraw @a {"rawtext":[{"text":"[IlhaLogica] Progresso e tags resetados (Conjuntos + Logica Proposicional)."}]}

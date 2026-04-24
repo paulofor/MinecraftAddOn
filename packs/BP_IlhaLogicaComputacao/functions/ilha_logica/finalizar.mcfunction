@@ -2,7 +2,7 @@
 execute as @a[tag=ilhlog_fase_a,tag=ilhlog_fase_b,tag=ilhlog_fase_c,tag=ilhlog_fase_d,tag=!ilhlog_final] run tag @s add ilhlog_final
 
 execute as @a[tag=ilhlog_final,scores={ilhlog_erros=..1}] run title @s title §aBloco de Conjuntos concluido
-execute as @a[tag=ilhlog_final,scores={ilhlog_erros=..1}] run title @s subtitle §fDesempenho >= 80% de acertos
+execute as @a[tag=ilhlog_final,scores={ilhlog_erros=..1}] run title @s subtitle §fDesempenho de 80% ou mais de acertos
 execute as @a[tag=ilhlog_final,scores={ilhlog_erros=..1}] run tellraw @s {"rawtext":[{"text":"[IlhaLogica] Parabens! Base de conjuntos consolidada para avancar a Logica Proposicional."}]}
 
 execute as @a[tag=ilhlog_final,scores={ilhlog_erros=2..}] run title @s title §eBloco de Conjuntos concluido

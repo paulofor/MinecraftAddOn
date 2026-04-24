@@ -4,6 +4,6 @@ scoreboard objectives add ilhlog_acertos dummy
 scoreboard objectives add ilhlog_erros dummy
 scoreboard objectives add ilhlog_lp_progresso dummy
 
-say [IlhaLogica] Objetivos de progresso inicializados (base e bloco proposicional).
+tellraw @a {"rawtext":[{"text":"[IlhaLogica] Objetivos de progresso inicializados (base e bloco proposicional)."}]}
 execute as @a at @s run function ilha_logica/visual_hub
-say [IlhaLogica] Hub visual da ilha preparado para os jogadores ativos.
+tellraw @a {"rawtext":[{"text":"[IlhaLogica] Hub visual da ilha preparado para os jogadores ativos."}]}
