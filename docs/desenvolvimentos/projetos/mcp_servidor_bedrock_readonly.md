@@ -31,11 +31,11 @@ Ele suporta transporte via **HTTP** (padrão atual) e também **STDIO** (modo le
 
 ## Caminhos padrão dentro do container
 
-Para evitar problemas de permissão ao rodar com usuário não-root, o compose monta os diretórios do host em caminhos acessíveis no container:
+Para manter um único padrão canônico, o compose usa os mesmos caminhos absolutos do host dentro do container:
 
-- Bedrock root: `/data/minecraftserver`
-- Logs: `/data/logging`
-- Repositório: `/data/repo`
+- Bedrock root: `/root/MinecraftServer`
+- Log canônico: `/root/MinecraftServer/logging/bedrock.log`
+- Repositório: `/root/MinecraftAddOn`
 
 Use esses caminhos nas chamadas MCP (`list_directory`, `read_file`, `run_read_command` com `cwd`).
 
@@ -88,7 +88,7 @@ Use um comando equivalente ao abaixo no arquivo de configuração de MCP do clie
 
 ## Variáveis de ambiente principais
 
-- `ALLOWED_ROOTS` (padrão: `/data/minecraftserver,/data/logging,/data/repo`)
+- `ALLOWED_ROOTS` (padrão: `/root/MinecraftServer,/root/MinecraftServer/logging,/root/MinecraftServer/logging/bedrock.log,/root/MinecraftAddOn`)
 - `READ_CMD_TIMEOUT` (padrão: `10`)
 - `MAX_FILE_BYTES` (padrão: `200000`)
 - `MCP_TRANSPORT` (`http` ou `stdio`; padrão: `http`)

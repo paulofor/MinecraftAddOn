@@ -131,6 +131,20 @@ Para iniciar o serviço do servidor Minecraft Bedrock:
 systemctl start bedrock.service
 ```
 
+### Correção rápida quando `bedrock.log` fica vazio
+
+Se o visualizador em `:8081` abrir, mas o arquivo `/root/MinecraftServer/logging/bedrock.log` continuar com tamanho `0`, reinstale os serviços de exportação/log viewer com autodetecção do nome do serviço Bedrock:
+
+```bash
+cd /root/MinecraftAddOn
+sudo bash tools/install_log_viewer_services.sh /root/MinecraftAddOn auto 8081
+```
+
+O exportador agora:
+- detecta automaticamente unidades comuns (`bedrock.service`, `minecraft-bedrock.service`, etc.);
+- grava snapshot inicial e segue em tempo real com `journalctl -o cat`;
+- evita falso positivo de serviço incorreto (causa comum de log vazio).
+
 ### Visualizar add-ons instalados na página do log viewer (porta 8081)
 
 O `infra/log-viewer/server.py` agora também mostra, na própria página `http://<host>:8081`,
@@ -437,7 +451,7 @@ Para facilitar diagnóstico rápido de erros, este repositório inclui um **log 
 1. Exporte o journal do serviço Bedrock para um arquivo contínuo:
 
 ```bash
-./tools/export_bedrock_journal.sh bedrock.service /root/MinecraftServer/logging/bedrock.log
+./tools/export_bedrock_journal.sh bedrock.service
 ```
 
 > Dica: rode esse comando via `systemd`/`screen`/`tmux`, pois ele fica em modo contínuo (`-f`).
@@ -448,10 +462,8 @@ Para facilitar diagnóstico rápido de erros, este repositório inclui um **log 
 docker compose -f docker-compose.log-viewer.yml up -d --build
 ```
 
-> Se `BEDROCK_LOG_PATH` for definido para um **diretório** (por exemplo `/root/MinecraftServer/logging`),
-> o viewer tenta automaticamente abrir `${BEDROCK_LOG_PATH}/bedrock.log`.  
-> Se o arquivo tiver outro nome, ajuste `LOG_PATH` para o caminho completo do arquivo ou defina
-> `LOG_FALLBACK_FILENAME` no container.
+> Padrão canônico único: o viewer deve sempre ler exclusivamente
+> `/root/MinecraftServer/logging/bedrock.log`.
 
 3. Acesse localmente:
 
@@ -480,7 +492,7 @@ Foi adicionado um módulo MCP containerizado para permitir que o Codex execute l
 
 Por padrão, o compose publica o endpoint MCP na porta `80` do host (`http://SEU_HOST/mcp`) e mantém o servidor interno no container em `8765` (healthcheck em `/health`), com opção de voltar para `stdio` via variável de ambiente.
 
-Por padrão, os volumes do host são montados no container em `/data/minecraftserver`, `/data/logging` e `/data/repo` para evitar falhas de permissão com usuário não-root.
+Por padrão, os volumes do host são montados no container preservando os caminhos canônicos absolutos: `/root/MinecraftServer` e `/root/MinecraftAddOn`.
 
 - Compose: `docker-compose.mcp-bedrock-readonly.yml`
 - Código: `infra/mcp-bedrock-readonly/server.py`
