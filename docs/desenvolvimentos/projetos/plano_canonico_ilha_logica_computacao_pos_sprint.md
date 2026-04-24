@@ -15,6 +15,12 @@ Este documento é a referência oficial para:
 >
 > Toda automação, validação, diagnóstico e observabilidade deste projeto deve usar exclusivamente esse caminho.
 
+> [!IMPORTANT]
+> **Política canônica de operação (obrigatória):**
+> nenhuma ação operacional deve ser executada manualmente no host.
+> Instalação, correção, validação e diagnóstico devem ocorrer exclusivamente via **workflow/pipeline**,
+> consumindo os scripts versionados no repositório e publicando evidências como artefatos do job.
+
 ---
 
 ## 2) Escopo da versão inicial (MVP)
