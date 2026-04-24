@@ -17,9 +17,10 @@ Este documento é a referência oficial para:
 
 > [!IMPORTANT]
 > **Política canônica de operação (obrigatória):**
-> nenhuma ação operacional deve ser executada manualmente no host.
-> Instalação, correção, validação e diagnóstico devem ocorrer exclusivamente via **workflow/pipeline**,
-> consumindo os scripts versionados no repositório e publicando evidências como artefatos do job.
+> o **workflow/pipeline é 100% responsável** por gerenciar todo o deploy do sistema.
+> Nenhuma ação de deploy/operação deve ser executada manualmente pelo operador no host.
+> Instalação, atualização, correção, validação, diagnóstico e rollback devem ocorrer exclusivamente via workflow,
+> consumindo scripts versionados no repositório e publicando evidências como artefatos do job.
 
 ---
 
