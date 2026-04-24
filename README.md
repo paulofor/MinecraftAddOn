@@ -133,17 +133,21 @@ systemctl start bedrock.service
 
 ### Correção rápida quando `bedrock.log` fica vazio
 
-Se o visualizador em `:8081` abrir, mas o arquivo `/root/MinecraftServer/logging/bedrock.log` continuar com tamanho `0`, reinstale os serviços de exportação/log viewer com autodetecção do nome do serviço Bedrock:
-
-```bash
-cd /root/MinecraftAddOn
-sudo bash tools/install_log_viewer_services.sh /root/MinecraftAddOn auto 8081
-```
+> [!IMPORTANT]
+> **Padrão operacional deste projeto: não executar comandos manualmente no host.**
+> Toda instalação, correção e diagnóstico deve ser disparado por **workflow de deploy/ops** (pipeline),
+> usando os scripts versionados deste repositório como etapa automatizada.
 
 O exportador agora:
 - detecta automaticamente unidades comuns (`bedrock.service`, `minecraft-bedrock.service`, etc.);
+- prioriza automaticamente o serviço Bedrock que estiver **ativo**;
 - grava snapshot inicial e segue em tempo real com `journalctl -o cat`;
 - evita falso positivo de serviço incorreto (causa comum de log vazio).
+
+Se ainda ficar zerado após reinício, o workflow deve executar automaticamente:
+- `tools/install_log_viewer_services.sh` (reconciliação dos serviços);
+- `tools/diagnosticar_log_bedrock.sh` (coleta de evidências para troubleshooting);
+- publicação dos artefatos de diagnóstico no job (logs/status/journal).
 
 ### Visualizar add-ons instalados na página do log viewer (porta 8081)
 

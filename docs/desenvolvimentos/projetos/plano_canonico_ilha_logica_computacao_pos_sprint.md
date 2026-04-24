@@ -15,6 +15,13 @@ Este documento é a referência oficial para:
 >
 > Toda automação, validação, diagnóstico e observabilidade deste projeto deve usar exclusivamente esse caminho.
 
+> [!IMPORTANT]
+> **Política canônica de operação (obrigatória):**
+> o **workflow/pipeline é 100% responsável** por gerenciar todo o deploy do sistema.
+> Nenhuma ação de deploy/operação deve ser executada manualmente pelo operador no host.
+> Instalação, atualização, correção, validação, diagnóstico e rollback devem ocorrer exclusivamente via workflow,
+> consumindo scripts versionados no repositório e publicando evidências como artefatos do job.
+
 ---
 
 ## 2) Escopo da versão inicial (MVP)
