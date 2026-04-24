@@ -2,9 +2,9 @@
 set -euo pipefail
 
 REMOTE_DIR="${1:-/root/MinecraftAddOn}"
-SERVICE_NAME="${2:-bedrock.service}"
-LOG_FILE="${3:-/root/MinecraftServer/logging/bedrock.log}"
-VIEWER_PORT="${4:-8081}"
+SERVICE_NAME="${2:-auto}"
+LOG_FILE="/root/MinecraftServer/logging/bedrock.log"
+VIEWER_PORT="${3:-8081}"
 
 if [[ $EUID -ne 0 ]]; then
   echo "[erro] execute como root" >&2
@@ -21,7 +21,8 @@ Wants=network-online.target
 
 [Service]
 Type=simple
-ExecStart=/bin/bash -lc '/usr/bin/journalctl -u ${SERVICE_NAME} -f -n 200 --no-pager >> ${LOG_FILE}'
+WorkingDirectory=${REMOTE_DIR}
+ExecStart=/bin/bash -lc '${REMOTE_DIR}/tools/export_bedrock_journal.sh ${SERVICE_NAME}'
 Restart=always
 RestartSec=3
 

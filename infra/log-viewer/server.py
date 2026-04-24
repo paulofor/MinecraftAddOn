@@ -13,8 +13,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import parse_qs, urlparse
 
-LOG_PATH = Path(os.getenv("LOG_PATH", "/logs/bedrock.log"))
-LOG_FALLBACK_FILENAME = os.getenv("LOG_FALLBACK_FILENAME", "bedrock.log")
+LOG_PATH = Path(os.getenv("LOG_PATH", "/root/MinecraftServer/logging/bedrock.log"))
 HOST = os.getenv("HOST", "0.0.0.0")
 PORT = int(os.getenv("PORT", "8081"))
 DEFAULT_LINES = int(os.getenv("DEFAULT_LINES", "300"))
@@ -139,24 +138,16 @@ def resolve_log_path(path: Path) -> Path | None:
   if not path.exists():
     return None
   if path.is_dir():
-    fallback_file = path / LOG_FALLBACK_FILENAME
-    if fallback_file.exists() and fallback_file.is_file():
-      return fallback_file
+    return None
   return path
 
 
 def read_last_lines(path: Path, num_lines: int) -> list[str]:
   resolved_path = resolve_log_path(path)
   if resolved_path is None:
-    return [f"Arquivo de log não encontrado: {path}"]
-  if resolved_path.is_dir():
     return [
-      f"LOG_PATH aponta para diretório, não arquivo: {resolved_path}",
-      (
-        "Defina LOG_PATH para o arquivo completo "
-        f"(ex.: {resolved_path / LOG_FALLBACK_FILENAME}) "
-        "ou ajuste LOG_FALLBACK_FILENAME."
-      ),
+      "Arquivo de log canônico não encontrado.",
+      f"Caminho obrigatório: {LOG_PATH}",
     ]
 
   with resolved_path.open("rb") as fp:
