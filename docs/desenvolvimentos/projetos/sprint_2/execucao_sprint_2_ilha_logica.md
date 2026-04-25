@@ -39,6 +39,14 @@ Foram adicionadas mensagens em `title/subtitle/actionbar` para reforçar:
 
 Também foi adicionada a função `visual_hub` para criar uma ilha-hub visível ao redor do jogador ativo (base, praça central, iluminação e pontos de interesse didático), executada automaticamente no `init` e disponível para reconstrução manual.
 
+### Registro operacional — posição fixa da ilha (ambiente atual)
+
+- Centro registrado da ilha-hub: `-20 65 17`
+- Comando de recriação no mesmo ponto:
+  - `/execute positioned -20 65 17 run function ilha_logica/visual_hub`
+- Comando de teleporte para o centro:
+  - `/tp @s -20 66 17`
+
 **Arquivos:**
 - `packs/BP_IlhaLogicaComputacao/functions/ilha_logica/visual_hub.mcfunction`
 - `packs/BP_IlhaLogicaComputacao/functions/ilha_logica/init.mcfunction`
