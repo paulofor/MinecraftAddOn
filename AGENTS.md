@@ -73,3 +73,11 @@ Arquivo principal observado:
 ```
 
 > Observação: o MCP readonly também deve usar `/root/MinecraftServer/logging` para manter o padrão único de diretórios.
+
+## Diretriz para planos de Add-On
+Sempre que for solicitado um **plano de Add-On**, o plano deve ser estruturado por **sprints**.
+
+Além disso, cada sprint deve conter obrigatoriamente um espaço de **registro pós-conclusão** para o(a) desenvolvedor(a) preencher:
+- o que foi feito;
+- o que ficou faltando;
+- impedimentos/bloqueios (se houver).

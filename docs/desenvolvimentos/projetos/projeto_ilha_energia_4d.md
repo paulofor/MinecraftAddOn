@@ -109,6 +109,11 @@ packs/RP_IlhaEnergia4D/
 
 **Critério de aceite:** comandos executam sem erro e scoreboards aparecem corretamente.
 
+**Registro pós-conclusão (preencher ao finalizar):**
+- O que foi feito:
+- O que ficou faltando:
+- Impedimentos/bloqueios:
+
 ## Sprint 1 — Loop de energia
 - implementar cálculo de energia por eventos;
 - criar feedback visual mínimo por estado;
@@ -116,12 +121,22 @@ packs/RP_IlhaEnergia4D/
 
 **Critério de aceite:** transição consistente entre estados frio/estável/radiante.
 
+**Registro pós-conclusão (preencher ao finalizar):**
+- O que foi feito:
+- O que ficou faltando:
+- Impedimentos/bloqueios:
+
 ## Sprint 2 — Conteúdo educativo
 - adicionar 3 desafios com acerto/erro;
 - ajustar balanceamento de ganho/perda de energia;
 - validar experiência com sessão guiada.
 
 **Critério de aceite:** jogador conclui trilha completa com objetivo pedagógico claro.
+
+**Registro pós-conclusão (preencher ao finalizar):**
+- O que foi feito:
+- O que ficou faltando:
+- Impedimentos/bloqueios:
 
 ---
 
