@@ -25,12 +25,6 @@ fill ~ ~-2 ~12 ~ ~-1 ~16 dirt
 fill ~12 ~-2 ~ ~16 ~-1 ~ dirt
 fill ~-12 ~-2 ~ ~-16 ~-1 ~ dirt
 
-# Rampas de acesso para quem chega nadando (N, S, L, O)
-fill ~ ~-2 ~-7 ~ ~-1 ~-9 dirt
-fill ~ ~-2 ~7 ~ ~-1 ~9 dirt
-fill ~7 ~-2 ~ ~9 ~-1 ~ dirt
-fill ~-7 ~-2 ~ ~-9 ~-1 ~ dirt
-
 # Praca central e marco visual
 fill ~-3 ~-1 ~-3 ~3 ~-1 ~3 oak_planks
 setblock ~ ~0 ~ sea_lantern

@@ -5,6 +5,7 @@ REMOTE_DIR="${1:-/root/MinecraftAddOn}"
 SERVICE_NAME="${2:-auto}"
 LOG_FILE="/root/MinecraftServer/logging/bedrock.log"
 VIEWER_PORT="${3:-8081}"
+ENABLE_VIEWER="${4:-yes}"
 
 if [[ $EUID -ne 0 ]]; then
   echo "[erro] execute como root" >&2
@@ -30,6 +31,7 @@ RestartSec=3
 WantedBy=multi-user.target
 EOF
 
+if [[ "${ENABLE_VIEWER}" == "yes" ]]; then
 cat >/etc/systemd/system/bedrock-log-viewer.service <<EOF
 [Unit]
 Description=Servidor web para visualização dos logs Bedrock
@@ -51,11 +53,20 @@ RestartSec=3
 [Install]
 WantedBy=multi-user.target
 EOF
+fi
 
 systemctl daemon-reload
 systemctl enable --now bedrock-log-export.service
-systemctl enable --now bedrock-log-viewer.service
+if [[ "${ENABLE_VIEWER}" == "yes" ]]; then
+  systemctl enable --now bedrock-log-viewer.service
+else
+  systemctl disable --now bedrock-log-viewer.service >/dev/null 2>&1 || true
+fi
 
 echo "[ok] serviços instalados e iniciados"
 systemctl --no-pager --full status bedrock-log-export.service | sed -n '1,15p'
-systemctl --no-pager --full status bedrock-log-viewer.service | sed -n '1,15p'
+if [[ "${ENABLE_VIEWER}" == "yes" ]]; then
+  systemctl --no-pager --full status bedrock-log-viewer.service | sed -n '1,15p'
+else
+  echo "[ok] bedrock-log-viewer.service desabilitado (modo export-only)"
+fi
