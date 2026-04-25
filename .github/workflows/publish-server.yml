@@ -178,6 +178,9 @@ jobs:
              export BEDROCK_ROOT='/root/MinecraftServer' && \
              export HOST_LOG_DIR='/root/MinecraftServer/logging' && \
              export HOST_REPO_DIR='$REMOTE_DIR' && \
+             if command -v systemctl >/dev/null 2>&1; then \
+               systemctl disable --now bedrock-log-viewer.service >/dev/null 2>&1 || true; \
+             fi && \
              mkdir -p \"\$HOST_LOG_DIR\" && \
              if [ -d \"\$BEDROCK_LOG_PATH\" ]; then \
                BEDROCK_LOG_FILE=\"\${BEDROCK_LOG_PATH%/}/bedrock.log\"; \
@@ -202,9 +205,9 @@ jobs:
           ssh -i ~/.ssh/id_ed25519 -p "$VPS_PORT" "$VPS_USER@$VPS_HOST" \
             "set -euo pipefail && \
              cd '$REMOTE_DIR' && \
-             bash tools/install_log_viewer_services.sh '$REMOTE_DIR' auto 8081 && \
+             bash tools/install_log_viewer_services.sh '$REMOTE_DIR' auto 8081 no && \
              systemctl is-active --quiet bedrock-log-export.service && \
-             systemctl is-active --quiet bedrock-log-viewer.service"
+             ! systemctl is-active --quiet bedrock-log-viewer.service"
 
       - name: Coletar diagnóstico pré-restart do Bedrock
         run: |
