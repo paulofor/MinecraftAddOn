@@ -9,6 +9,12 @@ fill ~6 ~-3 ~-8 ~8 ~-1 ~-6 air
 fill ~-8 ~-3 ~6 ~-6 ~-1 ~8 air
 fill ~6 ~-3 ~6 ~8 ~-1 ~8 air
 
+# Rampas de acesso para quem chega nadando (N, S, L, O)
+fill ~ ~-2 ~-7 ~ ~-1 ~-9 dirt
+fill ~ ~-2 ~7 ~ ~-1 ~9 dirt
+fill ~7 ~-2 ~ ~9 ~-1 ~ dirt
+fill ~-7 ~-2 ~ ~-9 ~-1 ~ dirt
+
 # Praca central e marco visual
 fill ~-2 ~-1 ~-2 ~2 ~-1 ~2 oak_planks
 setblock ~ ~0 ~ sea_lantern
