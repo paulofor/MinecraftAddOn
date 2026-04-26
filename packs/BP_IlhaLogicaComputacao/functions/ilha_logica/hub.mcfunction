@@ -8,6 +8,7 @@ execute as @a[tag=ilhlog_final,tag=!ilhlog_lp_final] run title @s subtitle §fBl
 
 execute as @a[tag=!ilhlog_final] run tellraw @s {"rawtext":[{"text":"[IlhaLogica] Objetivo atual: concluir 4 fases de Conjuntos com no minimo 80% de acertos (max. 1 erro)."}]}
 execute as @a[tag=!ilhlog_final] run tellraw @s {"rawtext":[{"text":"[IlhaLogica] Sequencia guiada: A) Pertinencia, B) Subconjuntos, C) Operacoes, D) Produto Cartesiano."}]}
+execute as @a[tag=!ilhlog_final] run tellraw @s {"rawtext":[{"text":"[IlhaLogica] Esta tentativa usa o caderno de questoes V"},{"score":{"name":"*","objective":"ilhlog_versao_teste"}},{"text":" (mesmo nivel, valores diferentes)."}]}
 
 execute as @a[tag=ilhlog_final,tag=!ilhlog_lp_final] run tellraw @s {"rawtext":[{"text":"[IlhaLogica] Bloco de Logica Proposicional liberado: Intro + Tabela-Verdade."}]}
 execute as @a[tag=ilhlog_final,tag=!ilhlog_lp_final] run tellraw @s {"rawtext":[{"text":"[IlhaLogica] Use as funcoes do bloco LP para treinar proposicoes, conectivos e avaliacao logica."}]}
