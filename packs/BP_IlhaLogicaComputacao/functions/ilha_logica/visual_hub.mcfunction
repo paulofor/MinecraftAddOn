@@ -1,7 +1,17 @@
-# Sprint 2 - melhoria visual: cria ilha-hub didatica ao redor do jogador
-# Base ampliada da ilha (camadas)
+# Sprint 2/3 - melhoria visual: cria ilha-hub didatica ao redor do jogador
+# Base principal da ilha (nucleo firme)
 fill ~-14 ~-4 ~-14 ~14 ~-2 ~14 dirt
 fill ~-12 ~-1 ~-12 ~12 ~-1 ~12 grass
+
+# Saia submersa para ampliar a base inferior e reduzir aproximacao hostil pelo mar
+fill ~-18 ~-6 ~-18 ~18 ~-5 ~18 stone
+fill ~-20 ~-8 ~-20 ~20 ~-7 ~20 stone
+fill ~-19 ~-6 ~-19 ~19 ~-6 ~19 dirt
+
+# Faixa de praia ao redor para entrada nadando mais natural
+fill ~-16 ~-2 ~-16 ~16 ~-2 ~16 dirt
+fill ~-17 ~-1 ~-17 ~17 ~-1 ~17 sand
+fill ~-18 ~-1 ~-18 ~18 ~-1 ~18 sand
 
 # Recorte dos cantos para reduzir simetria e deixar contorno organico
 fill ~-14 ~-4 ~-14 ~-11 ~-1 ~-11 air
@@ -19,11 +29,11 @@ fill ~14 ~-4 ~-7 ~15 ~-2 ~-5 dirt
 fill ~-6 ~-4 ~14 ~-4 ~-2 ~15 dirt
 fill ~5 ~-4 ~-15 ~7 ~-2 ~-14 dirt
 
-# Rampas de acesso para quem chega nadando (N, S, L, O)
-fill ~ ~-2 ~-12 ~ ~-1 ~-16 dirt
-fill ~ ~-2 ~12 ~ ~-1 ~16 dirt
-fill ~12 ~-2 ~ ~16 ~-1 ~ dirt
-fill ~-12 ~-2 ~ ~-16 ~-1 ~ dirt
+# Rampas suaves de acesso pela praia (N, S, L, O)
+fill ~ ~-3 ~-13 ~ ~-1 ~-18 sand
+fill ~ ~-3 ~13 ~ ~-1 ~18 sand
+fill ~13 ~-3 ~ ~18 ~-1 ~ sand
+fill ~-13 ~-3 ~ ~-18 ~-1 ~ sand
 
 # Praca central e marco visual
 fill ~-3 ~-1 ~-3 ~3 ~-1 ~3 oak_planks
@@ -50,8 +60,9 @@ fill ~8 ~0 ~7 ~8 ~3 ~7 oak_log
 fill ~7 ~4 ~6 ~9 ~5 ~8 oak_leaves
 setblock ~8 ~6 ~7 oak_leaves
 
-# Plaquinha cenografica "Ilha da Logica"
+# Totem/placa de madeira de boas-vindas (area da Ilha da Logica)
 fill ~-2 ~0 ~-11 ~2 ~2 ~-11 stripped_oak_wood
+setblock ~0 ~0 ~-10 oak_sign
 setblock ~0 ~1 ~-10 lantern
 
 # Iluminacao charmosa (pontos quentes na borda e no eixo central)
@@ -74,4 +85,4 @@ setblock ~2 ~0 ~-4 enchanting_table
 setblock ~-2 ~0 ~4 crafting_table
 setblock ~2 ~0 ~4 lectern
 
-tellraw @s {"rawtext":[{"text":"[IlhaLogica] Hub visual ampliado: gramados, laguinhos, arvores e iluminacao ativados. Bem-vindo(a) a Ilha da Logica!"}]}
+tellraw @s {"rawtext":[{"text":"[IlhaLogica] Hub visual ampliado: praia de acesso, base submersa reforcada, gramados, laguinhos, arvores e iluminacao ativados. Bem-vindo(a) a Ilha da Logica!"}]}

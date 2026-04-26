@@ -3,6 +3,9 @@ scoreboard players reset @a ilhlog_progresso
 scoreboard players reset @a ilhlog_acertos
 scoreboard players reset @a ilhlog_erros
 scoreboard players reset @a ilhlog_lp_progresso
+scoreboard players reset @a ilhlog_record_temp
+
+function ilha_logica/gerar_versao_teste
 
 tag @a remove ilhlog_fase_a
 tag @a remove ilhlog_fase_b
@@ -13,4 +16,4 @@ tag @a remove ilhlog_lp_intro
 tag @a remove ilhlog_lp_tabela
 tag @a remove ilhlog_lp_final
 
-tellraw @a {"rawtext":[{"text":"[IlhaLogica] Progresso e tags resetados (Conjuntos + Logica Proposicional)."}]}
+tellraw @a {"rawtext":[{"text":"[IlhaLogica] Progresso e tags resetados (Conjuntos + Logica Proposicional). Novo caderno gerado sem repetir a tentativa anterior."}]}
