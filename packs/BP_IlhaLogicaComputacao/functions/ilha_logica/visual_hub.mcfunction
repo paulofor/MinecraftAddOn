@@ -51,18 +51,22 @@ setblock ~9 ~0 ~-8 allium
 fill ~-7 ~-1 ~1 ~-5 ~-1 ~3 water
 fill ~5 ~-1 ~-4 ~7 ~-1 ~-2 water
 
-# Arvores simples (tronco + copa)
+# Arvores um pouco mais cheias (tronco + copa ampliada)
 fill ~-8 ~0 ~-8 ~-8 ~3 ~-8 oak_log
 fill ~-9 ~4 ~-9 ~-7 ~5 ~-7 oak_leaves
+fill ~-10 ~4 ~-8 ~-6 ~5 ~-8 oak_leaves
+fill ~-8 ~4 ~-10 ~-8 ~5 ~-6 oak_leaves
 setblock ~-8 ~6 ~-8 oak_leaves
 
 fill ~8 ~0 ~7 ~8 ~3 ~7 oak_log
 fill ~7 ~4 ~6 ~9 ~5 ~8 oak_leaves
+fill ~6 ~4 ~7 ~10 ~5 ~7 oak_leaves
+fill ~8 ~4 ~5 ~8 ~5 ~9 oak_leaves
 setblock ~8 ~6 ~7 oak_leaves
 
 # Totem/placa de madeira de boas-vindas (area da Ilha da Logica)
 fill ~-2 ~0 ~-11 ~2 ~2 ~-11 stripped_oak_wood
-setblock ~0 ~0 ~-10 oak_sign
+setblock ~0 ~0 ~-10 standing_sign
 setblock ~0 ~1 ~-10 lantern
 
 # Iluminacao charmosa (pontos quentes na borda e no eixo central)
