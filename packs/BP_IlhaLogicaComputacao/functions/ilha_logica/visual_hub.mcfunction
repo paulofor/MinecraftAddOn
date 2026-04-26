@@ -62,7 +62,7 @@ setblock ~8 ~6 ~7 oak_leaves
 
 # Totem/placa de madeira de boas-vindas (area da Ilha da Logica)
 fill ~-2 ~0 ~-11 ~2 ~2 ~-11 stripped_oak_wood
-setblock ~0 ~0 ~-10 oak_sign
+setblock ~0 ~0 ~-10 standing_sign
 setblock ~0 ~1 ~-10 lantern
 
 # Iluminacao charmosa (pontos quentes na borda e no eixo central)
