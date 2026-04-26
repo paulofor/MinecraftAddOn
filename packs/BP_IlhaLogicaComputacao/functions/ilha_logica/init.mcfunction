@@ -3,6 +3,8 @@ scoreboard objectives add ilhlog_progresso dummy
 scoreboard objectives add ilhlog_acertos dummy
 scoreboard objectives add ilhlog_erros dummy
 scoreboard objectives add ilhlog_lp_progresso dummy
+scoreboard objectives add ilhlog_melhor_acertos dummy
+scoreboard objectives add ilhlog_record_temp dummy
 
 tellraw @a {"rawtext":[{"text":"[IlhaLogica] Objetivos de progresso inicializados (base e bloco proposicional)."}]}
 execute as @a at @s run function ilha_logica/visual_hub

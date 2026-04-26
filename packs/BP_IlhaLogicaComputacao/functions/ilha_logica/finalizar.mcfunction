@@ -1,6 +1,14 @@
 # Sprint 3 - encerramento da trilha de conjuntos e ponte para bloco proposicional
 execute as @a[tag=ilhlog_fase_a,tag=ilhlog_fase_b,tag=ilhlog_fase_c,tag=ilhlog_fase_d,tag=!ilhlog_final] run tag @s add ilhlog_final
 
+execute as @a[tag=ilhlog_final] run scoreboard players operation @s ilhlog_record_temp = @s ilhlog_melhor_acertos
+execute as @a[tag=ilhlog_final] run scoreboard players operation @s ilhlog_melhor_acertos > @s ilhlog_acertos
+execute as @a[tag=ilhlog_final] run tellraw @s {"rawtext":[{"text":"[IlhaLogica] Pontuacao desta tentativa: "},{"score":{"name":"*","objective":"ilhlog_acertos"}},{"text":" acertos."}]}
+execute as @a[tag=ilhlog_final] run tellraw @s {"rawtext":[{"text":"[IlhaLogica] Seu melhor recorde: "},{"score":{"name":"*","objective":"ilhlog_melhor_acertos"}},{"text":" acertos. Tente superar seu proprio recorde!"}]}
+execute as @a[tag=ilhlog_final] if score @s ilhlog_acertos > @s ilhlog_record_temp run tellraw @s {"rawtext":[{"text":"[IlhaLogica] Novo recorde pessoal! Continue evoluindo."}]}
+execute as @a[tag=ilhlog_final,scores={ilhlog_acertos=4,ilhlog_erros=0}] if score @s ilhlog_acertos > @s ilhlog_record_temp run give @s diamond 1
+execute as @a[tag=ilhlog_final,scores={ilhlog_acertos=4,ilhlog_erros=0}] if score @s ilhlog_acertos > @s ilhlog_record_temp run tellraw @s {"rawtext":[{"text":"[IlhaLogica] Recompensa de excelencia: 1 diamante por recorde perfeito no bloco de Conjuntos!"}]}
+
 execute as @a[tag=ilhlog_final,scores={ilhlog_erros=..1}] run title @s title §aBloco de Conjuntos concluido
 execute as @a[tag=ilhlog_final,scores={ilhlog_erros=..1}] run title @s subtitle §fDesempenho de 80% ou mais de acertos
 execute as @a[tag=ilhlog_final,scores={ilhlog_erros=..1}] run tellraw @s {"rawtext":[{"text":"[IlhaLogica] Parabens! Base de conjuntos consolidada para avancar a Logica Proposicional."}]}
