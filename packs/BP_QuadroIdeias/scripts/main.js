@@ -1,19 +1,11 @@
-import {
-  DynamicPropertiesDefinition,
-  system,
-  world,
-} from "@minecraft/server";
+import { system, world } from "@minecraft/server";
 import { ActionFormData, MessageFormData, ModalFormData } from "@minecraft/server-ui";
 
 const QUADRO_BLOCK_ID = "digicomo:quadro_ideias";
 const IDEAS_PROPERTY_ID = "digicomo:quadro_ideias_ideas";
 const IDEA_LIMIT = 20;
-
-world.afterEvents.worldInitialize.subscribe(({ propertyRegistry }) => {
-  const definition = new DynamicPropertiesDefinition();
-  definition.defineString(IDEAS_PROPERTY_ID, 32767);
-  propertyRegistry.registerWorldDynamicProperties(definition);
-});
+let ideasFallbackCache = [];
+let dynamicPropertyWarningSent = false;
 
 world.afterEvents.playerInteractWithBlock.subscribe((event) => {
   const block = event.block;
@@ -192,25 +184,27 @@ function openIdeaDetail(player, ideaId) {
 }
 
 function getIdeas() {
-  const raw = world.getDynamicProperty(IDEAS_PROPERTY_ID);
+  const raw = getWorldDynamicPropertySafe(IDEAS_PROPERTY_ID);
 
   if (!raw || typeof raw !== "string") {
-    return [];
+    return [...ideasFallbackCache];
   }
 
   try {
     const parsed = JSON.parse(raw);
     if (!Array.isArray(parsed)) {
-      return [];
+      return [...ideasFallbackCache];
     }
+    ideasFallbackCache = [...parsed];
     return parsed;
   } catch {
-    return [];
+    return [...ideasFallbackCache];
   }
 }
 
 function setIdeas(ideas) {
-  world.setDynamicProperty(IDEAS_PROPERTY_ID, JSON.stringify(ideas));
+  ideasFallbackCache = [...ideas];
+  setWorldDynamicPropertySafe(IDEAS_PROPERTY_ID, JSON.stringify(ideas));
 }
 
 function getStatusLabel(status) {
@@ -241,3 +235,30 @@ world.afterEvents.playerSpawn.subscribe(({ player, initialSpawn }) => {
 
   player.sendMessage("§7Quadro de Ideias ativo: interaja com o bloco para abrir o menu.");
 });
+
+function getWorldDynamicPropertySafe(propertyId) {
+  try {
+    return world.getDynamicProperty(propertyId);
+  } catch {
+    warnDynamicPropertyFallbackOnce();
+    return undefined;
+  }
+}
+
+function setWorldDynamicPropertySafe(propertyId, value) {
+  try {
+    world.setDynamicProperty(propertyId, value);
+  } catch {
+    warnDynamicPropertyFallbackOnce();
+  }
+}
+
+function warnDynamicPropertyFallbackOnce() {
+  if (dynamicPropertyWarningSent) {
+    return;
+  }
+  dynamicPropertyWarningSent = true;
+  console.warn(
+    "[BP_QuadroIdeias] DynamicProperty indisponível neste runtime; usando cache em memória (sem persistência entre reinicializações).",
+  );
+}
