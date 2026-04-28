@@ -12,6 +12,18 @@ fill ~-19 ~-6 ~-19 ~19 ~-6 ~19 dirt
 fill ~-16 ~-2 ~-16 ~16 ~-2 ~16 dirt
 fill ~-17 ~-1 ~-17 ~17 ~-1 ~17 sand
 fill ~-18 ~-1 ~-18 ~18 ~-1 ~18 sand
+fill ~-22 ~-2 ~-22 ~22 ~-2 ~22 sandstone
+fill ~-21 ~-1 ~-21 ~21 ~-1 ~21 sand
+
+# Praia ampliada (anel externo mais largo, com nivel seco acima do mar)
+fill ~-26 ~-1 ~-26 ~26 ~0 ~-23 sand
+fill ~-26 ~-1 ~23 ~26 ~0 ~26 sand
+fill ~-26 ~-1 ~-22 ~-23 ~0 ~22 sand
+fill ~23 ~-1 ~-22 ~26 ~0 ~22 sand
+fill ~-24 ~0 ~-24 ~24 ~0 ~-22 sand
+fill ~-24 ~0 ~22 ~24 ~0 ~24 sand
+fill ~-24 ~0 ~-21 ~-22 ~0 ~21 sand
+fill ~22 ~0 ~-21 ~24 ~0 ~21 sand
 
 # Recorte dos cantos para reduzir simetria e deixar contorno organico
 fill ~-14 ~-4 ~-14 ~-11 ~-1 ~-11 air
@@ -89,4 +101,4 @@ setblock ~2 ~0 ~-4 enchanting_table
 setblock ~-2 ~0 ~4 crafting_table
 setblock ~2 ~0 ~4 lectern
 
-tellraw @s {"rawtext":[{"text":"[IlhaLogica] Hub visual ampliado: praia de acesso, base submersa reforcada, gramados, laguinhos, arvores e iluminacao ativados. Bem-vindo(a) a Ilha da Logica!"}]}
+tellraw @s {"rawtext":[{"text":"[IlhaLogica] Hub visual ampliado: praia maior (anel seco acima do mar), base submersa reforcada, gramados, laguinhos, arvores e iluminacao ativados. Bem-vindo(a) a Ilha da Logica!"}]}
