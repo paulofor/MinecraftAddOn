@@ -4,18 +4,49 @@
     "name": "BP Ilha Lógica e Computação",
     "description": "Base canônica do Behavior Pack para a trilha educativa de Teoria de Conjuntos.",
     "uuid": "35b76ace-b514-401c-8994-0678e4e6f68c",
-    "version": [0, 1, 0],
-    "min_engine_version": [1, 20, 0]
+    "version": [
+      0,
+      2,
+      0
+    ],
+    "min_engine_version": [
+      1,
+      20,
+      0
+    ]
   },
   "modules": [
     {
       "type": "data",
       "uuid": "b918429e-b760-4c67-960a-0978be13e2a0",
-      "version": [0, 1, 0]
+      "version": [
+        0,
+        2,
+        0
+      ]
+    },
+    {
+      "type": "script",
+      "language": "javascript",
+      "uuid": "3e24bdb2-4231-427b-9412-42defd91bddc",
+      "version": [
+        0,
+        2,
+        0
+      ],
+      "entry": "scripts/main.js"
     }
   ],
   "metadata": {
-    "authors": ["MinecraftAddOn"],
+    "authors": [
+      "MinecraftAddOn"
+    ],
     "license": "MIT"
-  }
+  },
+  "dependencies": [
+    {
+      "module_name": "@minecraft/server",
+      "version": "2.0.0"
+    }
+  ]
 }
