@@ -377,3 +377,18 @@ jobs:
 
           print("[ok] Sincronização do mundo confirmada.")
           PY
+
+      - name: Validar logs de runtime (Script API / Functions)
+        run: |
+          ssh -i ~/.ssh/id_ed25519 -p "$VPS_PORT" "$VPS_USER@$VPS_HOST" \
+            "set -euo pipefail && \
+             LOG_FILE='/root/MinecraftServer/logging/bedrock.log' && \
+             if [ ! -f \"\$LOG_FILE\" ]; then \
+               echo '[erro] Arquivo de log não encontrado: '"\$LOG_FILE" >&2; \
+               exit 1; \
+             fi && \
+             echo '[info] Verificando erros recentes de runtime no bedrock.log...' && \
+             tail -n 1200 \"\$LOG_FILE\" | rg -n \
+               'Failed to load module|Cannot find module|Invalid dependency|Dependency version mismatch|Script API disabled|Function .* failed to load correctly|command failed to parse|Unexpected version for the loaded data' \
+               && { echo '[erro] Foram encontrados erros de runtime após o deploy.' >&2; exit 1; } \
+               || echo '[ok] Nenhum erro crítico de runtime encontrado nos logs recentes.'"
