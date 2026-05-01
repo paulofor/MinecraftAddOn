@@ -9,5 +9,4 @@ scoreboard objectives add ilhlog_versao_teste dummy
 
 tellraw @a {"rawtext":[{"text":"[IlhaLogica] Objetivos de progresso inicializados (base, bloco proposicional e versoes de caderno)."}]}
 function ilha_logica/gerar_versao_teste
-execute as @a at @s run function ilha_logica/visual_hub
-tellraw @a {"rawtext":[{"text":"[IlhaLogica] Hub visual da ilha preparado para os jogadores ativos."}]}
+tellraw @a {"rawtext":[{"text":"[IlhaLogica] Inicializacao logica concluida. Para construir a ilha visual, execute manualmente: /function ilha_logica/visual_hub"}]}
