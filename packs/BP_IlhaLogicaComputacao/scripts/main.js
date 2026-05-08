@@ -36,23 +36,28 @@ async function openHubMenu(player) {
     .button("Diagnóstico rápido")
     .button("Fechar");
 
-  logHub(`abrindo menu para ${player.name} no tick ${now}.`);
-  const response = await form.show(player);
-  if (response.canceled) {
-    logHub(`menu cancelado por ${player.name}.`);
-    return;
-  }
+  try {
+    logHub(`abrindo menu para ${player.name} no tick ${now}.`);
+    const response = await form.show(player);
+    if (response.canceled) {
+      logHub(`menu cancelado por ${player.name}.`);
+      return;
+    }
 
-  logHub(`seleção de menu de ${player.name}: ${response.selection}.`);
+    logHub(`seleção de menu de ${player.name}: ${response.selection}.`);
 
-  if (response.selection === 0) {
-    runHub(player);
-  } else if (response.selection === 1) {
-    player.runCommandAsync("function ilha_logica/diagnostico");
+    if (response.selection === 0) {
+      runHub(player);
+    } else if (response.selection === 1) {
+      player.runCommandAsync("function ilha_logica/diagnostico");
+    }
+  } catch (error) {
+    logHub(`falha ao abrir menu para ${player.name}: ${error}`);
+    player.sendMessage("§c[IlhaLogica] Não foi possível abrir o menu agora. Tente novamente sem outras telas abertas.");
   }
 }
 
-function triggerHub(player, block) {
+function triggerHub(player, block, source) {
   const key = player.id ?? player.name;
   const now = system.currentTick;
   const nextAllowedTick = playerCooldown.get(key) ?? 0;
@@ -64,7 +69,7 @@ function triggerHub(player, block) {
 
   playerCooldown.set(key, now + COOLDOWN_TICKS);
 
-  logHub(`triggerHub para ${player.name} no bloco ${block?.typeId ?? "desconhecido"} (tick ${now}).`);
+  logHub(`triggerHub(${source}) para ${player.name} no bloco ${block?.typeId ?? "desconhecido"} (tick ${now}).`);
 
   system.run(() => {
     if (block?.typeId === "minecraft:lectern") {
@@ -84,13 +89,21 @@ world.afterEvents.playerInteractWithBlock.subscribe((event) => {
   const block = event.block;
 
   if (!player || !block || !HUB_TRIGGER_BLOCKS.has(block.typeId)) {
-    if (player && block) {
-      logHub(`interação ignorada de ${player.name} no bloco ${block.typeId}.`);
-    }
     return;
   }
 
   logHub(`interação válida de ${player.name} no bloco ${block.typeId}.`);
+  triggerHub(player, block, "interact");
+});
 
-  triggerHub(player, block);
+world.afterEvents.playerBreakBlock.subscribe((event) => {
+  const player = event.player;
+  const block = event.block;
+
+  if (!player || !block || !HUB_TRIGGER_BLOCKS.has(block.typeId)) {
+    return;
+  }
+
+  logHub(`quebra válida de ${player.name} no bloco ${block.typeId}.`);
+  triggerHub(player, block, "break");
 });
