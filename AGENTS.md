@@ -81,3 +81,13 @@ Além disso, cada sprint deve conter obrigatoriamente um espaço de **registro p
 - o que foi feito;
 - o que ficou faltando;
 - impedimentos/bloqueios (se houver).
+
+## MCP Server oficial da Microsoft (Minecraft)
+Para consultas de documentação e materiais oficiais de Minecraft, utilizar também o MCP Server da Microsoft Learn:
+
+```json
+"microsoft-learn": {
+  "type": "http",
+  "url": "https://learn.microsoft.com/api/mcp"
+}
+```
