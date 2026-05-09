@@ -1,3 +1,5 @@
 pack.name=RP Ilha Lógica e Computação
 pack.description=Base visual da trilha de Teoria de Conjuntos.
 tile.digicomo:hub_lanterna_logica.name=Lanterna Lógica
+
+entity.minecraftaddon:barco_3_jogadores.name=Barco para 3 Jogadores
