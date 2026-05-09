@@ -6,6 +6,9 @@ const COOLDOWN_TICKS = 40;
 const MENU_COOLDOWN_TICKS = 100;
 const playerCooldown = new Map();
 const playerMenuCooldown = new Map();
+const PROXIMITY_HINT_INTERVAL_TICKS = 20;
+const PROXIMITY_RADIUS = 2;
+const playerHintCooldown = new Map();
 
 function logHub(message) {
   console.warn(`[IlhaLogica][Hub] ${message}`);
@@ -120,3 +123,65 @@ world.afterEvents.playerBreakBlock.subscribe((event) => {
   logHub(`quebra válida de ${player.name} no bloco ${block.typeId}.`);
   triggerHub(player, block, "break");
 });
+
+world.afterEvents.itemUseOn.subscribe((event) => {
+  const player = event.source;
+  const block = event.block;
+
+  if (!player || !block || !HUB_TRIGGER_BLOCKS.has(block.typeId)) {
+    return;
+  }
+
+  logHub(`itemUseOn válido de ${player.name} no bloco ${block.typeId}.`);
+  triggerHub(player, block, "itemUseOn");
+});
+
+function findNearbyHubBlock(player) {
+  const location = player.location;
+  const baseX = Math.floor(location.x);
+  const baseY = Math.floor(location.y);
+  const baseZ = Math.floor(location.z);
+
+  for (let dy = -1; dy <= 1; dy++) {
+    for (let dx = -PROXIMITY_RADIUS; dx <= PROXIMITY_RADIUS; dx++) {
+      for (let dz = -PROXIMITY_RADIUS; dz <= PROXIMITY_RADIUS; dz++) {
+        const distanceSquared = dx * dx + dz * dz;
+        if (distanceSquared > PROXIMITY_RADIUS * PROXIMITY_RADIUS) {
+          continue;
+        }
+
+        const candidate = player.dimension.getBlock({
+          x: baseX + dx,
+          y: baseY + dy,
+          z: baseZ + dz,
+        });
+
+        if (candidate && HUB_TRIGGER_BLOCKS.has(candidate.typeId)) {
+          return candidate;
+        }
+      }
+    }
+  }
+
+  return undefined;
+}
+
+system.runInterval(() => {
+  for (const player of world.getAllPlayers()) {
+    const nearbyHubBlock = findNearbyHubBlock(player);
+    if (!nearbyHubBlock) {
+      continue;
+    }
+
+    const key = player.id ?? player.name;
+    const now = system.currentTick;
+    const nextHintTick = playerHintCooldown.get(key) ?? 0;
+
+    if (now < nextHintTick) {
+      continue;
+    }
+
+    playerHintCooldown.set(key, now + PROXIMITY_HINT_INTERVAL_TICKS);
+    player.onScreenDisplay.setActionBar("§e[IlhaLogica] Pressione usar no Sea Lantern/Lectern para iniciar.");
+  }
+}, PROXIMITY_HINT_INTERVAL_TICKS);
