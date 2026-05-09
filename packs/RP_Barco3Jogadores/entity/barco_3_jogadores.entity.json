@@ -3,10 +3,18 @@
   "minecraft:client_entity": {
     "description": {
       "identifier": "minecraftaddon:barco_3_jogadores",
-      "materials": { "default": "entity_alphatest" },
-      "textures": { "default": "textures/entity/boat/oak" },
-      "geometry": { "default": "geometry.minecraftaddon.barco_3_jogadores" },
-      "render_controllers": ["controller.render.minecraftaddon.barco_3_jogadores"]
+      "materials": {
+        "default": "entity_alphatest"
+      },
+      "textures": {
+        "default": "textures/entity/barco_3_jogadores"
+      },
+      "geometry": {
+        "default": "geometry.minecraftaddon.barco_3_jogadores"
+      },
+      "render_controllers": [
+        "controller.render.minecraftaddon.barco_3_jogadores"
+      ]
     }
   }
 }
