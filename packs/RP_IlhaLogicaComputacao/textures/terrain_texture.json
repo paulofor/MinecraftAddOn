@@ -1,0 +1,11 @@
+{
+  "num_mip_levels": 4,
+  "padding": 8,
+  "resource_pack_name": "ilha_logica_computacao",
+  "texture_name": "atlas.terrain",
+  "texture_data": {
+    "sea_lantern": {
+      "textures": "textures/blocks/sea_lantern"
+    }
+  }
+}

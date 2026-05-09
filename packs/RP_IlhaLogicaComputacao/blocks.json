@@ -1,0 +1,7 @@
+{
+  "format_version": [1, 1, 0],
+  "digicomo:hub_lanterna_logica": {
+    "textures": "sea_lantern",
+    "sound": "glass"
+  }
+}
