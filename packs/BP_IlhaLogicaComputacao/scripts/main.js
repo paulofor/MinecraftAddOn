@@ -100,7 +100,19 @@ function triggerHub(player, block, source) {
   });
 }
 
-world.afterEvents.playerInteractWithBlock.subscribe((event) => {
+
+function subscribeEvent(eventSignal, eventName, handler) {
+  if (!eventSignal || typeof eventSignal.subscribe !== "function") {
+    logHub(`evento indisponível na API atual: ${eventName}.`);
+    return false;
+  }
+
+  eventSignal.subscribe(handler);
+  logHub(`evento registrado: ${eventName}.`);
+  return true;
+}
+
+subscribeEvent(world.afterEvents?.playerInteractWithBlock, "afterEvents.playerInteractWithBlock", (event) => {
   const player = event.player;
   const block = event.block;
 
@@ -112,7 +124,7 @@ world.afterEvents.playerInteractWithBlock.subscribe((event) => {
   triggerHub(player, block, "interact");
 });
 
-world.afterEvents.playerBreakBlock.subscribe((event) => {
+subscribeEvent(world.afterEvents?.playerBreakBlock, "afterEvents.playerBreakBlock", (event) => {
   const player = event.player;
   const block = event.block;
 
@@ -124,7 +136,7 @@ world.afterEvents.playerBreakBlock.subscribe((event) => {
   triggerHub(player, block, "break");
 });
 
-world.afterEvents.itemUseOn.subscribe((event) => {
+subscribeEvent(world.afterEvents?.itemStartUseOn, "afterEvents.itemStartUseOn", (event) => {
   const player = event.source;
   const block = event.block;
 
@@ -132,8 +144,8 @@ world.afterEvents.itemUseOn.subscribe((event) => {
     return;
   }
 
-  logHub(`itemUseOn válido de ${player.name} no bloco ${block.typeId}.`);
-  triggerHub(player, block, "itemUseOn");
+  logHub(`itemStartUseOn válido de ${player.name} no bloco ${block.typeId}.`);
+  triggerHub(player, block, "itemStartUseOn");
 });
 
 function findNearbyHubBlock(player) {
