@@ -1,7 +1,7 @@
 import { system, world } from "@minecraft/server";
 import { ActionFormData } from "@minecraft/server-ui";
 
-const HUB_TRIGGER_BLOCKS = new Set(["minecraft:sea_lantern", "minecraft:lectern"]);
+const HUB_TRIGGER_BLOCKS = new Set(["digicomo:hub_lanterna_logica", "minecraft:sea_lantern", "minecraft:lectern"]);
 const COOLDOWN_TICKS = 40;
 const MENU_COOLDOWN_TICKS = 100;
 const playerCooldown = new Map();
@@ -182,6 +182,6 @@ system.runInterval(() => {
     }
 
     playerHintCooldown.set(key, now + PROXIMITY_HINT_INTERVAL_TICKS);
-    player.onScreenDisplay.setActionBar("§e[IlhaLogica] Pressione usar no Sea Lantern/Lectern para iniciar.");
+    player.onScreenDisplay.setActionBar("§e[IlhaLogica] Pressione usar na Lanterna Lógica/Lectern para iniciar.");
   }
 }, PROXIMITY_HINT_INTERVAL_TICKS);
