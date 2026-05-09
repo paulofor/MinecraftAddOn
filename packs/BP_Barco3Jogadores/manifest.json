@@ -4,18 +4,32 @@
     "name": "BP Barco 3 Jogadores",
     "description": "Behavior Pack dedicado ao barco customizado de 3 jogadores.",
     "uuid": "a2b1775d-058f-4f2f-8fd8-df5a0d6a8e31",
-    "version": [0, 1, 0],
-    "min_engine_version": [1, 20, 0]
+    "version": [
+      0,
+      1,
+      1
+    ],
+    "min_engine_version": [
+      1,
+      20,
+      0
+    ]
   },
   "modules": [
     {
       "type": "data",
       "uuid": "5c754d9f-94dc-4dc9-b7b3-9bd43f2f17a6",
-      "version": [0, 1, 0]
+      "version": [
+        0,
+        1,
+        1
+      ]
     }
   ],
   "metadata": {
-    "authors": ["MinecraftAddOn"],
+    "authors": [
+      "MinecraftAddOn"
+    ],
     "license": "MIT"
   }
 }
