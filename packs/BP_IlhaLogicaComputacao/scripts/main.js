@@ -214,6 +214,4 @@ system.runInterval(() => {
     logBoat(`encontrados ${boats.length} barco(s). Exemplo de posição: x=${sample.x.toFixed(1)} y=${sample.y.toFixed(1)} z=${sample.z.toFixed(1)}.`);
   }
 
-  const hasVisualHubBlock = world.getAllPlayers().some((player) => Boolean(findNearbyHubBlock(player)));
-  logBoat(`status visual do hub perto de jogadores: ${hasVisualHubBlock ? "ativo" : "não detectado"}.`);
 }, BOAT_DIAGNOSTIC_INTERVAL_TICKS);
