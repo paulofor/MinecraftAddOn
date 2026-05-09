@@ -14,6 +14,7 @@ function logHub(message) {
   console.warn(`[IlhaLogica][Hub] ${message}`);
 }
 
+
 async function runCommandForPlayer(player, command) {
   const executor = player?.dimension;
   if (!executor || typeof executor.runCommandAsync !== "function") {
@@ -197,3 +198,4 @@ system.runInterval(() => {
     player.onScreenDisplay.setActionBar("§e[IlhaLogica] Pressione usar na Lanterna Lógica/Lectern para iniciar.");
   }
 }, PROXIMITY_HINT_INTERVAL_TICKS);
+
