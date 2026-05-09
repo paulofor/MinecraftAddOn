@@ -91,3 +91,82 @@ Para consultas de documentação e materiais oficiais de Minecraft, utilizar tam
   "url": "https://learn.microsoft.com/api/mcp"
 }
 ```
+
+## Playbook de depuração — módulo Ilha da Lógica
+
+Quando houver problema de interação (ex.: `sea_lantern`/`lectern` não responde), seguir este fluxo.
+
+### 1) Acessar o MCP Readonly (JSON-RPC)
+Endpoint:
+
+```text
+http://186.202.209.206/mcp
+```
+
+Listar tools disponíveis:
+
+```bash
+curl -sS -X POST 'http://186.202.209.206/mcp' \
+  -H 'Content-Type: application/json' \
+  --data '{"jsonrpc":"2.0","id":1,"method":"tools/list","params":{}}'
+```
+
+### 2) Verificar diretório e log do Bedrock
+Listar diretório de logs:
+
+```bash
+curl -sS -X POST 'http://186.202.209.206/mcp' \
+  -H 'Content-Type: application/json' \
+  --data '{"jsonrpc":"2.0","id":2,"method":"tools/call","params":{"name":"list_directory","arguments":{"path":"/root/MinecraftServer/logging"}}}'
+```
+
+Ler últimas linhas do log:
+
+```bash
+curl -sS -X POST 'http://186.202.209.206/mcp' \
+  -H 'Content-Type: application/json' \
+  --data '{"jsonrpc":"2.0","id":3,"method":"tools/call","params":{"name":"run_read_command","arguments":{"command":"tail","args":["-n","200","/root/MinecraftServer/logging/bedrock.log"]}}}'
+```
+
+### 3) O que buscar no `bedrock.log`
+Filtrar mensagens úteis:
+
+- `[Scripting]`
+- `[IlhaLogica][Hub]`
+- `TypeError`
+- `SyntaxError`
+- `runHub`
+- nome do arquivo, por exemplo `main.js`
+
+Dica prática: confirmar no log se houve:
+1. interação detectada (`interação válida ... sea_lantern/lectern`);
+2. trigger disparado (`triggerHub ...`);
+3. erro imediatamente após (`TypeError`, `not a function`, etc.).
+
+### 4) Ajustar código no módulo da Ilha da Lógica
+Arquivo principal:
+
+```text
+packs/BP_IlhaLogicaComputacao/scripts/main.js
+```
+
+Checklist mínimo após ajuste:
+
+1. validar sintaxe JS local (`node --check`);
+2. publicar/deploy do pack no servidor;
+3. reproduzir interação no jogo;
+4. revalidar `bedrock.log` via MCP para confirmar ausência de erro.
+
+### 5) Usar MCP da Microsoft para referência oficial
+Quando a correção envolver API Script do Bedrock (mudança de método/evento/comportamento), consultar MCP da Microsoft Learn para validar a API atual antes de alterar o código.
+
+Configuração de referência:
+
+```json
+"microsoft-learn": {
+  "type": "http",
+  "url": "https://learn.microsoft.com/api/mcp"
+}
+```
+
+Objetivo: evitar regressão por uso de método indisponível na versão do servidor.
