@@ -11,9 +11,19 @@ function logHub(message) {
   console.warn(`[IlhaLogica][Hub] ${message}`);
 }
 
-function runHub(player) {
+async function runCommandForPlayer(player, command) {
+  const executor = player?.dimension;
+  if (!executor || typeof executor.runCommandAsync !== "function") {
+    throw new Error("dimension.runCommandAsync indisponível para este jogador.");
+  }
+
+  const escapedName = String(player.name).replace(/"/g, '\\"');
+  await executor.runCommandAsync(`execute as "${escapedName}" run ${command}`);
+}
+
+async function runHub(player) {
   logHub(`runHub acionado para ${player.name} no tick ${system.currentTick}.`);
-  player.runCommandAsync("function ilha_logica/hub");
+  await runCommandForPlayer(player, "function ilha_logica/hub");
   player.sendMessage("§b[IlhaLogica] Instruções da trilha exibidas no chat.");
 }
 
@@ -47,9 +57,9 @@ async function openHubMenu(player) {
     logHub(`seleção de menu de ${player.name}: ${response.selection}.`);
 
     if (response.selection === 0) {
-      runHub(player);
+      await runHub(player);
     } else if (response.selection === 1) {
-      player.runCommandAsync("function ilha_logica/diagnostico");
+      await runCommandForPlayer(player, "function ilha_logica/diagnostico");
     }
   } catch (error) {
     logHub(`falha ao abrir menu para ${player.name}: ${error}`);
@@ -74,7 +84,10 @@ function triggerHub(player, block, source) {
   system.run(() => {
     if (block?.typeId === "minecraft:lectern") {
       logHub(`atalho lectern para ${player.name}.`);
-      runHub(player);
+      void runHub(player).catch((error) => {
+        logHub(`falha ao executar hub para ${player.name}: ${error}`);
+        player.sendMessage("§c[IlhaLogica] Não foi possível executar o hub agora.");
+      });
       return;
     }
 
