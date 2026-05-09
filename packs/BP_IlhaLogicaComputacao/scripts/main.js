@@ -8,10 +8,15 @@ const playerCooldown = new Map();
 const playerMenuCooldown = new Map();
 const PROXIMITY_HINT_INTERVAL_TICKS = 20;
 const PROXIMITY_RADIUS = 2;
+const BOAT_DIAGNOSTIC_INTERVAL_TICKS = 200;
 const playerHintCooldown = new Map();
 
 function logHub(message) {
   console.warn(`[IlhaLogica][Hub] ${message}`);
+}
+
+function logBoat(message) {
+  console.warn(`[IlhaLogica][Barco] ${message}`);
 }
 
 async function runCommandForPlayer(player, command) {
@@ -197,3 +202,18 @@ system.runInterval(() => {
     player.onScreenDisplay.setActionBar("§e[IlhaLogica] Pressione usar na Lanterna Lógica/Lectern para iniciar.");
   }
 }, PROXIMITY_HINT_INTERVAL_TICKS);
+
+system.runInterval(() => {
+  const overworld = world.getDimension("overworld");
+  const boats = overworld.getEntities({ type: "minecraftaddon:barco_3_jogadores" });
+
+  if (!boats.length) {
+    logBoat("nenhum minecraftaddon:barco_3_jogadores encontrado no overworld.");
+  } else {
+    const sample = boats[0].location;
+    logBoat(`encontrados ${boats.length} barco(s). Exemplo de posição: x=${sample.x.toFixed(1)} y=${sample.y.toFixed(1)} z=${sample.z.toFixed(1)}.`);
+  }
+
+  const hasVisualHubBlock = world.getAllPlayers().some((player) => Boolean(findNearbyHubBlock(player)));
+  logBoat(`status visual do hub perto de jogadores: ${hasVisualHubBlock ? "ativo" : "não detectado"}.`);
+}, BOAT_DIAGNOSTIC_INTERVAL_TICKS);
