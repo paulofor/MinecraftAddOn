@@ -170,3 +170,7 @@ Configuração de referência:
 ```
 
 Objetivo: evitar regressão por uso de método indisponível na versão do servidor.
+
+## Regra de versionamento de objetos
+Sempre que alterar qualquer objeto do projeto (entidades, blocos, itens, scripts, manifests ou definições relacionadas), atualizar a versão correspondente no arquivo impactado para garantir rastreabilidade e deploy consistente.
+
