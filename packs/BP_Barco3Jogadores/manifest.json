@@ -7,7 +7,7 @@
     "version": [
       0,
       1,
-      1
+      2
     ],
     "min_engine_version": [
       1,
@@ -22,8 +22,19 @@
       "version": [
         0,
         1,
-        1
+        2
       ]
+    },
+    {
+      "type": "script",
+      "language": "javascript",
+      "uuid": "9ef92f8f-afeb-48cf-a973-447636bc14c3",
+      "version": [
+        0,
+        1,
+        2
+      ],
+      "entry": "scripts/main.js"
     }
   ],
   "metadata": {
@@ -31,5 +42,11 @@
       "MinecraftAddOn"
     ],
     "license": "MIT"
-  }
+  },
+  "dependencies": [
+    {
+      "module_name": "@minecraft/server",
+      "version": "2.0.0"
+    }
+  ]
 }
