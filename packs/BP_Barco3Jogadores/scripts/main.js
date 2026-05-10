@@ -4,8 +4,11 @@ const BOAT_ID = "minecraftaddon:barco_3_jogadores";
 const LOG_PREFIX = "[Barco3Debug]";
 
 function log(message) {
-  world.sendMessage(`§7${LOG_PREFIX} ${message}`);
   console.warn(`${LOG_PREFIX} ${message}`);
+
+  system.run(() => {
+    world.sendMessage(`§7${LOG_PREFIX} ${message}`);
+  });
 }
 
 function getPassengers(boat) {
