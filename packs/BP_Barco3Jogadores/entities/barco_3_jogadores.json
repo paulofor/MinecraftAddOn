@@ -47,7 +47,7 @@
       "minecraft:underwater_movement": { "value": 0.3 },
       "minecraft:buoyant": {
         "apply_gravity": false,
-        "base_buoyancy": 1.2,
+        "base_buoyancy": 1.0,
         "big_wave_probability": 0.03,
         "big_wave_speed": 8.0,
         "liquid_blocks": [
