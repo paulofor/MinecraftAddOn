@@ -173,6 +173,15 @@ Configuração de referência:
 
 Objetivo: evitar regressão por uso de método indisponível na versão do servidor.
 
+
+## Regra para arquivos PNG
+Arquivos `.png` devem **sempre** ser enviados para o host usando o MCP Server (tool de upload), e **nunca** devem ser adicionados/commitados no Git deste repositório.
+
+Diretriz operacional:
+- usar a tool MCP de upload de PNG para publicar/atualizar imagens no host;
+- evitar PRs com diff binário de `.png`;
+- manter no Git apenas definições, manifests, scripts e demais arquivos texto de configuração.
+
 ## Regra de versionamento de objetos
 Sempre que alterar qualquer objeto do projeto (entidades, blocos, itens, scripts, manifests ou definições relacionadas), atualizar a versão correspondente no arquivo impactado para garantir rastreabilidade e deploy consistente.
 
