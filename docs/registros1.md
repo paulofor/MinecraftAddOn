@@ -127,3 +127,9 @@
   - `packs/RP_QuadroIdeias/textures/blocks/quadro_ideias_topo.png`
   - `packs/RP_QuadroInformacoes/textures/blocks/quadro_informacoes.png`
 - Diretriz preservada: PNG real deve ser publicado via MCP Server (tool de upload), não via commit binário no Git.
+
+## 2026-05-11 15:32:45 UTC-3
+- Ajuste no `docker-compose.mcp-bedrock-readonly.yml` para permitir escrita no diretório Bedrock quando necessário para upload de PNG via tool MCP `write_png_base64`.
+- Alteração aplicada no mount do Bedrock: `:ro` -> `:${BEDROCK_ROOT_MOUNT_MODE:-rw}` (padrão agora `rw`, configurável por variável de ambiente).
+- Mantido o mount do repositório host como somente leitura por padrão, mas parametrizado: `:${HOST_REPO_MOUNT_MODE:-ro}`.
+- Objetivo: destravar publicação de texturas `.png` diretamente no host pelo MCP sem perder controle operacional por ambiente.
