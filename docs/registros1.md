@@ -151,3 +151,37 @@
 - Atualizado `AGENTS.md` para deixar explícito e permanente o processo obrigatório de tratamento de imagens de textura (`textures/**/*.png`).
 - O fluxo foi detalhado em 6 passos mandatórios: proibição de commit binário de PNG, upload exclusivo via MCP (`write_png_base64`), validação de disponibilidade (`tools/list`), validação de sucesso (`bytes_written`), registro obrigatório em `/docs/registros1.md` e versionamento dos objetos texto correlatos.
 - Objetivo: remover ambiguidades operacionais e reforçar a regra “sempre via MCP” para texturas.
+
+## 2026-05-11 18:00:41 UTC-3
+- Novo ajuste para resolver textura magenta persistente no barco de 3 jogadores sem versionar PNG no Git.
+- Alteração em `packs/RP_Barco3Jogadores/entity/barco_3_jogadores.entity.json`: textura do `client_entity` trocada de `textures/entity/barco_3_jogadores` para `textures/entity/boat/boat_oak` (textura vanilla existente no cliente), eliminando dependência de arquivo PNG custom no repositório.
+- Versionamento de objeto atualizado em `packs/RP_Barco3Jogadores/manifest.json`: `0.1.9` -> `0.1.10` (header e module) para forçar atualização de pack no cliente/servidor.
+- Próximo passo operacional recomendado: aplicar deploy do RP atualizado e reentrar no mundo para invalidar cache local de resource pack.
+
+## 2026-05-11 18:10:19 UTC-3
+- Diagnóstico orientado por logs/MCP para o problema de textura do barco ainda magenta.
+- Verificação no `bedrock.log` confirmou carregamento do BP (`BP Barco 3 Jogadores v0.1.7`) e spawn da entidade, sem erro de script para o barco, indicando problema de asset/deploy do RP e não de runtime da entidade.
+- Ajuste no `client_entity` revertido para usar novamente textura custom `textures/entity/barco_3_jogadores` (agora que o PNG válido já existe no host).
+- Ajuste no workflow `.github/workflows/publish-server.yml`: sincronização de `RP_*` para o mundo agora ignora `textures/**/*.png` no `rsync`, evitando sobrescrever no servidor os PNGs publicados via MCP com ponteiros/arquivos do repositório.
+- Versionamento atualizado em `packs/RP_Barco3Jogadores/manifest.json`: `0.1.10` -> `0.1.11` (header e module).
+
+## 2026-05-11 18:14:35 UTC-3
+- Atendimento ao pedido de observabilidade: adicionado log explícito no workflow de deploy durante a promoção de `RP_Barco3Jogadores` para diagnosticar textura no momento da sincronização.
+- No passo `Promover packs para o mundo Bedrock`, após o `rsync` do RP, o workflow agora imprime:
+  - caminho da textura no repositório remoto (`$REMOTE_DIR/packs/RP_Barco3Jogadores/textures/entity/barco_3_jogadores.png`), com `ls -lh` e `file`;
+  - caminho da textura no mundo Bedrock (`$WORLD_RP_DIR/RP_Barco3Jogadores/textures/entity/barco_3_jogadores.png`), com `ls -lh` e `file`.
+- Objetivo: permitir identificar no log do GitHub Actions se a textura está ausente, como ponteiro texto ou PNG válido no momento exato do deploy.
+
+## 2026-05-11 18:19:50 UTC-3
+- Ajuste de governança solicitado: remoção de tratamento específico de `.png` no workflow GitHub (`.github/workflows/publish-server.yml`).
+- Revertido o trecho de deploy que fazia exceção/diagnóstico de textura PNG no passo de promoção de `RP_*`.
+- Atualizado `AGENTS.md` para deixar explícito que operações com `.png` ficam **fora do workflow GitHub** e devem ocorrer **somente via MCP** (upload, atualização e diagnóstico de textura).
+
+## 2026-05-11 18:22:27 UTC-3
+- Implementado log de diagnóstico no BP do barco para o momento em que a entidade é spawnada, indicando explicitamente o lookup de textura esperado.
+- Alteração em `packs/BP_Barco3Jogadores/scripts/main.js`:
+  - adicionadas constantes `EXPECTED_TEXTURE` (`textures/entity/barco_3_jogadores`) e `CLIENT_ENTITY_DEF` (`RP_Barco3Jogadores/entity/barco_3_jogadores.entity.json`);
+  - novo log `TEXTURA lookup esperado -> ...` emitido no `entitySpawn` do `minecraftaddon:barco_3_jogadores`;
+  - log de inicialização do script atualizado para exibir referência de textura/arquivo de definição.
+- Versionamento atualizado por alteração de script/objeto em `packs/BP_Barco3Jogadores/manifest.json`: `0.1.7` -> `0.1.8` (header, module data e module script).
+- Observação técnica: o servidor não confirma “download de textura do cliente”; o log adicionado rastreia o ponto de spawn e qual textura o `client_entity` deveria resolver.
