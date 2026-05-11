@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+import base64
 import json
 import os
 import subprocess
@@ -12,7 +13,7 @@ from pathlib import Path
 from typing import Any
 
 SERVER_NAME = "bedrock-readonly"
-SERVER_VERSION = "0.1.0"
+SERVER_VERSION = "0.2.0"
 PROTOCOL_VERSION = "2024-11-05"
 
 DEFAULT_ALLOWED_ROOTS = (
@@ -131,6 +132,40 @@ def _run_read_command(
   }
 
 
+
+
+def _write_png_base64(path: str, png_base64: str, overwrite: bool = False) -> dict[str, Any]:
+  ok, resolved = _is_path_allowed(path)
+  if not ok:
+    raise ValueError(f"Caminho fora do escopo permitido: {resolved}")
+
+  if resolved.exists() and resolved.is_dir():
+    raise ValueError(f"O caminho informado é diretório: {resolved}")
+  if resolved.suffix.lower() != ".png":
+    raise ValueError("A ferramenta aceita somente arquivos .png")
+  existed_before = resolved.exists()
+  if existed_before and not overwrite:
+    raise ValueError(f"Arquivo já existe (use overwrite=true): {resolved}")
+
+  parent = resolved.parent
+  if not parent.exists():
+    parent.mkdir(parents=True, exist_ok=True)
+
+  try:
+    raw = base64.b64decode(png_base64, validate=True)
+  except Exception as exc:  # noqa: BLE001
+    raise ValueError("png_base64 inválido") from exc
+
+  if len(raw) < 8 or raw[:8] != b"\x89PNG\r\n\x1a\n":
+    raise ValueError("Conteúdo não é PNG válido (assinatura ausente)")
+
+  resolved.write_bytes(raw)
+  return {
+    "path": str(resolved),
+    "bytes_written": len(raw),
+    "overwrote": existed_before,
+  }
+
 def _tools_list_result() -> dict[str, Any]:
   return {
     "tools": [
@@ -153,6 +188,19 @@ def _tools_list_result() -> dict[str, Any]:
             "max_bytes": {"type": "integer", "minimum": 1},
           },
           "required": ["path"],
+        },
+      },
+      {
+        "name": "write_png_base64",
+        "description": "Escreve arquivo PNG a partir de conteúdo base64 em diretório permitido.",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "path": {"type": "string"},
+            "png_base64": {"type": "string"},
+            "overwrite": {"type": "boolean"}
+          },
+          "required": ["path", "png_base64"]
         },
       },
       {
@@ -211,6 +259,12 @@ def _handle_rpc(message: dict[str, Any]) -> dict[str, Any] | None:
         payload = _list_directory(arguments["path"])
       elif name == "read_file":
         payload = _read_file(arguments["path"], arguments.get("max_bytes"))
+      elif name == "write_png_base64":
+        payload = _write_png_base64(
+          path=arguments["path"],
+          png_base64=arguments["png_base64"],
+          overwrite=bool(arguments.get("overwrite", False)),
+        )
       elif name == "run_read_command":
         payload = _run_read_command(
           command=arguments["command"],

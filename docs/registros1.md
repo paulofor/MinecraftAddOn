@@ -68,3 +68,62 @@
   - `actions/checkout@v4` configurado com `lfs: true`;
   - etapa explícita `git lfs pull` adicionada antes da sincronização de `packs/`.
 - Objetivo: garantir que o `rsync` publique texturas/imagens reais no servidor remoto.
+
+## 2026-05-11 14:46:06 UTC-3
+- Diagnóstico de falha no CI ao executar `git lfs fetch origin refs/remotes/origin/main` com erro 404 para múltiplos objetos LFS ausentes no endpoint `https://github.com/paulofor/MinecraftAddOn.git/info/lfs`.
+- Causa provável registrada: histórico do repositório referencia ponteiros LFS cujos binários não estão mais presentes no storage LFS remoto (objetos órfãos/removidos), impedindo fetch completo em ambientes limpos.
+- Diretriz operacional para pipeline: evitar etapa de `git lfs fetch` global do branch enquanto houver objetos ausentes e priorizar checkout/publicação sem dependência de blobs LFS legados não utilizados no deploy atual.
+- Próxima ação recomendada: inventariar arquivos LFS referenciados no `origin/main`, restaurar/reenviar os objetos faltantes para o Git LFS remoto (ou remover/regravar referências históricas se a política do projeto permitir).
+
+## 2026-05-11 14:48:18 UTC-3
+- Levantamento explícito dos objetos Git LFS não encontrados (erro 404) no fetch de `origin/main`:
+  - `2d66414bd0242fbe0cde4ef42ccb2d1b9ff3cb9dc261f483b530070116f17f8b`
+  - `fa66f7122c0aa05eaed2039ba0bb5688074373fbcb328308abf9439870233f48`
+  - `9cebb9bdeb8981416f974ec5b341581c8fa0abada71c5320f803974d526cff3b`
+  - `e1181c3eea0f075e3c79ac81f71af5abb0245580ea5638a06269d4edfffd104c`
+  - `7e93fa876b64ad216e887fab72ea2e4f3103c8b6c97c10526037b318b2a0a1c4`
+- Registro criado para responder objetivamente ao questionamento sobre quais objetos estavam ausentes no servidor LFS.
+
+## 2026-05-11 14:50:37 UTC-3
+- Verificação de correlação entre hashes LFS ausentes e arquivos do Barco 3 Jogadores.
+- Resultado: **sim**, há objetos ausentes relacionados ao barco de 3 pessoas no histórico da textura `packs/RP_Barco3Jogadores/textures/entity/barco_3_jogadores.png`.
+- Mapeamento identificado:
+  - `2d66414bd0242fbe0cde4ef42ccb2d1b9ff3cb9dc261f483b530070116f17f8b` (commit `98c2f2d`);
+  - `9cebb9bdeb8981416f974ec5b341581c8fa0abada71c5320f803974d526cff3b` (commit `3195a1b`).
+- Os demais hashes ausentes listados anteriormente não foram confirmados nesta verificação como pertencentes ao arquivo do barco 3 jogadores.
+
+## 2026-05-11 14:53:40 UTC-3
+- Ação para eliminar erros de objetos LFS ausentes no CI: remoção do rastreamento LFS para imagens (`*.png`, `*.jpg`, `*.jpeg`, `*.webp`) em `.gitattributes`.
+- Substituição dos 5 arquivos atualmente quebrados (ponteiros LFS com 404) por PNGs binários válidos versionados diretamente no Git:
+  - `packs/RP_Barco3Jogadores/textures/entity/barco_3_jogadores.png`
+  - `packs/RP_QuadroIdeias/textures/blocks/quadro_ideias_frente.png`
+  - `packs/RP_QuadroIdeias/textures/blocks/quadro_ideias_lateral.png`
+  - `packs/RP_QuadroIdeias/textures/blocks/quadro_ideias_topo.png`
+  - `packs/RP_QuadroInformacoes/textures/blocks/quadro_informacoes.png`
+- Versionamento atualizado por alteração de objetos visuais:
+  - `packs/RP_Barco3Jogadores/manifest.json`: `0.1.8` -> `0.1.9`;
+  - `packs/RP_QuadroIdeias/manifest.json`: `0.3.0` -> `0.3.1`;
+  - `packs/RP_QuadroInformacoes/manifest.json`: `0.1.0` -> `0.1.1`.
+
+## 2026-05-11 15:07:05 UTC-3
+- Implementada nova tool MCP `write_png_base64` no serviço `infra/mcp-bedrock-readonly/server.py` para envio de imagens `.png` ao host por JSON-RPC.
+- A tool valida escopo de caminho permitido (`ALLOWED_ROOTS`), exige extensão `.png`, valida base64 e assinatura PNG (`\x89PNG\r\n\x1a\n`) e suporta `overwrite` opcional.
+- Catálogo de tools (`tools/list`) atualizado para expor `write_png_base64` com schema de entrada (`path`, `png_base64`, `overwrite`).
+- Roteamento `tools/call` atualizado para tratar a nova tool, retornando caminho e bytes gravados.
+- Versionamento do servidor MCP atualizado de `0.1.0` para `0.2.0` por adição de capacidade de escrita.
+
+## 2026-05-11 15:09:47 UTC-3
+- Atualização do `AGENTS.md` com diretriz explícita para assets PNG:
+  - arquivos `.png` devem ser enviados sempre via MCP Server (tool de upload);
+  - arquivos `.png` não devem ser adicionados/commitados no Git do repositório.
+- Incluídas orientações operacionais para evitar PR com diff binário de imagem e manter no Git apenas arquivos texto de definição/configuração.
+
+## 2026-05-11 15:12:43 UTC-3
+- Remoção de conteúdo binário dos arquivos `.png` no commit atual, conforme solicitação.
+- Os 5 arquivos de textura foram revertidos para formato texto de ponteiro Git LFS (3 linhas `version/oid/size`), eliminando diff binário de PR:
+  - `packs/RP_Barco3Jogadores/textures/entity/barco_3_jogadores.png`
+  - `packs/RP_QuadroIdeias/textures/blocks/quadro_ideias_frente.png`
+  - `packs/RP_QuadroIdeias/textures/blocks/quadro_ideias_lateral.png`
+  - `packs/RP_QuadroIdeias/textures/blocks/quadro_ideias_topo.png`
+  - `packs/RP_QuadroInformacoes/textures/blocks/quadro_informacoes.png`
+- Diretriz preservada: PNG real deve ser publicado via MCP Server (tool de upload), não via commit binário no Git.
