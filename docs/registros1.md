@@ -164,3 +164,10 @@
 - Ajuste no `client_entity` revertido para usar novamente textura custom `textures/entity/barco_3_jogadores` (agora que o PNG válido já existe no host).
 - Ajuste no workflow `.github/workflows/publish-server.yml`: sincronização de `RP_*` para o mundo agora ignora `textures/**/*.png` no `rsync`, evitando sobrescrever no servidor os PNGs publicados via MCP com ponteiros/arquivos do repositório.
 - Versionamento atualizado em `packs/RP_Barco3Jogadores/manifest.json`: `0.1.10` -> `0.1.11` (header e module).
+
+## 2026-05-11 18:14:35 UTC-3
+- Atendimento ao pedido de observabilidade: adicionado log explícito no workflow de deploy durante a promoção de `RP_Barco3Jogadores` para diagnosticar textura no momento da sincronização.
+- No passo `Promover packs para o mundo Bedrock`, após o `rsync` do RP, o workflow agora imprime:
+  - caminho da textura no repositório remoto (`$REMOTE_DIR/packs/RP_Barco3Jogadores/textures/entity/barco_3_jogadores.png`), com `ls -lh` e `file`;
+  - caminho da textura no mundo Bedrock (`$WORLD_RP_DIR/RP_Barco3Jogadores/textures/entity/barco_3_jogadores.png`), com `ls -lh` e `file`.
+- Objetivo: permitir identificar no log do GitHub Actions se a textura está ausente, como ponteiro texto ou PNG válido no momento exato do deploy.
