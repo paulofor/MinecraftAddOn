@@ -2,6 +2,8 @@ import { system, world } from "@minecraft/server";
 
 const BOAT_ID = "minecraftaddon:barco_3_jogadores";
 const LOG_PREFIX = "[Barco3Debug]";
+const EXPECTED_TEXTURE = "textures/entity/barco_3_jogadores";
+const CLIENT_ENTITY_DEF = "RP_Barco3Jogadores/entity/barco_3_jogadores.entity.json";
 
 function log(message) {
   console.warn(`${LOG_PREFIX} ${message}`);
@@ -36,6 +38,9 @@ function summarizeBoat(boat) {
 world.afterEvents.entitySpawn.subscribe((event) => {
   if (event.entity.typeId !== BOAT_ID) return;
 
+  log(
+    `TEXTURA lookup esperado -> entity=${BOAT_ID} | texture=${EXPECTED_TEXTURE} | source=${CLIENT_ENTITY_DEF}`
+  );
   log(`SPAWN detectado -> ${summarizeBoat(event.entity)}`);
 
   system.runTimeout(() => {
@@ -63,4 +68,6 @@ system.runInterval(() => {
   }
 }, 100);
 
-log("Script de debug do Barco3 carregado.");
+log(
+  `Script de debug do Barco3 carregado. Texture lookup esperado: ${EXPECTED_TEXTURE} (def: ${CLIENT_ENTITY_DEF})`
+);

@@ -176,3 +176,12 @@
 - Ajuste de governança solicitado: remoção de tratamento específico de `.png` no workflow GitHub (`.github/workflows/publish-server.yml`).
 - Revertido o trecho de deploy que fazia exceção/diagnóstico de textura PNG no passo de promoção de `RP_*`.
 - Atualizado `AGENTS.md` para deixar explícito que operações com `.png` ficam **fora do workflow GitHub** e devem ocorrer **somente via MCP** (upload, atualização e diagnóstico de textura).
+
+## 2026-05-11 18:22:27 UTC-3
+- Implementado log de diagnóstico no BP do barco para o momento em que a entidade é spawnada, indicando explicitamente o lookup de textura esperado.
+- Alteração em `packs/BP_Barco3Jogadores/scripts/main.js`:
+  - adicionadas constantes `EXPECTED_TEXTURE` (`textures/entity/barco_3_jogadores`) e `CLIENT_ENTITY_DEF` (`RP_Barco3Jogadores/entity/barco_3_jogadores.entity.json`);
+  - novo log `TEXTURA lookup esperado -> ...` emitido no `entitySpawn` do `minecraftaddon:barco_3_jogadores`;
+  - log de inicialização do script atualizado para exibir referência de textura/arquivo de definição.
+- Versionamento atualizado por alteração de script/objeto em `packs/BP_Barco3Jogadores/manifest.json`: `0.1.7` -> `0.1.8` (header, module data e module script).
+- Observação técnica: o servidor não confirma “download de textura do cliente”; o log adicionado rastreia o ponto de spawn e qual textura o `client_entity` deveria resolver.
