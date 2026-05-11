@@ -31,3 +31,9 @@
 > Em caso de timestamp incorreto já registrado, não apague nem edite o registro antigo; adicione um novo registro de correção explicando o erro.
 > Neste documento segue política de **append-only** (não pode ter nenhuma linha apagada; apenas inserções).
 
+
+## 2026-05-11 11:40:30 UTC-3
+- Investigação do barco de 3 lugares com textura rosa/magenta.
+- Consulta à documentação oficial da Microsoft Learn (MCP Server Microsoft) para validar configuração correta de textura em `minecraft:client_entity` (uso de `description.textures` com caminho relativo sem extensão e correspondência com `render_controllers`).
+- Correção aplicada: arquivo `packs/RP_Barco3Jogadores/textures/entity/barco_3_jogadores.png` estava como ponteiro Git LFS (texto) e não PNG válido; foi substituído por PNG válido para eliminar fallback magenta.
+- Versionamento atualizado no `manifest.json` do RP Barco 3 Jogadores de `0.1.4` para `0.1.5` para rastreabilidade de objeto visual.
