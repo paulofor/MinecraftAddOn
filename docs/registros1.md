@@ -42,3 +42,22 @@
 - Ajuste complementar após revisão: substituição da textura temporária por textura oficial de referência (`boat_oak.png`) do repositório oficial Mojang Bedrock Samples (Microsoft/Mojang).
 - Objetivo: garantir UV/layout fiel ao modelo de barco e evitar desalinhamentos visuais.
 - Versionamento do RP Barco 3 Jogadores atualizado de `0.1.5` para `0.1.6` (header e module) por alteração de objeto visual.
+- 2026-05-11: tentativa de consulta ao MCP Readonly do host `http://186.202.209.206/mcp` via JSON-RPC (`tools/list`) retornou timeout de conexão (indisponibilidade no momento da análise).
+- 2026-05-11: consulta de referência na Microsoft Learn (MCP/Docs) para `minecraft:input_ground_controlled` e `client_entity` confirmou uso de WASD para entidades montáveis e referência de textura por caminho relativo sem extensão.
+- Correção do barco 3 lugares:
+  - textura `packs/RP_Barco3Jogadores/textures/entity/barco_3_jogadores.png` estava em formato ponteiro (texto Git LFS) e foi substituída por PNG válido (base `boat_oak.png` do repositório oficial `Mojang/bedrock-samples`), removendo o preto/magenta;
+  - saneamento de `packs/BP_Barco3Jogadores/entities/barco_3_jogadores.json` removendo chaves duplicadas de componentes (`minecraft:health` e `minecraft:collision_box`), que causavam comportamento inconsistente de pilotagem/colisão;
+  - versionamento atualizado por regra de rastreabilidade: BP `0.1.5` -> `0.1.6`; RP `0.1.6` -> `0.1.7`.
+
+## 2026-05-11 13:58:25 UTC-3
+- Nova tentativa de correção do Barco 3 Jogadores após feedback de que persistia problema de navegação.
+- Ajuste estrutural em         : remoção dos componentes manuais de movimento/controle terrestre e alinhamento do comportamento ao padrão oficial da entidade  (colisão, buoyancy e configuração de assentos).
+- Reconfiguração dos assentos para 3 jogadores mantendo o primeiro assento como controlador () e com offsets compatíveis com o barco vanilla.
+- Versionamento atualizado por alteração de objeto: BP incrementado para  e RP incrementado para .
+
+## 2026-05-11 13:58:37 UTC-3
+- Registro de correção: a entrada imediatamente anterior perdeu trechos entre crases por expansão indevida de shell durante o append.
+- Conteúdo correto da correção aplicada no barco:
+  - arquivo `packs/BP_Barco3Jogadores/entities/barco_3_jogadores.json` foi reestruturado para remover componentes manuais de controle terrestre e alinhar a base de movimentação/flutuação ao padrão da `minecraft:boat` oficial;
+  - assentos configurados para 3 jogadores com `controlling_seat: 0` e posições baseadas no layout do barco vanilla, preservando dirigibilidade no assento do piloto;
+  - versionamento atualizado por alteração de objeto: BP `0.1.6` -> `0.1.7` e RP `0.1.7` -> `0.1.8`.
