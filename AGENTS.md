@@ -192,6 +192,7 @@ Quando houver criação/alteração de **texturas** (`textures/**/*.png`), segui
 2. **Publicar textura somente via MCP**  
    - usar `tools/call` com `write_png_base64`;
    - destino deve ser caminho do host Bedrock (ex.: `/root/MinecraftServer/resource_packs/.../*.png`).
+   - **não usar GitHub Actions/workflow para publicar, copiar, sincronizar, validar ou diagnosticar `.png`**; esse ciclo é exclusivo do MCP.
 
 3. **Validar disponibilidade do MCP antes do upload**  
    - executar `tools/list` no endpoint `http://186.202.209.206/mcp`;
@@ -207,6 +208,11 @@ Quando houver criação/alteração de **texturas** (`textures/**/*.png`), segui
 
 6. **Versionar objetos relacionados (arquivos texto)**  
    - sempre incrementar versão dos manifests/definições impactadas por alteração de textura, garantindo rastreabilidade de deploy.
+
+### Regra explícita: PNG fora do workflow GitHub
+- O pipeline/workflow do GitHub **não é o fluxo oficial de PNG**.
+- Qualquer operação com textura `.png` (deploy, atualização, correção, diagnóstico de arquivo) deve ocorrer **somente via MCP**.
+- Em PRs, manter no workflow apenas arquivos texto de configuração/manifest/scripts; não adicionar etapas especiais para tratar `.png`.
 
 ## Regra de versionamento de objetos
 Sempre que alterar qualquer objeto do projeto (entidades, blocos, itens, scripts, manifests ou definições relacionadas), atualizar a versão correspondente no arquivo impactado para garantir rastreabilidade e deploy consistente.

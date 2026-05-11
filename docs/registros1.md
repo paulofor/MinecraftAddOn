@@ -171,3 +171,8 @@
   - caminho da textura no repositório remoto (`$REMOTE_DIR/packs/RP_Barco3Jogadores/textures/entity/barco_3_jogadores.png`), com `ls -lh` e `file`;
   - caminho da textura no mundo Bedrock (`$WORLD_RP_DIR/RP_Barco3Jogadores/textures/entity/barco_3_jogadores.png`), com `ls -lh` e `file`.
 - Objetivo: permitir identificar no log do GitHub Actions se a textura está ausente, como ponteiro texto ou PNG válido no momento exato do deploy.
+
+## 2026-05-11 18:19:50 UTC-3
+- Ajuste de governança solicitado: remoção de tratamento específico de `.png` no workflow GitHub (`.github/workflows/publish-server.yml`).
+- Revertido o trecho de deploy que fazia exceção/diagnóstico de textura PNG no passo de promoção de `RP_*`.
+- Atualizado `AGENTS.md` para deixar explícito que operações com `.png` ficam **fora do workflow GitHub** e devem ocorrer **somente via MCP** (upload, atualização e diagnóstico de textura).

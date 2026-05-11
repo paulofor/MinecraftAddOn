@@ -99,25 +99,7 @@ jobs:
                [ -d \"\$src\" ] || continue; \
                rp_found=1; \
                name=\$(basename \"\$src\"); \
-               rsync -azc --delete --itemize-changes --exclude=\"textures/**/*.png\" \"\$src/\" '$WORLD_RP_DIR'/\"\$name/\"; \
-               if [ \"\$name\" = \"RP_Barco3Jogadores\" ]; then \
-                 texture_world='$WORLD_RP_DIR'/\"\$name\"/textures/entity/barco_3_jogadores.png; \
-                 texture_repo='$REMOTE_DIR'/packs/\"\$name\"/textures/entity/barco_3_jogadores.png; \
-                 echo \"[info] Diagnóstico textura barco (repo): \$texture_repo\"; \
-                 if [ -f \"\$texture_repo\" ]; then \
-                   ls -lh \"\$texture_repo\"; \
-                   file \"\$texture_repo\" || true; \
-                 else \
-                   echo \"[warn] textura não encontrada no repositório remoto\"; \
-                 fi; \
-                 echo \"[info] Diagnóstico textura barco (world): \$texture_world\"; \
-                 if [ -f \"\$texture_world\" ]; then \
-                   ls -lh \"\$texture_world\"; \
-                   file \"\$texture_world\" || true; \
-                 else \
-                   echo \"[warn] textura não encontrada no mundo\"; \
-                 fi; \
-               fi; \
+               rsync -azc --delete --itemize-changes \"\$src/\" '$WORLD_RP_DIR'/\"\$name/\"; \
              done && \
              [ \"\$bp_found\" -eq 1 ] && \
              [ \"\$rp_found\" -eq 1 ]"
