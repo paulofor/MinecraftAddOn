@@ -1,3 +1,5 @@
+**Todo trabalho realizado nesse projeto deve ser registrado em : /docs/registros1.md**
+
 # AGENTS
 
 ## Objetivo do projeto
