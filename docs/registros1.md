@@ -151,3 +151,16 @@
 - Atualizado `AGENTS.md` para deixar explícito e permanente o processo obrigatório de tratamento de imagens de textura (`textures/**/*.png`).
 - O fluxo foi detalhado em 6 passos mandatórios: proibição de commit binário de PNG, upload exclusivo via MCP (`write_png_base64`), validação de disponibilidade (`tools/list`), validação de sucesso (`bytes_written`), registro obrigatório em `/docs/registros1.md` e versionamento dos objetos texto correlatos.
 - Objetivo: remover ambiguidades operacionais e reforçar a regra “sempre via MCP” para texturas.
+
+## 2026-05-11 18:00:41 UTC-3
+- Novo ajuste para resolver textura magenta persistente no barco de 3 jogadores sem versionar PNG no Git.
+- Alteração em `packs/RP_Barco3Jogadores/entity/barco_3_jogadores.entity.json`: textura do `client_entity` trocada de `textures/entity/barco_3_jogadores` para `textures/entity/boat/boat_oak` (textura vanilla existente no cliente), eliminando dependência de arquivo PNG custom no repositório.
+- Versionamento de objeto atualizado em `packs/RP_Barco3Jogadores/manifest.json`: `0.1.9` -> `0.1.10` (header e module) para forçar atualização de pack no cliente/servidor.
+- Próximo passo operacional recomendado: aplicar deploy do RP atualizado e reentrar no mundo para invalidar cache local de resource pack.
+
+## 2026-05-11 18:10:19 UTC-3
+- Diagnóstico orientado por logs/MCP para o problema de textura do barco ainda magenta.
+- Verificação no `bedrock.log` confirmou carregamento do BP (`BP Barco 3 Jogadores v0.1.7`) e spawn da entidade, sem erro de script para o barco, indicando problema de asset/deploy do RP e não de runtime da entidade.
+- Ajuste no `client_entity` revertido para usar novamente textura custom `textures/entity/barco_3_jogadores` (agora que o PNG válido já existe no host).
+- Ajuste no workflow `.github/workflows/publish-server.yml`: sincronização de `RP_*` para o mundo agora ignora `textures/**/*.png` no `rsync`, evitando sobrescrever no servidor os PNGs publicados via MCP com ponteiros/arquivos do repositório.
+- Versionamento atualizado em `packs/RP_Barco3Jogadores/manifest.json`: `0.1.10` -> `0.1.11` (header e module).
