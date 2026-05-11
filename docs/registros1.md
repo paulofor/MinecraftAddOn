@@ -61,3 +61,10 @@
   - arquivo `packs/BP_Barco3Jogadores/entities/barco_3_jogadores.json` foi reestruturado para remover componentes manuais de controle terrestre e alinhar a base de movimentação/flutuação ao padrão da `minecraft:boat` oficial;
   - assentos configurados para 3 jogadores com `controlling_seat: 0` e posições baseadas no layout do barco vanilla, preservando dirigibilidade no assento do piloto;
   - versionamento atualizado por alteração de objeto: BP `0.1.6` -> `0.1.7` e RP `0.1.7` -> `0.1.8`.
+
+## 2026-05-11 14:40:09 UTC-3
+- Ajuste no workflow de publicação do servidor para evitar envio de ponteiros Git LFS no lugar dos binários reais (ex.: `.png`).
+- Alteração aplicada em `.github/workflows/publish-server.yml`:
+  - `actions/checkout@v4` configurado com `lfs: true`;
+  - etapa explícita `git lfs pull` adicionada antes da sincronização de `packs/`.
+- Objetivo: garantir que o `rsync` publique texturas/imagens reais no servidor remoto.
