@@ -16,5 +16,5 @@ services:
     ports:
       - ${MCP_HOST_PORT:-80}:${MCP_HTTP_PORT:-8765}
     volumes:
-      - ${BEDROCK_ROOT:-/root/MinecraftServer}:/root/MinecraftServer:ro
-      - ${HOST_REPO_DIR:-/root/MinecraftAddOn}:/root/MinecraftAddOn:ro
+      - ${BEDROCK_ROOT:-/root/MinecraftServer}:/root/MinecraftServer:${BEDROCK_ROOT_MOUNT_MODE:-rw}
+      - ${HOST_REPO_DIR:-/root/MinecraftAddOn}:/root/MinecraftAddOn:${HOST_REPO_MOUNT_MODE:-ro}
