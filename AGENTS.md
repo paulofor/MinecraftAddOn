@@ -182,6 +182,31 @@ Diretriz operacional:
 - evitar PRs com diff binário de `.png`;
 - manter no Git apenas definições, manifests, scripts e demais arquivos texto de configuração.
 
+### Processo obrigatório para imagens de textura (sempre)
+Quando houver criação/alteração de **texturas** (`textures/**/*.png`), seguir **obrigatoriamente** este fluxo:
+
+1. **Não commitar PNG no Git**  
+   - é proibido abrir PR com diff binário de `.png`;
+   - se houver alteração visual, manter no Git apenas arquivos texto correlatos (JSON, manifest, controllers, scripts).
+
+2. **Publicar textura somente via MCP**  
+   - usar `tools/call` com `write_png_base64`;
+   - destino deve ser caminho do host Bedrock (ex.: `/root/MinecraftServer/resource_packs/.../*.png`).
+
+3. **Validar disponibilidade do MCP antes do upload**  
+   - executar `tools/list` no endpoint `http://186.202.209.206/mcp`;
+   - se houver `timeout`/`503`, aplicar retentativas até estabilizar.
+
+4. **Validar resultado do upload**  
+   - confirmar resposta de sucesso com `bytes_written`;
+   - reconsultar arquivo/diretório remoto (quando aplicável) para garantir persistência.
+
+5. **Registrar evidências em `/docs/registros1.md`**  
+   - registrar timestamp UTC-3, origem da textura, caminho de destino, resultado e erros/intermitências;
+   - em caso de falha, registrar causa e próximo passo.
+
+6. **Versionar objetos relacionados (arquivos texto)**  
+   - sempre incrementar versão dos manifests/definições impactadas por alteração de textura, garantindo rastreabilidade de deploy.
+
 ## Regra de versionamento de objetos
 Sempre que alterar qualquer objeto do projeto (entidades, blocos, itens, scripts, manifests ou definições relacionadas), atualizar a versão correspondente no arquivo impactado para garantir rastreabilidade e deploy consistente.
-
