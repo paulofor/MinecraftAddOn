@@ -185,3 +185,33 @@
   - log de inicialização do script atualizado para exibir referência de textura/arquivo de definição.
 - Versionamento atualizado por alteração de script/objeto em `packs/BP_Barco3Jogadores/manifest.json`: `0.1.7` -> `0.1.8` (header, module data e module script).
 - Observação técnica: o servidor não confirma “download de textura do cliente”; o log adicionado rastreia o ponto de spawn e qual textura o `client_entity` deveria resolver.
+
+## 2026-05-11 20:57:37 UTC-3
+- Atendimento ao pedido de diagnóstico via MCP Readonly para o barco de 3 pessoas (navegação/textura).
+- Endpoint `http://186.202.209.206/mcp` validado com `tools/list` (tools disponíveis: `list_directory`, `read_file`, `write_png_base64`, `run_read_command`).
+- Leitura de log remoto via `run_read_command` (`tail -n 260 /root/MinecraftServer/logging/bedrock.log`) com intermitência inicial (`connection timeout`) e sucesso na retentativa.
+- Evidências do log:
+  - não houve `TypeError`/`SyntaxError` relacionado ao barco;
+  - houve eventos de spawn e proximidade do `Barco3Debug`;
+  - em um trecho houve `riders=1` e deslocamento grande no eixo `x` (de `~2.42` para `14.89`), seguido por retorno para `riders=0`.
+- Indicação diagnóstica registrada: o problema atual aparenta estar mais em comportamento/física/controle da entidade em runtime e não em erro explícito de script no log.
+
+## 2026-05-11 22:56:12 UTC-3
+- Ajustes solicitados para o barco de 3 pessoas em **textura** e **navegação**.
+- Consulta técnica ao MCP Server da Microsoft Learn (`https://learn.microsoft.com/api/mcp`) usando `tools/call` (`microsoft_docs_search`) para validar referências oficiais de `minecraft:rideable` (propriedade `controlling_seat`, semântica de assentos) e boas práticas de entidades baseadas em vanilla boat.
+- Correção de textura (sem commit de PNG): `client_entity` alterado para `textures/entity/boat/boat_oak`, removendo dependência do arquivo local `barco_3_jogadores.png` (que está como ponteiro LFS no repositório).
+- Correção de navegação/assentos em `minecraft:rideable`:
+  - reconfiguração dos 3 assentos com `max_rider_count: 1` para cada seat;
+  - normalização de `min_rider_count: 0` para evitar bloqueio condicional por contagem global;
+  - reposicionamento dos assentos para distribuição mais estável (piloto + 2 passageiros traseiros).
+- Versionamento atualizado por alteração de objeto:
+  - `packs/BP_Barco3Jogadores/manifest.json`: `0.1.8` -> `0.1.9`;
+  - `packs/RP_Barco3Jogadores/manifest.json`: `0.1.11` -> `0.1.12`.
+
+## 2026-05-11 22:59:56 UTC-3
+- Ajuste solicitado após revisão: retorno do lookup de textura do barco 3 jogadores para o asset custom.
+- `client_entity` atualizado para usar `textures/entity/barco_3_jogadores`, compatível com a textura disponível no host em `/root/MinecraftServer/resource_packs/RP_Barco3Jogadores/textures/entity/barco_3_jogadores.png`.
+- Script de debug (`EXPECTED_TEXTURE`) alinhado para o mesmo caminho, facilitando validação em log de spawn.
+- Versionamento incrementado por alteração de objeto:
+  - BP `0.1.9` -> `0.1.10`;
+  - RP `0.1.12` -> `0.1.13`.
