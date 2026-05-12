@@ -348,3 +348,18 @@ Checklist executado no host via MCP readonly/projeto:
   - container passa a executar como `USER root`.
 - Objetivo: permitir que a tool `write_png_base64` grave também no caminho do mundo (ex.: `/root/MinecraftServer/worlds/Bedrock level/resource_packs/...`).
 - Observação operacional: após merge/deploy, é necessário recriar o container MCP para aplicar a nova imagem antes de retestar upload para o path do mundo.
+
+## 2026-05-12 18:15:01 UTC-3
+- Solicitação operacional atendida via MCP Server: upload de PNG do objeto `goo_doo` para a pasta do mundo.
+- Validação de disponibilidade do MCP (`tools/list`) executada com sucesso no endpoint `http://186.202.209.206/mcp`.
+- Pasta de destino validada via MCP: `/root/MinecraftServer/worlds/Bedrock level`.
+- Upload realizado via `write_png_base64` para `/root/MinecraftServer/worlds/Bedrock level/goo_doo.png` com retorno de sucesso `bytes_written: 68`.
+- Persistência validada via `list_directory` confirmando presença do arquivo `goo_doo.png` no mundo.
+- Tentativa de reinicialização do servidor Bedrock via MCP não concluída: a tool disponível para comandos (`run_read_command`) bloqueia comandos de administração e retornou `Comando não permitido: systemctl`.
+- Próximo passo sugerido: expor no MCP uma tool administrativa de restart (ex.: `restart_bedrock`) ou ampliar allowlist controlada para operação de reinício.
+
+## 2026-05-12 18:17:33 UTC-3
+- Implementada no MCP (`infra/mcp-bedrock-readonly/server.py`) a nova tool `restart_bedrock` para permitir reinício do servidor Bedrock por JSON-RPC.
+- A tool executa comando configurável por variável de ambiente `BEDROCK_RESTART_CMD` e retorna `status`, `exit_code`, `stdout` e `stderr`.
+- Caso o comando não esteja configurado, a API retorna erro explícito orientando definir `BEDROCK_RESTART_CMD`.
+- Versionamento do MCP incrementado de `0.2.0` para `0.3.0` por adição de capacidade administrativa de restart.

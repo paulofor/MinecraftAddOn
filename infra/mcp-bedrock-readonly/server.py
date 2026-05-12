@@ -13,7 +13,7 @@ from pathlib import Path
 from typing import Any
 
 SERVER_NAME = "bedrock-readonly"
-SERVER_VERSION = "0.2.0"
+SERVER_VERSION = "0.3.0"
 PROTOCOL_VERSION = "2024-11-05"
 
 DEFAULT_ALLOWED_ROOTS = (
@@ -30,6 +30,8 @@ DEFAULT_MAX_FILE_BYTES = int(os.getenv("MAX_FILE_BYTES", "200000"))
 TRANSPORT = os.getenv("MCP_TRANSPORT", "stdio").strip().lower()
 HTTP_HOST = os.getenv("MCP_HTTP_HOST", "0.0.0.0")
 HTTP_PORT = int(os.getenv("MCP_HTTP_PORT", "8765"))
+
+BEDROCK_RESTART_CMD = [part for part in os.getenv("BEDROCK_RESTART_CMD", "").split() if part]
 
 SAFE_COMMANDS = {
   "cat",
@@ -166,6 +168,32 @@ def _write_png_base64(path: str, png_base64: str, overwrite: bool = False) -> di
     "overwrote": existed_before,
   }
 
+def _restart_bedrock() -> dict[str, Any]:
+  if not BEDROCK_RESTART_CMD:
+    raise ValueError("Reinício não configurado: defina BEDROCK_RESTART_CMD no ambiente do MCP")
+
+  completed = subprocess.run(
+    BEDROCK_RESTART_CMD,
+    capture_output=True,
+    text=True,
+    timeout=DEFAULT_CMD_TIMEOUT,
+    check=False,
+  )
+
+  if completed.returncode != 0:
+    raise RuntimeError(
+      f"Falha no restart (exit_code={completed.returncode}): {completed.stderr.strip() or completed.stdout.strip()}"
+    )
+
+  return {
+    "command": BEDROCK_RESTART_CMD,
+    "exit_code": completed.returncode,
+    "stdout": completed.stdout,
+    "stderr": completed.stderr,
+    "status": "restarted",
+  }
+
+
 def _tools_list_result() -> dict[str, Any]:
   return {
     "tools": [
@@ -201,6 +229,14 @@ def _tools_list_result() -> dict[str, Any]:
             "overwrite": {"type": "boolean"}
           },
           "required": ["path", "png_base64"]
+        },
+      },
+      {
+        "name": "restart_bedrock",
+        "description": "Reinicia o servidor Bedrock via comando configurado em BEDROCK_RESTART_CMD.",
+        "inputSchema": {
+          "type": "object",
+          "properties": {},
         },
       },
       {
@@ -265,6 +301,8 @@ def _handle_rpc(message: dict[str, Any]) -> dict[str, Any] | None:
           png_base64=arguments["png_base64"],
           overwrite=bool(arguments.get("overwrite", False)),
         )
+      elif name == "restart_bedrock":
+        payload = _restart_bedrock()
       elif name == "run_read_command":
         payload = _run_read_command(
           command=arguments["command"],
