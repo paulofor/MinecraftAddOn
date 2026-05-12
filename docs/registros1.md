@@ -363,3 +363,31 @@ Checklist executado no host via MCP readonly/projeto:
 - A tool executa comando configurável por variável de ambiente `BEDROCK_RESTART_CMD` e retorna `status`, `exit_code`, `stdout` e `stderr`.
 - Caso o comando não esteja configurado, a API retorna erro explícito orientando definir `BEDROCK_RESTART_CMD`.
 - Versionamento do MCP incrementado de `0.2.0` para `0.3.0` por adição de capacidade administrativa de restart.
+
+## 2026-05-12 18:46:21 UTC-3 — Investigação MCP: item `digicomo:goo` preto/roxo
+- Solicitação: validar no servidor (via MCP Readonly) por que o item custom continua com textura ausente (preto/roxo).
+- Endpoint testado: `http://186.202.209.206/mcp`.
+- Disponibilidade MCP: intermitente (timeouts em algumas chamadas), com sucesso após retentativas em `tools/list` e demais `tools/call`.
+- Evidências coletadas no host:
+  - `worlds/Bedrock level/resource_packs/RP_GooDemo` existe e contém `manifest.json`, `texts/` e `textures/`.
+  - `worlds/Bedrock level/resource_packs/RP_GooDemo/textures/item_texture.json` aponta `goo_item -> textures/items/goo`.
+  - **não existe** `worlds/Bedrock level/resource_packs/RP_GooDemo/textures/items/` (diretório inexistente).
+  - no caminho global existe `resource_packs/RP_GooDemo/textures/items/goo.png` (arquivo presente, 425 bytes).
+- Conclusão técnica:
+  - O atlas do item no pack do **mundo** referencia `textures/items/goo`, porém o `goo.png` não está no pack ativo do mundo; por isso o cliente renderiza preto/roxo.
+  - Estado atual **não está OK** para esse item no mundo em execução.
+- Próximo passo recomendado:
+  - publicar `goo.png` via MCP (`write_png_base64`) diretamente em `/root/MinecraftServer/worlds/Bedrock level/resource_packs/RP_GooDemo/textures/items/goo.png` e validar persistência com `list_directory`.
+
+## 2026-05-12 21:52:54 UTC-3 — Upload MCP do `goo.png` no pack do mundo + tentativa de reinício
+- Ação solicitada: enviar `goo.png` para o caminho correto do mundo e reiniciar via MCP Server.
+- Upload executado via `write_png_base64` para:
+  `/root/MinecraftServer/worlds/Bedrock level/resource_packs/RP_GooDemo/textures/items/goo.png`
+- Resultado do upload: sucesso (`bytes_written: 68`, `overwrote: false`).
+- Validação pós-upload via `list_directory`: arquivo `goo.png` presente em `.../textures/items` com `size: 68`.
+- Tentativa de reinício via tool `restart_bedrock`: **falhou** com erro de configuração:
+  `Reinício não configurado: defina BEDROCK_RESTART_CMD no ambiente do MCP`.
+- Próximo passo operacional para concluir reinício via MCP:
+  - configurar variável `BEDROCK_RESTART_CMD` no container `minecraftaddon-bedrock-mcp-readonly-1`;
+  - recriar/reiniciar o container MCP;
+  - repetir chamada `restart_bedrock`.
