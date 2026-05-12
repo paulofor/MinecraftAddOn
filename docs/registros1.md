@@ -215,3 +215,11 @@
 - Versionamento incrementado por alteração de objeto:
   - BP `0.1.9` -> `0.1.10`;
   - RP `0.1.12` -> `0.1.13`.
+
+## 2026-05-11 23:06:06 UTC-3
+- Correção do erro de CI relacionado a Git LFS 404 no workflow de publicação.
+- Ajuste aplicado em `.github/workflows/publish-server.yml`:
+  - removido `lfs: true` do `actions/checkout@v4`;
+  - removida etapa `Garantir download de objetos Git LFS` (`git lfs pull`).
+- Objetivo: impedir que o workflow tente baixar objetos LFS históricos ausentes no servidor (`404 Object does not exist`) e falhe antes do deploy.
+- A diretriz de textura PNG permanece: publicação/atualização via MCP no host, sem depender de blobs LFS no CI.
