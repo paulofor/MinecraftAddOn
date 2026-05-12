@@ -41,23 +41,35 @@
         "passenger_max_width": 1.375,
         "seats": [
           {
-            "position": [0.0, -0.2, 0.0],
+            "position": [
+              0.0,
+              -0.2,
+              0.25
+            ],
             "min_rider_count": 0,
             "max_rider_count": 1,
             "lock_rider_rotation": 90,
             "rotate_rider_by": -90
           },
           {
-            "position": [0.2, -0.2, 0.0],
-            "min_rider_count": 2,
-            "max_rider_count": 2,
+            "position": [
+              0.45,
+              -0.2,
+              -0.55
+            ],
+            "min_rider_count": 0,
+            "max_rider_count": 1,
             "lock_rider_rotation": 90,
             "rotate_rider_by": -90
           },
           {
-            "position": [-0.6, -0.2, 0.0],
-            "min_rider_count": 3,
-            "max_rider_count": 3,
+            "position": [
+              -0.45,
+              -0.2,
+              -0.55
+            ],
+            "min_rider_count": 0,
+            "max_rider_count": 1,
             "lock_rider_rotation": 90,
             "rotate_rider_by": -90
           }

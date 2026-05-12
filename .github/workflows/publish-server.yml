@@ -29,13 +29,6 @@ jobs:
     steps:
       - name: Checkout do repositório
         uses: actions/checkout@v4
-        with:
-          lfs: true
-
-      - name: Garantir download de objetos Git LFS
-        run: |
-          git lfs pull
-
       - name: Instalar dependência (rsync)
         run: |
           sudo apt-get update
