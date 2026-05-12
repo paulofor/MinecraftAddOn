@@ -223,3 +223,45 @@
   - removida etapa `Garantir download de objetos Git LFS` (`git lfs pull`).
 - Objetivo: impedir que o workflow tente baixar objetos LFS históricos ausentes no servidor (`404 Object does not exist`) e falhe antes do deploy.
 - A diretriz de textura PNG permanece: publicação/atualização via MCP no host, sem depender de blobs LFS no CI.
+
+## 2026-05-12 11:28:13 UTC-3
+- Consulta realizada ao MCP Server oficial da Microsoft Learn (`https://learn.microsoft.com/api/mcp`) via JSON-RPC.
+- `tools/list` validou disponibilidade das tools (`microsoft_docs_search`, `microsoft_code_sample_search`, `microsoft_docs_fetch`).
+- Busca executada com `microsoft_docs_search` para exemplo de Add-On com textura própria PNG.
+- Exemplo oficial encontrado: **Custom Items -> Goo** em `https://learn.microsoft.com/minecraft/creator/documents/addcustomitems?view=minecraft-bedrock-stable#goo`.
+- Evidência técnica do exemplo:
+  - `item_texture.json` mapeia o item `demo:goo` para `textures/items/goo`;
+  - tutorial fornece arquivo de textura `goo.png`;
+  - orientação oficial para copiar `goo.png` em `development_resource_pack/textures/items/`.
+
+## 2026-05-12 11:45:37 UTC-3
+- Implementado no projeto o exemplo de item custom com textura própria, inspirado no tutorial oficial **Custom Items -> Goo** da Microsoft Learn.
+- Novo item no BP: `packs/BP_QuadroIdeias/items/goo.json` com identificador `digicomo:goo`, ícone `goo_item` e nome localizado `item.digicomo:goo.name`.
+- RP atualizado em `packs/RP_QuadroIdeias/textures/item_texture.json` com mapeamento `goo_item` -> `textures/items/goo`.
+- Localização adicionada em `packs/RP_QuadroIdeias/texts/en_US.lang`: `item.digicomo:goo.name=Goo de Exemplo`.
+- Versionamento incrementado por alteração de objeto:
+  - `packs/BP_QuadroIdeias/manifest.json`: `0.3.0` -> `0.3.1`;
+  - `packs/RP_QuadroIdeias/manifest.json`: `0.3.1` -> `0.3.2`.
+- Observação operacional de PNG: por diretriz do projeto, o arquivo `textures/items/goo.png` **não foi commitado no Git** e deve ser publicado no host via MCP (`write_png_base64`) no caminho do RP correspondente.
+
+## 2026-05-12 11:49:43 UTC-3
+- Ajuste solicitado: exemplo do item `goo` migrado para **pack novo** dedicado, sem reutilizar/alterar o pack `QuadroIdeias`.
+- Novo Behavior Pack criado: `packs/BP_GooDemo`.
+  - `manifest.json` versão inicial `0.1.0`.
+  - item `digicomo:goo` em `items/goo.json` com ícone `goo_item`.
+- Novo Resource Pack criado: `packs/RP_GooDemo`.
+  - `manifest.json` versão inicial `0.1.0`.
+  - mapeamento de textura em `textures/item_texture.json`: `goo_item` -> `textures/items/goo`.
+  - localização em `texts/en_US.lang`: `item.digicomo:goo.name=Goo de Exemplo`.
+- Reversão aplicada nas mudanças anteriores do `QuadroIdeias` para manter o escopo do exemplo isolado em pack próprio.
+- Regra de PNG preservada: `textures/items/goo.png` não foi commitado; upload deve ser feito via MCP (`write_png_base64`) no host Bedrock.
+
+## 2026-05-12 12:01:41 UTC-3
+- Verificação de disponibilidade do MCP Readonly em `http://186.202.209.206/mcp` via `tools/list`: tool `write_png_base64` disponível.
+- Texture PNG do exemplo Goo obtida da documentação oficial Microsoft Learn: `https://learn.microsoft.com/minecraft/creator/documents/media/addcustomitems/goo.png?view=minecraft-bedrock-stable`.
+- Upload da textura executado via MCP (`write_png_base64`) para:
+  - `/root/MinecraftServer/resource_packs/RP_GooDemo/textures/items/goo.png`.
+- Resultado do upload:
+  - tentativas 1 e 2: `HTTP 503 Service Unavailable` (intermitência);
+  - tentativa 3: **sucesso** com `bytes_written: 425` e `overwrote: false`.
+- Validação pós-upload via MCP (`list_directory`) confirmou persistência do arquivo `goo.png` com tamanho `425` bytes no diretório de destino.

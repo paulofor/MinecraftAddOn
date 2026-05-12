@@ -1,0 +1,9 @@
+{
+  "resource_pack_name": "goo_demo",
+  "texture_name": "atlas.items",
+  "texture_data": {
+    "goo_item": {
+      "textures": "textures/items/goo"
+    }
+  }
+}
