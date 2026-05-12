@@ -255,3 +255,13 @@
   - localização em `texts/en_US.lang`: `item.digicomo:goo.name=Goo de Exemplo`.
 - Reversão aplicada nas mudanças anteriores do `QuadroIdeias` para manter o escopo do exemplo isolado em pack próprio.
 - Regra de PNG preservada: `textures/items/goo.png` não foi commitado; upload deve ser feito via MCP (`write_png_base64`) no host Bedrock.
+
+## 2026-05-12 12:01:41 UTC-3
+- Verificação de disponibilidade do MCP Readonly em `http://186.202.209.206/mcp` via `tools/list`: tool `write_png_base64` disponível.
+- Texture PNG do exemplo Goo obtida da documentação oficial Microsoft Learn: `https://learn.microsoft.com/minecraft/creator/documents/media/addcustomitems/goo.png?view=minecraft-bedrock-stable`.
+- Upload da textura executado via MCP (`write_png_base64`) para:
+  - `/root/MinecraftServer/resource_packs/RP_GooDemo/textures/items/goo.png`.
+- Resultado do upload:
+  - tentativas 1 e 2: `HTTP 503 Service Unavailable` (intermitência);
+  - tentativa 3: **sucesso** com `bytes_written: 425` e `overwrote: false`.
+- Validação pós-upload via MCP (`list_directory`) confirmou persistência do arquivo `goo.png` com tamanho `425` bytes no diretório de destino.
