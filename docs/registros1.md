@@ -391,3 +391,16 @@ Checklist executado no host via MCP readonly/projeto:
   - configurar variável `BEDROCK_RESTART_CMD` no container `minecraftaddon-bedrock-mcp-readonly-1`;
   - recriar/reiniciar o container MCP;
   - repetir chamada `restart_bedrock`.
+
+## 2026-05-12 19:11:22 UTC-3
+- Diagnóstico do item reportado como `goodoo` sem textura no pacote Goo Demo.
+- Verificação dos arquivos de definição confirmou que o item está registrado como `digicomo:goo` e usa ícone `goo_item` mapeado para `textures/items/goo`.
+- Foi identificado que o arquivo de textura esperado `packs/RP_GooDemo/textures/items/goo.png` não existe no repositório (ausente localmente), explicando o fallback sem textura.
+- Recomenda-se **não** apagar e recriar todos os objetos: primeiro publicar apenas a textura PNG correta via MCP (`write_png_base64`) no host Bedrock no caminho correspondente do RP ativo e, em seguida, incrementar versão dos manifests BP/RP para forçar recarga do pack.
+
+## 2026-05-12 19:15:02 UTC-3
+- Revisão dos manifests do Goo Demo para suporte à recarga de pack após upload de textura via MCP no mundo.
+- Versionamento atualizado por rastreabilidade de objeto:
+  - `packs/RP_GooDemo/manifest.json`: `0.1.0` -> `0.1.1` (header e module resources).
+  - `packs/BP_GooDemo/manifest.json`: `0.1.0` -> `0.1.1` (header e module data).
+- Objetivo: forçar refresh de pacote no cliente/servidor e reduzir risco de cache mantendo a regra de PNG fora do Git.
