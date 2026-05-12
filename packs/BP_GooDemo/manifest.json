@@ -4,14 +4,26 @@
     "name": "BP Goo Demo",
     "description": "Behavior Pack com item custom Goo para exemplo educativo.",
     "uuid": "4a132eb9-4057-4047-94fb-b21daa47f7cd",
-    "version": [0, 1, 0],
-    "min_engine_version": [1, 20, 0]
+    "version": [
+      0,
+      1,
+      1
+    ],
+    "min_engine_version": [
+      1,
+      20,
+      0
+    ]
   },
   "modules": [
     {
       "type": "data",
       "uuid": "5a8cc6bc-29a3-4e65-afb0-d31f1c5f9eaa",
-      "version": [0, 1, 0]
+      "version": [
+        0,
+        1,
+        1
+      ]
     }
   ]
 }
