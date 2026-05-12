@@ -6,9 +6,10 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 WORKDIR /app
 COPY infra/mcp-bedrock-readonly/server.py /app/server.py
 
-RUN adduser --disabled-password --gecos '' appuser && \
-    chmod 755 /app/server.py && \
+RUN chmod 755 /app/server.py && \
     chmod 755 /root
 
-USER appuser
+# Necessário para permitir escrita em caminhos do mundo Bedrock (ex.: worlds/*/resource_packs)
+# ao usar a tool write_png_base64 no host montado em /root/MinecraftServer.
+USER root
 ENTRYPOINT ["python", "/app/server.py"]
