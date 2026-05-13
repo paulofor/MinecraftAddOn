@@ -588,3 +588,37 @@ Checklist executado no host via MCP readonly/projeto:
 - Regras do projeto reforçadas no documento:
   - PNG não é commitado no Git;
   - publicação deve ser via MCP no host, com foco no caminho do pack do mundo ativo.
+
+## 2026-05-12 23:10:48 (UTC-3) — Diagnóstico MCP: PNG do Barco 3 Jogadores incorreto no mundo
+- Contexto: após confirmação de funcionamento do "barco 3 pessoas", foi solicitado validar o PNG ativo no mundo via MCP Server.
+- Endpoint consultado: `http://186.202.209.206/mcp`.
+- Evidências:
+  - `tools/list` apresentou intermitência (timeouts) e respondeu com sucesso após retentativas.
+  - `list_directory` em `/root/MinecraftServer/worlds/Bedrock level/resource_packs` confirmou o pack `RP_Barco3Jogadores` no mundo ativo.
+  - `list_directory` em `/root/MinecraftServer/worlds/Bedrock level/resource_packs/RP_Barco3Jogadores/textures/entity` retornou `barco_3_jogadores.png` com `size: 129` bytes.
+  - Arquivo local `packs/RP_Barco3Jogadores/textures/entity/barco_3_jogadores.png` também está com 129 bytes e conteúdo textual de ponteiro Git LFS (não imagem PNG binária), confirmando origem do erro visual.
+- Conclusão: o PNG atualmente no mundo está incorreto (ponteiro LFS), portanto a textura carregada no Bedrock é inválida.
+- Próximo passo recomendado: publicar o PNG binário real via MCP (`write_png_base64`) diretamente no path do mundo: `/root/MinecraftServer/worlds/Bedrock level/resource_packs/RP_Barco3Jogadores/textures/entity/barco_3_jogadores.png`, depois validar `bytes_written` e tamanho final do arquivo.
+
+## 2026-05-12 23:13:33 (UTC-3) — Ajuste de workflow para impedir recorrência de PNG inválido
+- Solicitação: ajustar o workflow para não voltar a gerar problema de textura por arquivo `.png` incorreto (ex.: ponteiro LFS).
+- Alteração aplicada em `.github/workflows/publish-server.yml`:
+  - no passo **Publicar packs no servidor**, adicionado `--exclude='*.png'` no `rsync` de `packs/` para o host;
+  - no passo **Promover packs para o mundo Bedrock** (loop `RP_*`), adicionado `--exclude='*.png'` no `rsync` para `WORLD_RP_DIR`.
+- Efeito esperado:
+  - o workflow não sobrescreve nem publica PNG por Git/CI;
+  - texturas continuam sob fluxo oficial via MCP (`write_png_base64`), evitando envio de ponteiro LFS como se fosse imagem.
+- Observação operacional: manter versionamento de manifests/definições textuais quando houver mudança de objeto, e publicar PNG apenas no caminho do pack do mundo ativo via MCP.
+
+## 2026-05-13 00:11:43 (UTC-3) — Criação e envio de PNG de textura do barco via MCP
+- Solicitação: criar um PNG de textura de barco e enviar novamente para o mundo.
+- Ação executada:
+  - PNG criado localmente de forma procedural (128x64 RGBA, padrão amadeirado) em `/tmp/barco_3_jogadores.png`.
+  - Upload realizado via MCP `write_png_base64` para:
+    `/root/MinecraftServer/worlds/Bedrock level/resource_packs/RP_Barco3Jogadores/textures/entity/barco_3_jogadores.png`.
+- Resultado do MCP:
+  - `bytes_written: 231`
+  - `overwrote: false`
+- Validação pós-upload:
+  - `list_directory` no diretório de destino confirmou `barco_3_jogadores.png` com `size: 231` bytes.
+- Observação: operação seguiu a diretriz de PNG fora do Git (sem commit de binário `.png`).
