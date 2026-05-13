@@ -622,3 +622,15 @@ Checklist executado no host via MCP readonly/projeto:
 - Validação pós-upload:
   - `list_directory` no diretório de destino confirmou `barco_3_jogadores.png` com `size: 231` bytes.
 - Observação: operação seguiu a diretriz de PNG fora do Git (sem commit de binário `.png`).
+
+## 2026-05-13 00:14:23 (UTC-3) — Bump de versão do Barco 3 Jogadores para forçar atualização
+- Solicitação: aumentar a versão do Barco 3 Jogadores para garantir atualização/aplicação no mundo.
+- Alterações de versionamento realizadas:
+  - `packs/BP_Barco3Jogadores/manifest.json`
+    - `header.version`: `0.1.13` -> `0.1.14`
+    - `modules[data].version`: `0.1.13` -> `0.1.14`
+    - `modules[script].version`: `0.1.13` -> `0.1.14`
+  - `packs/RP_Barco3Jogadores/manifest.json`
+    - `header.version`: `0.1.16` -> `0.1.17`
+    - `modules[resources].version`: `0.1.16` -> `0.1.17`
+- Objetivo: forçar refresh de pack/version binding e facilitar propagação da atualização no ambiente Bedrock.
