@@ -549,3 +549,13 @@ Checklist executado no host via MCP readonly/projeto:
 - Validação pós-upload:
   - `list_directory` no path do mundo confirmou `size: 1574` para `barco_3_jogadores.png`;
   - `read_file` (16 bytes) retornou cabeçalho `PNG` (`\x89PNG\r\n\x1a\n...`), confirmando binário válido no destino.
+
+## 2026-05-12 22:50:00 UTC-3 — Documento de referência de textura usando exemplo Goo/Goo_Doo
+- Solicitação: criar documentação detalhando como construir referências de textura de objeto usando o código do item Goo/Goo_Doo.
+- Entrega realizada:
+  - criado `docs/referencia_textura_objeto_goo_doo.md` com fluxo completo BP -> `minecraft:icon` -> `item_texture.json` -> PNG final;
+  - detalhamento com arquivos reais do projeto (`packs/BP_GooDemo/items/goo.json` e `packs/RP_GooDemo/textures/item_texture.json`);
+  - checklist anti-falha (textura preto/roxo) e modelo reutilizável para novos objetos.
+- Regras do projeto reforçadas no documento:
+  - PNG não é commitado no Git;
+  - publicação deve ser via MCP no host, com foco no caminho do pack do mundo ativo.
