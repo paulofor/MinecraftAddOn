@@ -645,3 +645,16 @@ Checklist executado no host via MCP readonly/projeto:
     - `header.version`: `0.1.17` -> `0.1.18`
     - `modules[resources].version`: `0.1.17` -> `0.1.18`
 - Objetivo: indicar de forma explícita qual posição está associada ao controle da direção (seat de controle).
+
+## 2026-05-13 00:25:29 (UTC-3) — Remo dos dois lados com controle em assento único
+- Solicitação: manter remo visível dos dois lados do barco, mas preservar controle de direção em apenas um assento.
+- Ajuste aplicado no modelo:
+  - `packs/RP_Barco3Jogadores/models/entity/barco_3_jogadores.geo.json`
+    - adicionado o remo espelhado do lado esquerdo;
+    - mantido o remo do lado direito já existente.
+- Regra de controle mantida:
+  - o controle do barco permanece em assento único (`controlling_seat: 0`) na entidade BP já existente.
+- Versionamento atualizado no RP:
+  - `packs/RP_Barco3Jogadores/manifest.json`
+    - `header.version`: `0.1.18` -> `0.1.19`
+    - `modules[resources].version`: `0.1.18` -> `0.1.19`
