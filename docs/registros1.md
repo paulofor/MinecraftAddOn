@@ -579,3 +579,12 @@ Checklist executado no host via MCP readonly/projeto:
   - `packs/RP_Barco3Jogadores/manifest.json`: `0.1.15` -> `0.1.16`.
   - `packs/BP_Barco3Jogadores/manifest.json`: `0.1.12` -> `0.1.13`.
 - Justificativa técnica: remove dependência de PNG custom no fluxo de deploy para eliminar falha de textura preto/roxo em ambientes onde o arquivo no pack do mundo possa estar ausente/incorreto.
+## 2026-05-12 22:50:00 UTC-3 — Documento de referência de textura usando exemplo Goo/Goo_Doo
+- Solicitação: criar documentação detalhando como construir referências de textura de objeto usando o código do item Goo/Goo_Doo.
+- Entrega realizada:
+  - criado `docs/referencia_textura_objeto_goo_doo.md` com fluxo completo BP -> `minecraft:icon` -> `item_texture.json` -> PNG final;
+  - detalhamento com arquivos reais do projeto (`packs/BP_GooDemo/items/goo.json` e `packs/RP_GooDemo/textures/item_texture.json`);
+  - checklist anti-falha (textura preto/roxo) e modelo reutilizável para novos objetos.
+- Regras do projeto reforçadas no documento:
+  - PNG não é commitado no Git;
+  - publicação deve ser via MCP no host, com foco no caminho do pack do mundo ativo.
