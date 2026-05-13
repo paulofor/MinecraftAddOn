@@ -634,3 +634,14 @@ Checklist executado no host via MCP readonly/projeto:
     - `header.version`: `0.1.16` -> `0.1.17`
     - `modules[resources].version`: `0.1.16` -> `0.1.17`
 - Objetivo: forçar refresh de pack/version binding e facilitar propagação da atualização no ambiente Bedrock.
+
+## 2026-05-13 00:17:08 (UTC-3) — Ajuste visual do Barco 3 Lugares: remo em posição única
+- Solicitação: manter remo apenas em uma posição para representar visualmente o ponto de controle/direção do barco.
+- Alteração aplicada:
+  - `packs/RP_Barco3Jogadores/models/entity/barco_3_jogadores.geo.json`
+    - adicionados cubos de remo apenas no lado direito (uma única posição de remo), sem duplicar para o lado oposto.
+- Versionamento atualizado por alteração de objeto de RP:
+  - `packs/RP_Barco3Jogadores/manifest.json`
+    - `header.version`: `0.1.17` -> `0.1.18`
+    - `modules[resources].version`: `0.1.17` -> `0.1.18`
+- Objetivo: indicar de forma explícita qual posição está associada ao controle da direção (seat de controle).
