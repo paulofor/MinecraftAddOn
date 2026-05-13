@@ -51,6 +51,7 @@ jobs:
       - name: Publicar packs no servidor
         run: |
           rsync -az --delete \
+            --exclude='*.png' \
             -e "ssh -i ~/.ssh/id_ed25519 -p $VPS_PORT" \
             packs/ "$VPS_USER@$VPS_HOST:$REMOTE_DIR/packs/"
 
@@ -93,7 +94,8 @@ jobs:
                rp_found=1; \
                name=\$(basename \"\$src\"); \
                # RP_*: não usar --delete para preservar PNGs publicados via MCP no host.
-               rsync -azc --itemize-changes \"\$src/\" '$WORLD_RP_DIR'/\"\$name/\"; \
+               # PNGs são gerenciados somente via MCP (write_png_base64), nunca via workflow.
+               rsync -azc --itemize-changes --exclude='*.png' \"\$src/\" '$WORLD_RP_DIR'/\"\$name/\"; \
              done && \
              [ \"\$bp_found\" -eq 1 ] && \
              [ \"\$rp_found\" -eq 1 ]"
