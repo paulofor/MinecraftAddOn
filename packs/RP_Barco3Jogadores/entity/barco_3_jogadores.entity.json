@@ -7,7 +7,7 @@
         "default": "entity_alphatest"
       },
       "textures": {
-        "default": "textures/entity/boat/boat_oak"
+        "default": "textures/items/boat_oak"
       },
       "geometry": {
         "default": "geometry.minecraftaddon.barco_3_jogadores"
