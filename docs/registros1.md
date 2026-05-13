@@ -460,3 +460,11 @@ Checklist executado no host via MCP readonly/projeto:
   1. definir variável `BEDROCK_RESTART_CMD` no container/serviço MCP readonly;
   2. reiniciar o container MCP;
   3. repetir `restart_bedrock`.
+
+## 2026-05-13 00:45:00 UTC-3 — Bump de versão do GooDemo para forçar recarregamento no cliente
+- Solicitação: atualizar a versão do add-on Goo para garantir recarregamento no cliente.
+- Alterações realizadas:
+  - `packs/BP_GooDemo/manifest.json`: `header.version` e `modules[0].version` de `0.1.1` para `0.1.2`.
+  - `packs/RP_GooDemo/manifest.json`: `header.version` e `modules[0].version` de `0.1.1` para `0.1.2`.
+- Resultado esperado:
+  - o cliente detecta nova versão dos packs e força novo carregamento de conteúdo do item `digicomo:goo`.
