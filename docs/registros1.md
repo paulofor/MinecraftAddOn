@@ -468,3 +468,84 @@ Checklist executado no host via MCP readonly/projeto:
   - `packs/RP_GooDemo/manifest.json`: `header.version` e `modules[0].version` de `0.1.1` para `0.1.2`.
 - Resultado esperado:
   - o cliente detecta nova versão dos packs e força novo carregamento de conteúdo do item `digicomo:goo`.
+
+## 2026-05-12 22:07:05 UTC-3
+- Verificação do Barco 3 Jogadores para alinhar comportamento de textura com o mesmo padrão funcional aplicado no exemplo do Goo (evitando dependência de PNG versionado no Git).
+- Validação técnica: o arquivo  está como ponteiro Git LFS (texto), não PNG binário; por isso o lookup custom  pode falhar no cliente.
+- Ajuste aplicado no :  alterado para  em .
+- Ajuste de consistência no debug:  atualizado para  em .
+- Versionamento incrementado por alteração de objeto:
+  - :  -> ;
+  - :  -> .
+
+## __TS__
+- Registro de correção: a tentativa de append imediatamente anterior sofreu expansão indevida de shell por uso de heredoc sem aspas.
+- Conteúdo correto da atividade executada:
+  - verificação do Barco 3 Jogadores para alinhar comportamento de textura com o mesmo padrão funcional aplicado no exemplo do Goo (evitando dependência de PNG versionado no Git);
+  - validação técnica: o arquivo `packs/RP_Barco3Jogadores/textures/entity/barco_3_jogadores.png` está como ponteiro Git LFS (texto), não PNG binário; por isso o lookup custom `textures/entity/barco_3_jogadores` pode falhar no cliente;
+  - ajuste aplicado no `client_entity`: `textures.default` alterado para `textures/entity/boat/boat_oak` em `packs/RP_Barco3Jogadores/entity/barco_3_jogadores.entity.json`;
+  - ajuste de consistência no debug: `EXPECTED_TEXTURE` atualizado para `textures/entity/boat/boat_oak` em `packs/BP_Barco3Jogadores/scripts/main.js`;
+  - versionamento incrementado por alteração de objeto:
+    - `packs/RP_Barco3Jogadores/manifest.json`: `0.1.13` -> `0.1.14`;
+    - `packs/BP_Barco3Jogadores/manifest.json`: `0.1.10` -> `0.1.11`.
+
+## 2026-05-12 22:07:25 UTC-3
+- Registro de correção adicional: a entrada anterior ficou com placeholder  no título por falha operacional no comando de substituição.
+- Considerar como válido este timestamp para o bloco de correção referente à verificação de textura/JSON do Barco 3 Jogadores.
+
+## 2026-05-12 22:07:29 UTC-3
+- Registro de correção adicional: a entrada anterior ficou com placeholder `__TS__` no título por falha operacional no comando de substituição.
+- Considerar como válido este timestamp para o bloco de correção referente à verificação de textura/JSON do Barco 3 Jogadores.
+
+
+## 2026-05-12 22:11:23 UTC-3
+- Revisão solicitada do AGENTS.md e do padrão do Goo concluída: o correto é manter lookup custom no JSON e garantir PNG publicado no pack do mundo via MCP, em vez de fallback permanente para textura vanilla.
+- Ajuste aplicado no barco 3 jogadores para espelhar o padrão do Goo:
+  - :  voltou para ;
+  - :  alinhado para .
+- Versionamento incrementado por alteração de objeto:
+  - :  -> ;
+  - :  -> .
+- Observação operacional: para textura aparecer no mundo ativo, o PNG deve existir em  (upload via MCP ).
+
+## 2026-05-12 22:11:32 UTC-3
+- Revisão solicitada do AGENTS.md e do padrão do Goo concluída: o correto é manter lookup custom no JSON e garantir PNG publicado no pack do mundo via MCP, em vez de fallback permanente para textura vanilla.
+- Ajuste aplicado no barco 3 jogadores para espelhar o padrão do Goo:
+  - packs/RP_Barco3Jogadores/entity/barco_3_jogadores.entity.json: textures.default voltou para textures/entity/barco_3_jogadores.
+  - packs/BP_Barco3Jogadores/scripts/main.js: EXPECTED_TEXTURE alinhado para textures/entity/barco_3_jogadores.
+- Versionamento incrementado por alteração de objeto:
+  - packs/RP_Barco3Jogadores/manifest.json: 0.1.14 -> 0.1.15.
+  - packs/BP_Barco3Jogadores/manifest.json: 0.1.11 -> 0.1.12.
+- Observação operacional: para textura aparecer no mundo ativo, o PNG deve existir em /root/MinecraftServer/worlds/Bedrock level/resource_packs/RP_Barco3Jogadores/textures/entity/barco_3_jogadores.png (upload via MCP write_png_base64).
+
+## 2026-05-12 22:19:19 UTC-3
+- Ajuste solicitado: alinhar o Barco 3 Jogadores ao mesmo princípio do Goo para lookup de textura por JSON.
+- Confirmação técnica aplicada:
+  - Goo usa mapeamento em `textures/item_texture.json` apontando para `textures/items/goo`.
+  - Barco 3 Jogadores usa o equivalente oficial para entidades em `entity/barco_3_jogadores.entity.json`, com `textures.default` apontando para `textures/entity/barco_3_jogadores`.
+- Validação de consistência local:
+  - existe arquivo de textura no repositório em `packs/RP_Barco3Jogadores/textures/entity/barco_3_jogadores.png` (ponteiro LFS no Git);
+  - debug do BP (`EXPECTED_TEXTURE`) permanece no mesmo caminho `textures/entity/barco_3_jogadores`.
+- Próximo passo operacional obrigatório (host): garantir PNG binário no mundo ativo em `/root/MinecraftServer/worlds/Bedrock level/resource_packs/RP_Barco3Jogadores/textures/entity/barco_3_jogadores.png` via MCP `write_png_base64`.
+
+## 2026-05-12 22:22:52 UTC-3
+- Verificação remota solicitada via MCP Server concluída para a textura do Barco 3 Jogadores.
+- Endpoint validado: `tools/list` em `http://186.202.209.206/mcp` retornou toolset esperado (incluindo `list_directory`, `read_file` e `write_png_base64`).
+- Resultado no pack do mundo ativo (`/root/MinecraftServer/worlds/Bedrock level/resource_packs/RP_Barco3Jogadores/textures/entity`):
+  - arquivo `barco_3_jogadores.png` existe, porém com `size: 129`.
+  - leitura via `read_file` confirmou conteúdo de ponteiro Git LFS (`version ... git-lfs`, `oid ...`, `size 1574`), ou seja, **não é PNG binário válido** nesse caminho do mundo.
+- Resultado no pack global (`/root/MinecraftServer/resource_packs/RP_Barco3Jogadores/textures/entity`):
+  - arquivo `barco_3_jogadores.png` existe com `size: 1574`.
+  - tentativa de leitura textual retornou erro de decode UTF-8 com byte `0x89`, evidência compatível com assinatura binária PNG no início do arquivo.
+- Conclusão operacional: no mundo ativo a textura ainda está incorreta (ponteiro LFS); é necessário publicar o PNG binário no caminho do mundo via MCP `write_png_base64`.
+
+## 2026-05-12 22:26:11 UTC-3
+- Execução solicitada: envio da textura do Barco 3 Jogadores via MCP Server.
+- Pré-condição: o arquivo no mundo ativo estava como ponteiro LFS (129 bytes), então foi necessário publicar PNG binário no path do mundo.
+- Origem da textura usada no upload: `boat_oak.png` (Mojang/bedrock-samples), baixada para `/tmp/boat_oak.png` (1574 bytes).
+- Upload realizado via MCP `write_png_base64` com `overwrite=true` para:
+  `/root/MinecraftServer/worlds/Bedrock level/resource_packs/RP_Barco3Jogadores/textures/entity/barco_3_jogadores.png`.
+- Resultado do MCP: sucesso com `bytes_written: 1574` e `overwrote: true`.
+- Validação pós-upload:
+  - `list_directory` no path do mundo confirmou `size: 1574` para `barco_3_jogadores.png`;
+  - `read_file` (16 bytes) retornou cabeçalho `PNG` (`\x89PNG\r\n\x1a\n...`), confirmando binário válido no destino.
