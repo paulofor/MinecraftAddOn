@@ -92,7 +92,8 @@ jobs:
                [ -d \"\$src\" ] || continue; \
                rp_found=1; \
                name=\$(basename \"\$src\"); \
-               rsync -azc --delete --itemize-changes \"\$src/\" '$WORLD_RP_DIR'/\"\$name/\"; \
+               # RP_*: não usar --delete para preservar PNGs publicados via MCP no host.
+               rsync -azc --itemize-changes \"\$src/\" '$WORLD_RP_DIR'/\"\$name/\"; \
              done && \
              [ \"\$bp_found\" -eq 1 ] && \
              [ \"\$rp_found\" -eq 1 ]"
