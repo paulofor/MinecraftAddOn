@@ -2,8 +2,10 @@ import { system, world } from "@minecraft/server";
 
 const BOAT_ID = "minecraftaddon:barco_3_jogadores";
 const LOG_PREFIX = "[Barco3Debug]";
-const EXPECTED_TEXTURE = "textures/entity/boat/boat_oak";
+const EXPECTED_TEXTURE = "textures/items/boat_oak";
 const CLIENT_ENTITY_DEF = "RP_Barco3Jogadores/entity/barco_3_jogadores.entity.json";
+
+const boatState = new Map();
 
 function log(message) {
   console.warn(`${LOG_PREFIX} ${message}`);
@@ -11,6 +13,14 @@ function log(message) {
   system.run(() => {
     world.sendMessage(`§7${LOG_PREFIX} ${message}`);
   });
+}
+
+function round(n) {
+  return Math.round(n * 100) / 100;
+}
+
+function vecToStr(v) {
+  return `x=${round(v.x)} y=${round(v.y)} z=${round(v.z)}`;
 }
 
 function getPassengers(boat) {
@@ -33,6 +43,18 @@ function summarizeBoat(boat) {
     `riders=${passengers.length}`,
     `tags=${tags.length ? tags.join(",") : "(nenhuma)"}`
   ].join(" | ");
+}
+
+function directionFromVelocity(v) {
+  const ax = Math.abs(v.x);
+  const az = Math.abs(v.z);
+  if (ax < 0.03 && az < 0.03) return "parado";
+
+  if (ax >= az) {
+    return v.x >= 0 ? "leste (+X)" : "oeste (-X)";
+  }
+
+  return v.z >= 0 ? "sul (+Z)" : "norte (-Z)";
 }
 
 world.afterEvents.entitySpawn.subscribe((event) => {
@@ -67,6 +89,47 @@ system.runInterval(() => {
     }
   }
 }, 100);
+
+system.runInterval(() => {
+  for (const dimension of world.getDimensions()) {
+    for (const boat of dimension.getEntities({ type: BOAT_ID })) {
+      const riders = getPassengers(boat);
+      const ridersNames = riders.map((r) => r.name ?? r.typeId);
+      const riderKey = ridersNames.join("|");
+      const velocity = boat.getVelocity();
+      const direction = directionFromVelocity(velocity);
+      const currentLocation = boat.location;
+      const previous = boatState.get(boat.id);
+
+      if (!previous || previous.riderKey !== riderKey) {
+        log(
+          `ASSENTOS boat=${boat.id} -> riders=[${ridersNames.join(", ") || "vazio"}] | piloto=${ridersNames[0] ?? "nenhum"}`
+        );
+      }
+
+      if (riders.length > 0) {
+        const pilot = riders[0];
+        const pilotDirection = pilot?.getViewDirection?.();
+        const delta = previous
+          ? {
+              x: currentLocation.x - previous.location.x,
+              y: currentLocation.y - previous.location.y,
+              z: currentLocation.z - previous.location.z
+            }
+          : { x: 0, y: 0, z: 0 };
+
+        log(
+          `CONTROLE piloto=${pilot?.name ?? "desconhecido"} | view=${pilotDirection ? vecToStr(pilotDirection) : "n/d"} | vel=${vecToStr(velocity)} | desloc=${vecToStr(delta)} | direcao=${direction}`
+        );
+      }
+
+      boatState.set(boat.id, {
+        riderKey,
+        location: { ...currentLocation }
+      });
+    }
+  }
+}, 20);
 
 log(
   `Script de debug do Barco3 carregado. Texture lookup esperado: ${EXPECTED_TEXTURE} (def: ${CLIENT_ENTITY_DEF})`

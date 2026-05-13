@@ -690,3 +690,14 @@ Checklist executado no host via MCP readonly/projeto:
   - `header.version`: `0.1.19` -> `0.1.20`
   - `modules[resources].version`: `0.1.19` -> `0.1.20`
 - Observação de intermitência: tentativa de upload também no path global `/root/MinecraftServer/resource_packs/...` retornou timeout neste ciclo; o upload crítico no path do mundo foi concluído com sucesso.
+
+## 2026-05-13 17:27:57 UTC-3
+- Ajuste solicitado para o Barco 3 Jogadores com foco em visual e diagnóstico de dirigibilidade.
+- Visual: `client_entity` alterado para usar textura de item (`textures/items/boat_oak`) para comparação rápida de aparência sem depender de PNG custom no Git.
+- Observabilidade de direção/comandos do usuário em `packs/BP_Barco3Jogadores/scripts/main.js`:
+  - mantidos logs de spawn/proximidade;
+  - adicionados logs de mudança de assentos/piloto (`ASSENTOS`);
+  - adicionados logs periódicos de controle (`CONTROLE`) com direção de visão do piloto (`view`), velocidade do barco (`vel`), deslocamento por intervalo (`desloc`) e direção inferida de movimento (`direcao`).
+- Versionamento atualizado por alteração de objeto/script:
+  - BP `0.1.14` -> `0.1.15`;
+  - RP `0.1.20` -> `0.1.21`.
