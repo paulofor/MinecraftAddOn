@@ -216,3 +216,18 @@ Quando houver criação/alteração de **texturas** (`textures/**/*.png`), segui
 
 ## Regra de versionamento de objetos
 Sempre que alterar qualquer objeto do projeto (entidades, blocos, itens, scripts, manifests ou definições relacionadas), atualizar a versão correspondente no arquivo impactado para garantir rastreabilidade e deploy consistente.
+
+## MUITO IMPORTANTE — caminho efetivo de PNG no servidor (prioridade alta)
+Para itens/blocos com textura custom em mundos ativos, o PNG **deve existir no pack do mundo** (não apenas no pack global), respeitando exatamente o path referenciado no JSON de textura.
+
+Exemplo validado no ambiente:
+- Se `item_texture.json` do `RP_GooDemo` usa `"textures": "textures/items/goo"`, então o arquivo obrigatório é:
+  `/root/MinecraftServer/worlds/Bedrock level/resource_packs/RP_GooDemo/textures/items/goo.png`
+
+Regra operacional:
+1. Verificar primeiro o pack em `worlds/<nome-do-mundo>/resource_packs/<RP>/...`.
+2. Não assumir que `/root/MinecraftServer/resource_packs/<RP>/...` (global) será usado pelo mundo atual.
+3. Se faltar PNG no pack do mundo, publicar via MCP (`write_png_base64`) no path do mundo.
+4. Após upload, validar presença/tamanho do arquivo e manter versionamento dos manifests/definições impactadas.
+
+Sinal de erro típico: textura preto/roxo mesmo com mapeamento correto no `item_texture.json`.

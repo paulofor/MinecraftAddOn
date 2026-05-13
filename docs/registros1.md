@@ -404,3 +404,59 @@ Checklist executado no host via MCP readonly/projeto:
   - `packs/RP_GooDemo/manifest.json`: `0.1.0` -> `0.1.1` (header e module resources).
   - `packs/BP_GooDemo/manifest.json`: `0.1.0` -> `0.1.1` (header e module data).
 - Objetivo: forçar refresh de pacote no cliente/servidor e reduzir risco de cache mantendo a regra de PNG fora do Git.
+
+## 2026-05-12 21:06:15 UTC-3 — Registro crítico: path de textura PNG no pack do mundo
+- Solicitação: registrar como **muito importante** a regra de localização de PNG para o caso do item `digicomo:goo`.
+- Evidência MCP coletada:
+  - `RP_GooDemo` do mundo existe em `/root/MinecraftServer/worlds/Bedrock level/resource_packs/RP_GooDemo`.
+  - `item_texture.json` desse RP aponta `textures/items/goo`.
+  - o arquivo esperado no mundo (`.../textures/items/goo.png`) estava ausente em verificações anteriores, enquanto havia PNG no caminho global `/root/MinecraftServer/resource_packs/RP_GooDemo/textures/items/goo.png`.
+- Conclusão operacional (alta prioridade):
+  - para o mundo ativo, o PNG deve estar no **pack do mundo** no path exato do atlas (`worlds/<mundo>/resource_packs/<RP>/textures/...`).
+  - presença somente no path global não garante renderização no cliente para aquele mundo.
+- Ação de governança aplicada:
+  - AGENTS.md atualizado com seção “MUITO IMPORTANTE — caminho efetivo de PNG no servidor (prioridade alta)”.
+
+## 2026-05-13 00:12:40 UTC-3 — Verificação MCP em host: `digicomo:goo` fora do local correto
+- Solicitação: verificar no host se os arquivos do objeto `digicomo:goo` estão no local correto do mundo ativo.
+- Endpoint usado: `http://186.202.209.206/mcp` (com intermitência/timeout em múltiplas tentativas).
+- Evidências confirmadas:
+  - Diretório do RP existe: `/root/MinecraftServer/worlds/Bedrock level/resource_packs/RP_GooDemo`.
+  - Em `.../textures/` existe apenas `item_texture.json`.
+  - `item_texture.json` referencia `goo_item -> textures/items/goo`.
+  - Diretório `.../textures/items` está ausente no pack do mundo (erro MCP: diretório inexistente), portanto `goo.png` não está no local esperado.
+- Conclusão:
+  - Para o mundo ativo, o objeto `digicomo:goo` **não está no local correto de textura**; falta `goo.png` em:
+    `/root/MinecraftServer/worlds/Bedrock level/resource_packs/RP_GooDemo/textures/items/goo.png`.
+- Próximo passo recomendado:
+  - publicar `goo.png` nesse caminho via MCP `write_png_base64` e validar com `list_directory`/`bytes_written`.
+
+## 2026-05-13 00:20:10 UTC-3 — Verificação de risco no workflow: deleção de PNG do `digicomo:goo`
+- Hipótese analisada: o workflow de publicação pode estar apagando `goo.png` ao sincronizar `RP_GooDemo` sem PNG no Git.
+- Evidência no workflow `publish-server.yml`:
+  - promoção para world RP usava `rsync -azc --delete` em `RP_* -> worlds/.../resource_packs/RP_*`.
+  - como PNGs não ficam no Git por diretriz, o `--delete` removia no destino qualquer `textures/**/*.png` publicado via MCP.
+- Correção aplicada no workflow:
+  - removido `--delete` da etapa de promoção de `RP_*` para o mundo;
+  - mantido sincronismo de arquivos texto do pack sem apagar PNG existente no host.
+- Resultado esperado:
+  - publicações via workflow não devem mais remover `goo.png` (nem outros PNGs) do pack do mundo.
+
+## 2026-05-13 00:28:45 UTC-3 — Upload imediato do `goo.png` no caminho correto do mundo
+- Ação solicitada: enviar o PNG para o local correto **agora**.
+- Método: MCP `write_png_base64` com `overwrite=true`.
+- Destino: `/root/MinecraftServer/worlds/Bedrock level/resource_packs/RP_GooDemo/textures/items/goo.png`.
+- Resultado do upload: sucesso (`bytes_written: 68`, `overwrote: false`).
+- Validação pós-upload: `list_directory` confirmou `goo.png` presente em `.../textures/items` com `size: 68`.
+- Observação operacional: endpoint MCP apresentou intermitência (`timeout`) em tentativas iniciais, normalizando após retentativas.
+
+## 2026-05-13 00:35:30 UTC-3 — Tentativa de restart no host via MCP
+- Solicitação: executar restart do Bedrock no host usando MCP Server.
+- Chamada realizada: `tools/call` com `name: restart_bedrock` no endpoint `http://186.202.209.206/mcp`.
+- Resultado: **falha de configuração** no MCP:
+  - `Reinício não configurado: defina BEDROCK_RESTART_CMD no ambiente do MCP`.
+- Evidência adicional: leitura de `bedrock.log` via `run_read_command/tail` funcionou, confirmando conectividade parcial do MCP apesar de intermitência por timeout.
+- Próximo passo necessário no host:
+  1. definir variável `BEDROCK_RESTART_CMD` no container/serviço MCP readonly;
+  2. reiniciar o container MCP;
+  3. repetir `restart_bedrock`.
