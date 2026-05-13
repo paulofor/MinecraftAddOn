@@ -658,3 +658,35 @@ Checklist executado no host via MCP readonly/projeto:
   - `packs/RP_Barco3Jogadores/manifest.json`
     - `header.version`: `0.1.18` -> `0.1.19`
     - `modules[resources].version`: `0.1.18` -> `0.1.19`
+
+## 2026-05-13 14:34:49 UTC-3
+- Pedido do usuário: pesquisar no MCP Server oficial da Microsoft Learn orientações para melhorar a textura do barco.
+- Consulta executada no endpoint `https://learn.microsoft.com/api/mcp`:
+  - `tools/list` para confirmar ferramentas disponíveis;
+  - `tools/call` com `microsoft_docs_search` focando em texturas/UV/modelagem para Bedrock Add-Ons.
+- Fontes oficiais encontradas como base técnica:
+  - `Entity Modeling and Animation` (seções de modelagem e texturing);
+  - `Getting Started with Blockbench`;
+  - `Converting Texture Packs from Minecraft: Java Edition to Minecraft: Bedrock Edition` (best practices de UV/alpha/formato).
+- Diretrizes consolidadas para próxima melhoria visual do barco:
+  1. validar UV map do modelo no Blockbench antes de pintar nova textura;
+  2. produzir textura em resolução coerente com `texture_width/texture_height` da geometria para evitar estiramento;
+  3. revisar transparência/alpha (e considerar TGA quando PNG não renderizar corretamente em casos específicos);
+  4. manter referência de textura por caminho relativo correto no `client_entity`/render controller.
+- Observação operacional reforçada: por regra do projeto, PNG não deve ser commitado no Git; upload de textura final deve ser feito via MCP (`write_png_base64`) no caminho efetivo do mundo/pack no host.
+
+## 2026-05-13 14:48:03 UTC-3
+- Entrega solicitada: geração de nova textura `.png` do barco com melhor contraste/legibilidade e publicação no mundo via MCP Server.
+- Textura gerada localmente: `/tmp/barco_3_jogadores_melhorado.png` (64x64, 656 bytes), com ajustes visuais de:
+  - variação de madeira (tons quentes) para reduzir aspecto “lavado”;
+  - linhas de tábuas e sombreamento lateral para dar leitura de casco;
+  - highlights sutis para evitar aparência plana.
+- Publicação via MCP (`write_png_base64`) realizada com sucesso no caminho efetivo do mundo ativo:
+  - `/root/MinecraftServer/worlds/Bedrock level/resource_packs/RP_Barco3Jogadores/textures/entity/barco_3_jogadores.png`
+  - retorno: `bytes_written: 656`, `overwrote: true`.
+- Validação remota pós-upload via MCP (`run_read_command` + `ls -lh`) confirmou persistência do arquivo com 656 bytes no destino.
+- Versionamento atualizado para forçar recarga no cliente:
+  - `packs/RP_Barco3Jogadores/manifest.json`
+  - `header.version`: `0.1.19` -> `0.1.20`
+  - `modules[resources].version`: `0.1.19` -> `0.1.20`
+- Observação de intermitência: tentativa de upload também no path global `/root/MinecraftServer/resource_packs/...` retornou timeout neste ciclo; o upload crítico no path do mundo foi concluído com sucesso.
