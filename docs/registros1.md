@@ -609,3 +609,52 @@ Checklist executado no host via MCP readonly/projeto:
   - o workflow não sobrescreve nem publica PNG por Git/CI;
   - texturas continuam sob fluxo oficial via MCP (`write_png_base64`), evitando envio de ponteiro LFS como se fosse imagem.
 - Observação operacional: manter versionamento de manifests/definições textuais quando houver mudança de objeto, e publicar PNG apenas no caminho do pack do mundo ativo via MCP.
+
+## 2026-05-13 00:11:43 (UTC-3) — Criação e envio de PNG de textura do barco via MCP
+- Solicitação: criar um PNG de textura de barco e enviar novamente para o mundo.
+- Ação executada:
+  - PNG criado localmente de forma procedural (128x64 RGBA, padrão amadeirado) em `/tmp/barco_3_jogadores.png`.
+  - Upload realizado via MCP `write_png_base64` para:
+    `/root/MinecraftServer/worlds/Bedrock level/resource_packs/RP_Barco3Jogadores/textures/entity/barco_3_jogadores.png`.
+- Resultado do MCP:
+  - `bytes_written: 231`
+  - `overwrote: false`
+- Validação pós-upload:
+  - `list_directory` no diretório de destino confirmou `barco_3_jogadores.png` com `size: 231` bytes.
+- Observação: operação seguiu a diretriz de PNG fora do Git (sem commit de binário `.png`).
+
+## 2026-05-13 00:14:23 (UTC-3) — Bump de versão do Barco 3 Jogadores para forçar atualização
+- Solicitação: aumentar a versão do Barco 3 Jogadores para garantir atualização/aplicação no mundo.
+- Alterações de versionamento realizadas:
+  - `packs/BP_Barco3Jogadores/manifest.json`
+    - `header.version`: `0.1.13` -> `0.1.14`
+    - `modules[data].version`: `0.1.13` -> `0.1.14`
+    - `modules[script].version`: `0.1.13` -> `0.1.14`
+  - `packs/RP_Barco3Jogadores/manifest.json`
+    - `header.version`: `0.1.16` -> `0.1.17`
+    - `modules[resources].version`: `0.1.16` -> `0.1.17`
+- Objetivo: forçar refresh de pack/version binding e facilitar propagação da atualização no ambiente Bedrock.
+
+## 2026-05-13 00:17:08 (UTC-3) — Ajuste visual do Barco 3 Lugares: remo em posição única
+- Solicitação: manter remo apenas em uma posição para representar visualmente o ponto de controle/direção do barco.
+- Alteração aplicada:
+  - `packs/RP_Barco3Jogadores/models/entity/barco_3_jogadores.geo.json`
+    - adicionados cubos de remo apenas no lado direito (uma única posição de remo), sem duplicar para o lado oposto.
+- Versionamento atualizado por alteração de objeto de RP:
+  - `packs/RP_Barco3Jogadores/manifest.json`
+    - `header.version`: `0.1.17` -> `0.1.18`
+    - `modules[resources].version`: `0.1.17` -> `0.1.18`
+- Objetivo: indicar de forma explícita qual posição está associada ao controle da direção (seat de controle).
+
+## 2026-05-13 00:25:29 (UTC-3) — Remo dos dois lados com controle em assento único
+- Solicitação: manter remo visível dos dois lados do barco, mas preservar controle de direção em apenas um assento.
+- Ajuste aplicado no modelo:
+  - `packs/RP_Barco3Jogadores/models/entity/barco_3_jogadores.geo.json`
+    - adicionado o remo espelhado do lado esquerdo;
+    - mantido o remo do lado direito já existente.
+- Regra de controle mantida:
+  - o controle do barco permanece em assento único (`controlling_seat: 0`) na entidade BP já existente.
+- Versionamento atualizado no RP:
+  - `packs/RP_Barco3Jogadores/manifest.json`
+    - `header.version`: `0.1.18` -> `0.1.19`
+    - `modules[resources].version`: `0.1.18` -> `0.1.19`
