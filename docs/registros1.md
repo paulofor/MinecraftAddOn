@@ -701,3 +701,40 @@ Checklist executado no host via MCP readonly/projeto:
 - Versionamento atualizado por alteração de objeto/script:
   - BP `0.1.14` -> `0.1.15`;
   - RP `0.1.20` -> `0.1.21`.
+
+## 2026-05-14 01:02:51 UTC-3 — Diagnóstico visual do barco “achatado/recortado”
+- Sintoma reportado em jogo: barco 3 jogadores aparecendo com textura quebrada/UV incorreta (partes “achatadas”).
+- Causa identificada no RP: `client_entity` estava apontando para textura de **item** (`textures/items/boat_oak`) em vez de textura de **entidade** (`textures/entity/boat/boat_oak`), causando mapeamento incompatível com a geometria do barco.
+- Correção aplicada:
+  - `packs/RP_Barco3Jogadores/entity/barco_3_jogadores.entity.json`: `textures.default` alterado para `textures/entity/boat/boat_oak`.
+  - `packs/BP_Barco3Jogadores/scripts/main.js`: `EXPECTED_TEXTURE` alinhado para `textures/entity/boat/boat_oak`.
+- Versionamento atualizado (rastreabilidade de deploy):
+  - `packs/RP_Barco3Jogadores/manifest.json` de `0.1.21` para `0.1.22`.
+  - `packs/BP_Barco3Jogadores/manifest.json` de `0.1.15` para `0.1.16`.
+- Próximo passo operacional: publicar/sincronizar os packs texto e recarregar no mundo para validar renderização final em jogo.
+
+## 2026-05-14 01:06:49 UTC-3 — Ajuste após revisão (restaura textura custom do barco)
+- Revisão do ajuste anterior: para manter o visual custom do projeto, o `client_entity` do barco 3 jogadores voltou a apontar para `textures/entity/barco_3_jogadores`.
+- Alinhamento de diagnóstico no BP: `EXPECTED_TEXTURE` também voltou para `textures/entity/barco_3_jogadores`.
+- Versionamento incrementado:
+  - `packs/RP_Barco3Jogadores/manifest.json`: `0.1.22` -> `0.1.23`.
+  - `packs/BP_Barco3Jogadores/manifest.json`: `0.1.16` -> `0.1.17`.
+- Diretriz operacional reforçada: para renderizar corretamente no mundo ativo, é obrigatório ter PNG binário no host em:
+  `/root/MinecraftServer/worlds/Bedrock level/resource_packs/RP_Barco3Jogadores/textures/entity/barco_3_jogadores.png`
+  via MCP `write_png_base64` (sem commitar `.png` no Git).
+
+## 2026-05-14 01:12:00 UTC-3 — Upload do PNG do barco para o pack do mundo via MCP
+- Solicitação atendida: envio do `.png` do barco para o local correto do **mundo ativo** usando MCP Server.
+- Endpoint MCP utilizado: `http://186.202.209.206/mcp`.
+- Validação de disponibilidade:
+  - `tools/list` apresentou intermitência inicial (`503 timeout`) e estabilizou na retentativa.
+- Origem do PNG usado no upload:
+  - `/tmp/boat_oak.png` (assinatura PNG válida, `1574` bytes).
+- Upload executado via `tools/call` + `write_png_base64` com `overwrite=true` para:
+  - `/root/MinecraftServer/worlds/Bedrock level/resource_packs/RP_Barco3Jogadores/textures/entity/barco_3_jogadores.png`
+- Resultado do MCP:
+  - `bytes_written: 1574`
+  - `overwrote: true`
+- Validação pós-upload:
+  - `list_directory` no diretório de destino confirmou `barco_3_jogadores.png` com `size: 1574`.
+- Observação: fluxo respeita a regra do projeto de **não commitar PNG no Git**; publicação de textura feita exclusivamente via MCP.

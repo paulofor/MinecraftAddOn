@@ -2,7 +2,7 @@ import { system, world } from "@minecraft/server";
 
 const BOAT_ID = "minecraftaddon:barco_3_jogadores";
 const LOG_PREFIX = "[Barco3Debug]";
-const EXPECTED_TEXTURE = "textures/items/boat_oak";
+const EXPECTED_TEXTURE = "textures/entity/barco_3_jogadores";
 const CLIENT_ENTITY_DEF = "RP_Barco3Jogadores/entity/barco_3_jogadores.entity.json";
 
 const boatState = new Map();
