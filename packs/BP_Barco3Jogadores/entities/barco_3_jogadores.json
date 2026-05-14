@@ -21,8 +21,8 @@
         "max": 18
       },
       "minecraft:collision_box": {
-        "width": 1.4,
-        "height": 0.455
+        "width": 1.35,
+        "height": 0.6
       },
       "minecraft:is_collidable": {},
       "minecraft:is_stackable": {},
@@ -43,35 +43,29 @@
           {
             "position": [
               0.0,
-              -0.2,
-              0.25
+              -0.1,
+              0.15
             ],
             "min_rider_count": 0,
-            "max_rider_count": 1,
-            "lock_rider_rotation": 90,
-            "rotate_rider_by": -90
+            "max_rider_count": 1
           },
           {
             "position": [
-              0.45,
-              -0.2,
+              0.42,
+              -0.1,
               -0.55
             ],
             "min_rider_count": 0,
-            "max_rider_count": 1,
-            "lock_rider_rotation": 90,
-            "rotate_rider_by": -90
+            "max_rider_count": 1
           },
           {
             "position": [
-              -0.45,
-              -0.2,
+              -0.42,
+              -0.1,
               -0.55
             ],
             "min_rider_count": 0,
-            "max_rider_count": 1,
-            "lock_rider_rotation": 90,
-            "rotate_rider_by": -90
+            "max_rider_count": 1
           }
         ],
         "controlling_seat": 0
