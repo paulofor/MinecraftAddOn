@@ -772,3 +772,7 @@ Checklist executado no host via MCP readonly/projeto:
 - Versionamento incrementado para rastreabilidade:
   - `packs/BP_Barco3Jogadores/manifest.json`: patch +1 (header e modules);
   - `packs/RP_Barco3Jogadores/manifest.json`: patch +1 (header e modules).
+
+## 2026-05-14 14:40:56 UTC-3
+- Criação do documento técnico `docs/barco_3_personagem_mcp_entidade.md` com guia do Barco 3 Jogadores cobrindo: diferença entre objeto com textura de entidade vs item, estrutura de arquivos (`client_entity`, `geometry`, `render_controller`), montagem de texturas (UV/layout) e fluxo obrigatório de upload PNG direto para o mundo via MCP (`write_png_base64`).
+- Registro inclui exemplos de comandos JSON-RPC (`tools/list`, `tools/call`) para validar MCP, publicar PNG no caminho do pack do mundo e confirmar persistência remota.
