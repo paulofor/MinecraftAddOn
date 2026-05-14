@@ -738,3 +738,37 @@ Checklist executado no host via MCP readonly/projeto:
 - Validação pós-upload:
   - `list_directory` no diretório de destino confirmou `barco_3_jogadores.png` com `size: 1574`.
 - Observação: fluxo respeita a regra do projeto de **não commitar PNG no Git**; publicação de textura feita exclusivamente via MCP.
+
+## 2026-05-14 10:41:42 UTC-3 — Revisão de logs e melhoria de visual/dirigibilidade (Barco 3 Pessoas)
+- Solicitação: revisar cenário do Barco 3 Pessoas após uso com dificuldade e melhorar visual + dirigibilidade.
+- Tentativa de consulta ao MCP Readonly (`http://186.202.209.206/mcp`) para `tools/list` retornou timeout no momento da execução (`upstream connect error ... connection timeout`), sem acesso ao log remoto nesta janela.
+- Melhorias aplicadas no projeto para reduzir dificuldade de controle e estabilizar aparência:
+  - `packs/BP_Barco3Jogadores/entities/barco_3_jogadores.json`
+    - assentos recalibrados (posição do piloto e passageiros) para layout mais centralizado no casco;
+    - removidos `lock_rider_rotation` e `rotate_rider_by` dos assentos para evitar rotação forçada e sensação de direção “presa”;
+    - `collision_box` ajustada para `width: 1.35` e `height: 0.6` para contato mais consistente em bordas/encalhe.
+  - `packs/RP_Barco3Jogadores/entity/barco_3_jogadores.entity.json`
+    - `textures.default` alterado para `textures/entity/boat/boat_oak` (textura de entidade vanilla estável), melhorando visual imediato sem depender de PNG custom no Git.
+  - `packs/BP_Barco3Jogadores/scripts/main.js`
+    - `EXPECTED_TEXTURE` alinhado para `textures/entity/boat/boat_oak` para manter observabilidade coerente com o RP.
+- Versionamento atualizado (regra de rastreabilidade de objeto):
+  - `packs/BP_Barco3Jogadores/manifest.json`: patch incrementado em `header` e módulos.
+  - `packs/RP_Barco3Jogadores/manifest.json`: patch incrementado em `header` e módulos.
+
+## 2026-05-14 10:46:41 UTC-3 — Ajuste pós-feedback: textura custom + upload PNG via MCP (Barco 3 Pessoas)
+- Contexto: usuário informou insatisfação com resultado anterior e pediu envio de novo PNG para o mundo via MCP.
+- Ação de visual no RP/BP:
+  - `packs/RP_Barco3Jogadores/entity/barco_3_jogadores.entity.json`: `textures.default` retornado para `textures/entity/barco_3_jogadores`.
+  - `packs/BP_Barco3Jogadores/scripts/main.js`: `EXPECTED_TEXTURE` alinhado para `textures/entity/barco_3_jogadores`.
+- Novo PNG gerado localmente (procedural, 128x64 RGBA) em `/tmp/barco3_melhorado_v2.png` com 1922 bytes.
+- Publicação via MCP Server (`write_png_base64`) para o pack do mundo ativo:
+  - destino: `/root/MinecraftServer/worlds/Bedrock level/resource_packs/RP_Barco3Jogadores/textures/entity/barco_3_jogadores.png`;
+  - resultado: `bytes_written: 1922`, `overwrote: true`.
+- Intermitências observadas e tratadas:
+  - timeouts esporádicos no endpoint MCP;
+  - tentativa inicial com parâmetro incorreto (`base64`) retornou erro de validação; corrigido para `png_base64` com sucesso.
+- Validação pós-upload:
+  - `list_directory` no diretório remoto confirmou presença de `barco_3_jogadores.png`.
+- Versionamento incrementado para rastreabilidade:
+  - `packs/BP_Barco3Jogadores/manifest.json`: patch +1 (header e modules);
+  - `packs/RP_Barco3Jogadores/manifest.json`: patch +1 (header e modules).
