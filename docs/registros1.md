@@ -788,3 +788,22 @@ Checklist executado no host via MCP readonly/projeto:
   - `modules[].version` (data/script): `0.1.19` -> `0.1.20`.
 - Resultado esperado: debug permanece disponível em log de servidor sem poluir a UI/chat do jogador.
 
+
+## 2026-05-14 18:08:41 UTC-3
+- Solicitação atendida: acesso ao MCP Readonly para investigar erro no módulo **BP Barco 3 Jogadores**.
+- Endpoint consultado: `http://186.202.209.206/mcp`.
+- `tools/list` apresentou intermitência (timeout em parte das tentativas), mas respondeu com sucesso e confirmou tools disponíveis (`list_directory`, `read_file`, `write_png_base64`, `restart_bedrock`, `run_read_command`).
+- Leitura do log via `run_read_command` (`tail -n 400 /root/MinecraftServer/logging/bedrock.log`) com retentativas até sucesso.
+- Evidências encontradas no `bedrock.log`:
+  - repetição de erro de script: `[Scripting] [BP Barco 3 Jogadores] TypeError: not a function at <anonymous> (main.js:94)` entre `2026-05-14 17:01:39` e `2026-05-14 17:04:28`;
+  - após reinício do serviço Bedrock, novo erro no mesmo pack: `ReferenceError: 'world' is not defined at <anonymous> (main.js:56)` em `2026-05-14 17:04:30`;
+  - carregamento do pack confirmado como `BP Barco 3 Jogadores ... version: 0.1.20` no stack do mundo.
+- Próximo passo recomendado: corrigir `packs/BP_Barco3Jogadores/scripts/main.js` (linhas próximas a 56 e 94), validar com `node --check`, publicar no servidor e revalidar o `bedrock.log` via MCP.
+
+## 2026-05-14 18:12:58 UTC-3
+- Ajuste de código aplicado no `BP Barco 3 Jogadores` para corrigir erros vistos no `bedrock.log`.
+- Correção 1 (ReferenceError): importado `world` em `packs/BP_Barco3Jogadores/scripts/main.js` (`import { system, world } from "@minecraft/server";`) para eliminar `ReferenceError: 'world' is not defined`.
+- Correção 2 (TypeError): removido uso de `world.getDimensions()` e substituído por iteração explícita em `overworld`, `nether` e `the_end` com `world.getDimension(...)`, evitando `TypeError: not a function` em runtime.
+- Versionamento do objeto atualizado por alteração de script:
+  - `packs/BP_Barco3Jogadores/manifest.json` `0.1.20` -> `0.1.21` (header e modules data/script).
+- Próximo passo operacional: publicar BP no servidor e revalidar `bedrock.log` para confirmar ausência de erros no `main.js`.
