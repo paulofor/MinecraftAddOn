@@ -776,3 +776,15 @@ Checklist executado no host via MCP readonly/projeto:
 ## 2026-05-14 14:40:56 UTC-3
 - Criação do documento técnico `docs/barco_3_personagem_mcp_entidade.md` com guia do Barco 3 Jogadores cobrindo: diferença entre objeto com textura de entidade vs item, estrutura de arquivos (`client_entity`, `geometry`, `render_controller`), montagem de texturas (UV/layout) e fluxo obrigatório de upload PNG direto para o mundo via MCP (`write_png_base64`).
 - Registro inclui exemplos de comandos JSON-RPC (`tools/list`, `tools/call`) para validar MCP, publicar PNG no caminho do pack do mundo e confirmar persistência remota.
+
+
+## 2026-05-14 16:38:23 UTC-3 — Remoção de logs na tela do usuário (Barco 3 Jogadores)
+- Solicitação: retirar os logs do Barco 3 que apareciam no chat/tela do usuário durante o jogo.
+- Ajuste aplicado em `packs/BP_Barco3Jogadores/scripts/main.js`:
+  - função `log()` manteve apenas `console.warn` para diagnóstico no servidor;
+  - remoção do `world.sendMessage(...)`, eliminando mensagens visuais para jogadores.
+- Versionamento do objeto atualizado em `packs/BP_Barco3Jogadores/manifest.json`:
+  - `header.version`: `0.1.19` -> `0.1.20`;
+  - `modules[].version` (data/script): `0.1.19` -> `0.1.20`.
+- Resultado esperado: debug permanece disponível em log de servidor sem poluir a UI/chat do jogador.
+

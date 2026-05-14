@@ -1,4 +1,4 @@
-import { system, world } from "@minecraft/server";
+import { system } from "@minecraft/server";
 
 const BOAT_ID = "minecraftaddon:barco_3_jogadores";
 const LOG_PREFIX = "[Barco3Debug]";
@@ -9,10 +9,6 @@ const boatState = new Map();
 
 function log(message) {
   console.warn(`${LOG_PREFIX} ${message}`);
-
-  system.run(() => {
-    world.sendMessage(`§7${LOG_PREFIX} ${message}`);
-  });
 }
 
 function round(n) {
