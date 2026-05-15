@@ -823,3 +823,14 @@ Checklist executado no host via MCP readonly/projeto:
   - `packs/BP_Barco3Jogadores/manifest.json`: `0.1.22` -> `0.1.23` (header/modules).
   - `packs/RP_Barco3Jogadores/manifest.json`: `0.1.25` -> `0.1.26` (header/modules).
 - Observação: nenhuma alteração de `.png` foi commitada (conforme diretriz do projeto).
+
+## 2026-05-15 14:11:09 UTC-3
+- Ajuste de pilotagem do `barco_3_jogadores` para reforçar o conceito de frente/traseira conforme solicitado.
+- Em `packs/BP_Barco3Jogadores/entities/barco_3_jogadores.json`:
+  - assento controlador (`controlling_seat: 0`) reposicionado para a frente do barco (`z=-0.45`), mantendo os assentos de passageiros atrás (`z=0.45`);
+  - `minecraft:movement.basic.max_turn` reduzido de `30` para `12` para curvas mais suaves (pequena curva para esquerda/direita).
+- Resultado esperado no jogo:
+  - somente quem senta no banco da frente controla;
+  - comandos passam a responder com referência física da frente do barco (frente/curvas/traseira em relação ao piloto frontal).
+- Versionamento atualizado por alteração de objeto/script no BP:
+  - `packs/BP_Barco3Jogadores/manifest.json`: `0.1.23` -> `0.1.24` (header + módulos).

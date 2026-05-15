@@ -35,7 +35,7 @@
         "max": 0.45
       },
       "minecraft:movement.basic": {
-        "max_turn": 30
+        "max_turn": 12
       },
       "minecraft:input_ground_controlled": {},
       "minecraft:water_movement": {
@@ -59,7 +59,7 @@
             "position": [
               0.0,
               -0.2,
-              0.0
+              -0.45
             ],
             "min_rider_count": 0,
             "max_rider_count": 1
@@ -68,7 +68,7 @@
             "position": [
               -0.4,
               -0.2,
-              0.6
+              0.45
             ],
             "min_rider_count": 0,
             "max_rider_count": 1
@@ -77,7 +77,7 @@
             "position": [
               0.4,
               -0.2,
-              0.6
+              0.45
             ],
             "min_rider_count": 0,
             "max_rider_count": 1
