@@ -834,3 +834,22 @@ Checklist executado no host via MCP readonly/projeto:
   - comandos passam a responder com referência física da frente do barco (frente/curvas/traseira em relação ao piloto frontal).
 - Versionamento atualizado por alteração de objeto/script no BP:
   - `packs/BP_Barco3Jogadores/manifest.json`: `0.1.23` -> `0.1.24` (header + módulos).
+
+## 2026-05-15 15:30:00 UTC-3 — Diagnóstico de atualização não aplicada após alteração de script
+- Pergunta analisada: após alterar script, o jogo não exibiu mensagem de baixar conteúdo adicional do servidor.
+- Esclarecimento técnico: ausência da mensagem de download **não confirma sozinha** que a alteração não foi aplicada; o cliente pode reutilizar cache/local pack quando não detecta mudança de versão/hash do pack.
+- Causa mais comum no fluxo Bedrock: `manifest.json` sem incremento de versão (header/modules) no BP/RP impactado, impedindo forçar novo download no cliente.
+- Checklist recomendado para confirmar aplicação da alteração:
+  1. incrementar versão do pack alterado (`manifest.json` do BP e, se aplicável, do RP);
+  2. republicar/deploy no servidor;
+  3. sair e entrar novamente no mundo;
+  4. validar no log `/root/MinecraftServer/logging/bedrock.log` se o pack novo foi carregado e se o erro anterior desapareceu.
+- Critério objetivo de confirmação: evidência no `bedrock.log` + comportamento corrigido em jogo (não depender apenas do popup de download).
+
+## 2026-05-15 15:45:00 UTC-3 — Bump de versão do Barco 3 Jogadores para forçar atualização no cliente
+- Solicitação: houve mudança de script e foi pedido alterar a versão do barco para confirmar atualização no jogo.
+- Alterações de versionamento aplicadas:
+  - `packs/BP_Barco3Jogadores/manifest.json`: `0.1.24` -> `0.1.25` (header + módulos `data` e `script`).
+  - `packs/RP_Barco3Jogadores/manifest.json`: `0.1.26` -> `0.1.27` (header + módulo `resources`).
+- Objetivo operacional: aumentar a chance de o cliente detectar nova versão dos packs e disparar atualização de conteúdo ao reconectar.
+- Próximo passo de validação: redeploy no servidor, reconectar no mundo e confirmar no `bedrock.log` o carregamento das versões novas.
