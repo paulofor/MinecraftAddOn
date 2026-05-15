@@ -853,3 +853,22 @@ Checklist executado no host via MCP readonly/projeto:
   - `packs/RP_Barco3Jogadores/manifest.json`: `0.1.26` -> `0.1.27` (header + módulo `resources`).
 - Objetivo operacional: aumentar a chance de o cliente detectar nova versão dos packs e disparar atualização de conteúdo ao reconectar.
 - Próximo passo de validação: redeploy no servidor, reconectar no mundo e confirmar no `bedrock.log` o carregamento das versões novas.
+
+## 2026-05-15 12:20:00 UTC-3 — Ajuste de curva do Barco 3 Pessoas (evitar giro em círculo)
+- Solicitação: ao pressionar frente + esquerda/direita, o barco estava girando em círculo em vez de fazer curva avançando.
+- Ajuste aplicado em `packs/BP_Barco3Jogadores/entities/barco_3_jogadores.json`:
+  - redução de `minecraft:movement.basic.max_turn` de `12` para `4` para suavizar a taxa de guinada;
+  - reposicionamento do assento controlador (`controlling_seat: 0`) para o centro longitudinal (`z: 0.0`) para reduzir efeito de pivô lateral durante aceleração + esterço;
+  - leve simetria dos assentos traseiros (`x: -0.45` e `x: 0.45`) preservando 3 ocupantes.
+- Versionamento atualizado em `packs/BP_Barco3Jogadores/manifest.json`:
+  - `header.version`: `0.1.25` → `0.1.26`;
+  - `modules.data.version`: `0.1.25` → `0.1.26`;
+  - `modules.script.version`: `0.1.25` → `0.1.26`.
+- Próximo passo de validação em jogo: testar navegação com combinação `frente + esquerda` e `frente + direita` para confirmar curva progressiva sem orbitagem.
+
+## 2026-05-15 12:40:00 UTC-3 — Bump de versão nos manifests BP e RP (Barco 3 Pessoas)
+- Solicitação complementar: alterar os 2 manifests (BP e RP) do Barco 3 Jogadores.
+- Versionamento aplicado:
+  - `packs/BP_Barco3Jogadores/manifest.json`: `0.1.26` → `0.1.27` (header + módulos `data` e `script`).
+  - `packs/RP_Barco3Jogadores/manifest.json`: `0.1.27` → `0.1.28` (header + módulo `resources`).
+- Objetivo: garantir rastreabilidade e forçar detecção de atualização de conteúdo no cliente após deploy.
