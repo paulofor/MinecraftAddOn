@@ -807,3 +807,11 @@ Checklist executado no host via MCP readonly/projeto:
 - Versionamento do objeto atualizado por alteração de script:
   - `packs/BP_Barco3Jogadores/manifest.json` `0.1.20` -> `0.1.21` (header e modules data/script).
 - Próximo passo operacional: publicar BP no servidor e revalidar `bedrock.log` para confirmar ausência de erros no `main.js`.
+
+## 2026-05-15 09:35:00 UTC-3 — Correção de navegação do Barco 3 Jogadores (padrão barco comum)
+- Solicitação: corrigir a navegação do barco 3 jogadores para ficar equivalente ao barco comum.
+- Pesquisa técnica realizada no MCP Server da Microsoft Learn (`https://learn.microsoft.com/api/mcp`) via `tools/call` (`microsoft_docs_search`) sobre `minecraft:rideable`, com confirmação de que `controlling_seat` define o assento de controle (índice base zero).
+- Ajuste aplicado em `packs/BP_Barco3Jogadores/entities/barco_3_jogadores.json`:
+  - reconfiguração dos assentos para layout mais próximo ao barco vanilla (piloto central + 2 passageiros traseiros simétricos);
+  - manutenção de `controlling_seat: 0` para garantir direção somente pelo assento do piloto.
+- Versionamento de objeto atualizado em `packs/BP_Barco3Jogadores/manifest.json`: patch incrementado em `header` e módulos (`data` e `script`) para forçar atualização consistente no deploy.
