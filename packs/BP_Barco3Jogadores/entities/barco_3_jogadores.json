@@ -26,7 +26,21 @@
       },
       "minecraft:is_collidable": {},
       "minecraft:is_stackable": {},
-      "minecraft:physics": {},
+      "minecraft:physics": {
+        "has_gravity": true,
+        "has_collision": true
+      },
+      "minecraft:movement": {
+        "value": 0.18,
+        "max": 0.45
+      },
+      "minecraft:movement.basic": {
+        "max_turn": 30
+      },
+      "minecraft:input_ground_controlled": {},
+      "minecraft:water_movement": {
+        "drag_factor": 0.8
+      },
       "minecraft:pushable": {
         "is_pushable": true,
         "is_pushable_by_piston": true
@@ -37,8 +51,9 @@
         "family_types": [
           "player"
         ],
-        "pull_in_entities": true,
+        "pull_in_entities": false,
         "passenger_max_width": 1.375,
+        "controlling_seat": 0,
         "seats": [
           {
             "position": [
@@ -67,8 +82,7 @@
             "min_rider_count": 0,
             "max_rider_count": 1
           }
-        ],
-        "controlling_seat": 0
+        ]
       },
       "minecraft:buoyant": {
         "apply_gravity": true,
