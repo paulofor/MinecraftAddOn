@@ -815,3 +815,11 @@ Checklist executado no host via MCP readonly/projeto:
   - reconfiguração dos assentos para layout mais próximo ao barco vanilla (piloto central + 2 passageiros traseiros simétricos);
   - manutenção de `controlling_seat: 0` para garantir direção somente pelo assento do piloto.
 - Versionamento de objeto atualizado em `packs/BP_Barco3Jogadores/manifest.json`: patch incrementado em `header` e módulos (`data` e `script`) para forçar atualização consistente no deploy.
+
+## 2026-05-15 01:57:27 UTC-3 — Verificação e bump de versão (Barco 3 Jogadores)
+- Solicitação: verificar alteração manual no Barco 3 Jogadores e gerar mudança de versão.
+- Verificação local do repositório: `git status --short` sem alterações pendentes no momento da checagem.
+- Versionamento aplicado para rastreabilidade de nova rodada de validação/deploy:
+  - `packs/BP_Barco3Jogadores/manifest.json`: `0.1.22` -> `0.1.23` (header/modules).
+  - `packs/RP_Barco3Jogadores/manifest.json`: `0.1.25` -> `0.1.26` (header/modules).
+- Observação: nenhuma alteração de `.png` foi commitada (conforme diretriz do projeto).
