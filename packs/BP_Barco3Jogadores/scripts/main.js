@@ -79,11 +79,27 @@ function clampSpinForLateralOnly(boat, inferredKeys, velocity) {
     z: velocity.z * 0.35
   };
 
-  boat.setVelocity(dampedVelocity);
   log(
     `ANTI_GIRO boat=${boat.id} | teclas=[${inferredKeys.join("+")}] | velAntes=${vecToStr(velocity)} | velDepois=${vecToStr(dampedVelocity)}`
   );
-  return true;
+
+  if (typeof boat.setVelocity === "function") {
+    boat.setVelocity(dampedVelocity);
+    return true;
+  }
+
+  if (typeof boat.clearVelocity === "function" && typeof boat.applyImpulse === "function") {
+    boat.clearVelocity();
+    boat.applyImpulse({
+      x: dampedVelocity.x * 0.5,
+      y: 0,
+      z: dampedVelocity.z * 0.5
+    });
+    return true;
+  }
+
+  log(`ANTI_GIRO indisponível para boat=${boat.id} (API sem setVelocity/applyImpulse)`);
+  return false;
 }
 
 function directionFromVelocity(v) {
