@@ -1090,3 +1090,10 @@ Checklist executado no host via MCP readonly/projeto:
   - `node --check packs/BP_Barco3Jogadores/scripts/main.js` (ok).
 - Próximo passo recomendado:
   - reproduzir o problema em jogo e coletar `tail -n 600` do `bedrock.log` para medir limiares de `yawRate`/`deltaYaw` que caracterizam giro anômalo.
+
+## 2026-05-16 23:45:00 UTC-3 — Bump de versão do módulo Barco 3 Jogadores
+- Solicitação: realizar bump de versão após alteração feita externamente no módulo do barco 3 jogadores.
+- Versionamento atualizado (BP/RP pareados):
+  - `packs/BP_Barco3Jogadores/manifest.json`: `0.1.36` -> `0.1.37` (header + módulos `data` e `script`);
+  - `packs/RP_Barco3Jogadores/manifest.json`: `0.1.35` -> `0.1.37` (header + módulo `resources`).
+- Observação: atualização executada para manter rastreabilidade de deploy e sincronismo entre manifests BP/RP do mesmo módulo.
