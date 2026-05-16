@@ -34,13 +34,6 @@
         "value": 0.18,
         "max": 0.45
       },
-      "minecraft:movement.basic": {
-        "max_turn": 4
-      },
-      "minecraft:input_ground_controlled": {},
-      "minecraft:water_movement": {
-        "drag_factor": 0.8
-      },
       "minecraft:pushable": {
         "is_pushable": true,
         "is_pushable_by_piston": true

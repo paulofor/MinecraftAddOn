@@ -872,3 +872,64 @@ Checklist executado no host via MCP readonly/projeto:
   - `packs/BP_Barco3Jogadores/manifest.json`: `0.1.26` → `0.1.27` (header + módulos `data` e `script`).
   - `packs/RP_Barco3Jogadores/manifest.json`: `0.1.27` → `0.1.28` (header + módulo `resources`).
 - Objetivo: garantir rastreabilidade e forçar detecção de atualização de conteúdo no cliente após deploy.
+
+## 2026-05-15 23:02:19 UTC-3 — Verificação MCP: script do Barco 3 Jogadores no mundo vs repositório
+- Solicitação: validar se o script ativo no **mundo** do Barco 3 Jogadores corresponde à versão do repositório.
+- Execução via MCP Server (`http://186.202.209.206/mcp`):
+  - `tools/list` confirmado após intermitência inicial de timeout no endpoint;
+  - leitura remota do arquivo do mundo via `tools/call` + `read_file` em:
+    `/root/MinecraftServer/worlds/Bedrock level/behavior_packs/BP_Barco3Jogadores/scripts/main.js`.
+- Validação de integridade:
+  - SHA-256 do arquivo remoto (extraído do `read_file`):
+    `0ba044cb8f4d132d61c614efac7d67df6e271fba07971034a623a6c1db89bd64`;
+  - SHA-256 local no repositório (`packs/BP_Barco3Jogadores/scripts/main.js`):
+    `0ba044cb8f4d132d61c614efac7d67df6e271fba07971034a623a6c1db89bd64`.
+- Resultado: **VERSÃO CORRETA** — conteúdo remoto e local idênticos (`cmp_exit=0`).
+- Observação: houve intermitência pontual de rede/MCP (`upstream connect timeout`) nas primeiras tentativas, normalizada com retentativa.
+
+## 2026-05-15 23:31:11 UTC-3 — Correção de curva do Barco 3 Jogadores (sem giro em círculo)
+- Solicitação: corrigir comportamento em que `seta direita/esquerda` fazia o barco entrar em círculo, adotando referência de direção do próprio barco (não da rotação dos passageiros).
+- Consulta técnica realizada no MCP Server oficial da Microsoft Learn (`https://learn.microsoft.com/api/mcp`) com `microsoft_docs_search`:
+  - `minecraft:movement.basic` define `max_turn` como taxa máxima de giro por tick;
+  - guia de componentes reforça uso de `minecraft:movement` + `minecraft:movement.basic` para controle de locomoção/curva;
+  - `minecraft:rideable` com `controlling_seat` define apenas qual assento controla, não deve depender da direção de olhar de passageiros para governar física de curva.
+- Ajustes aplicados em `packs/BP_Barco3Jogadores/entities/barco_3_jogadores.json`:
+  - `minecraft:movement.basic.max_turn`: `4` -> `1.25` para reduzir guinada brusca e evitar orbitagem em curva;
+  - remoção de `minecraft:input_ground_controlled` para evitar interferência de controle terrestre no comportamento náutico do runtime `minecraft:boat`;
+  - `minecraft:water_movement.drag_factor`: `0.8` -> `0.9` para amortecer giro residual e privilegiar deslocamento progressivo.
+- Versionamento atualizado em `packs/BP_Barco3Jogadores/manifest.json`:
+  - `header.version`: `0.1.27` -> `0.1.28`;
+  - `modules.data.version`: `0.1.27` -> `0.1.28`;
+  - `modules.script.version`: `0.1.27` -> `0.1.28`.
+- Próximo passo de validação em jogo: testar `frente + direita` e `frente + esquerda` em linha d'água longa para confirmar curva suave com avanço, sem giro em círculo.
+## 2026-05-15 23:45:14 UTC-3 — Barco 3 Jogadores: herança total de física do minecraft:boat (mantendo apenas 3 assentos)
+- Solicitação: remover ajustes custom de curva/arrasto e manter somente a customização de assentos do barco 3 jogadores.
+- Ação aplicada em `packs/BP_Barco3Jogadores/entities/barco_3_jogadores.json`:
+  - removido `minecraft:movement.basic` (incluindo `max_turn` custom);
+  - removido `minecraft:water_movement` (incluindo `drag_factor` custom);
+  - mantido `runtime_identifier: "minecraft:boat"` e `minecraft:rideable` com `seat_count: 3` e `controlling_seat: 0`.
+- Resultado esperado: física de movimento herdada integralmente do barco vanilla, preservando apenas o diferencial funcional de 3 assentos.
+- Versionamento atualizado em `packs/BP_Barco3Jogadores/manifest.json`:
+  - `header.version`: `0.1.28` -> `0.1.29`;
+  - `modules.data.version`: `0.1.28` -> `0.1.29`;
+  - `modules.script.version`: `0.1.28` -> `0.1.29`.
+
+## 2026-05-15 23:48:25 UTC-3 — Bump de versão solicitado para BP e RP do Barco 3 Jogadores
+- Solicitação: alterar a versão de manifest do **BP** e do **RP**.
+- Atualizações aplicadas:
+  - `packs/BP_Barco3Jogadores/manifest.json`:
+    - `header.version`: `0.1.29` -> `0.1.30`;
+    - `modules.data.version`: `0.1.29` -> `0.1.30`;
+    - `modules.script.version`: `0.1.29` -> `0.1.30`.
+  - `packs/RP_Barco3Jogadores/manifest.json`:
+    - `header.version`: `0.1.28` -> `0.1.29`;
+    - `modules.resources.version`: `0.1.28` -> `0.1.29`.
+- Objetivo: forçar detecção de atualização de conteúdo no cliente/servidor.
+
+## 2026-05-15 23:57:52 UTC-3 — Atualização de diretriz no AGENTS: versionar sempre BP e RP
+- Solicitação: registrar regra permanente para sempre alterar versão dos 2 manifests (BP e RP) em módulos pareados.
+- Alteração aplicada em `AGENTS.md`:
+  - adicionada seção **Regra fixa para BP/RP do mesmo módulo**;
+  - formaliza obrigatoriedade de bump em `packs/<BP>/manifest.json` e `packs/<RP>/manifest.json` no mesmo commit;
+  - define incremento mínimo de patch em `header.version` e `modules[].version` de ambos.
+- Objetivo: evitar divergência de versão entre packs pareados e melhorar rastreabilidade de deploy.
