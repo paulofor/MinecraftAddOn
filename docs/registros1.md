@@ -957,3 +957,67 @@ Checklist executado no host via MCP readonly/projeto:
 - Versionamento atualizado para rastreabilidade:
   - `packs/BP_Barco3Jogadores/manifest.json`: `0.1.31` -> `0.1.32` (header + módulos);
   - `packs/RP_Barco3Jogadores/manifest.json`: `0.1.30` -> `0.1.31` (header + módulo `resources`).
+
+## 2026-05-16 22:20:00 UTC-3 — Acesso ao MCP Readonly e leitura do bedrock.log para investigar navegação
+- Solicitação: acessar o MCP Server e verificar logs devido a muitos problemas na navegação.
+- Endpoint utilizado: `http://186.202.209.206/mcp`.
+- Verificação de disponibilidade (`tools/list`):
+  - **sucesso na tentativa 1** com retorno das tools (`list_directory`, `read_file`, `write_png_base64`, `restart_bedrock`, `run_read_command`);
+  - tentativas seguintes apresentaram intermitência (`upstream connect timeout`).
+- Verificação de logs (`tools/call` + `list_directory` em `/root/MinecraftServer/logging`):
+  - diretório acessível;
+  - arquivo encontrado: `bedrock.log` (size `11601988` bytes).
+- Leitura do log (`tools/call` + `run_read_command` com `tail -n 200 /root/MinecraftServer/logging/bedrock.log`):
+  - tentativa 1 com timeout;
+  - tentativa 2 com **sucesso** e `exit_code=0`.
+- Evidências no trecho lido (200 linhas):
+  - ocorrências `[Scripting]`: `99`;
+  - ocorrências `[Barco3Debug]`: `99`;
+  - ocorrências `[IlhaLogica][Hub]`: `0`;
+  - ocorrências `TypeError`: `0`;
+  - ocorrências `SyntaxError`: `0`;
+  - ocorrências `runHub`: `0`.
+- Leitura funcional do cenário:
+  - os logs recentes estão concentrados no módulo de debug do **Barco3** (`CONTROLE`/`PROXIMIDADE`), com combinações inferidas como `W+A`, `W+D`, `S+A`, `S+D`;
+  - não houve erro de script explícito no recorte analisado;
+  - há indício de intermitência de conectividade no MCP (timeouts), o que atrapalha inspeção contínua.
+- Próximo passo recomendado:
+  - se o problema de navegação persistir em jogo, coletar janela maior (`tail -n 600`) e correlacionar horário exato da reprodução com as linhas `CONTROLE` para identificar divergência entre entrada e deslocamento.
+
+## 2026-05-16 22:34:00 UTC-3 — Análise numérica de navegação: evidência de giro com setas laterais (A/D)
+- Solicitação: analisar os números do `bedrock.log` para validar se esquerda/direita estão deixando o barco girando.
+- Coleta realizada:
+  - leitura de janela maior do log: `tail -n 800 /root/MinecraftServer/logging/bedrock.log` via MCP (`run_read_command`);
+  - extração de linhas `CONTROLE` do `[Barco3Debug]` para análise de deslocamento (`desloc=x,z`) e direção.
+- Resultado quantitativo da amostra:
+  - linhas `CONTROLE` analisadas: `108`;
+  - eventos com variação angular forte de deslocamento entre amostras consecutivas (|Δângulo| > 45°) durante entradas laterais/diagonais (`A`, `D`, `W+A`, `W+D`, `S+A`, `S+D`): `36`.
+- Evidências diretas no trecho final:
+  - sequência com alternância de direção muito rápida (padrão compatível com giro/órbita):
+    - `01:14:49` (`[D]`) direção `leste (+X)`;
+    - `01:14:50` (`[S+D]`) direção `sul (+Z)`;
+    - `01:14:51` (`[S+A]`) direção `oeste (-X)`;
+    - `01:14:52` (`[W+A]`) direção `norte (-Z)`;
+    - `01:14:53` (`[W+D]`) direção `leste (+X)`.
+  - essa rotação quase em quadrante completo em poucos segundos indica comportamento de giro acentuado quando há comando lateral.
+- Conclusão:
+  - **sim**, pelos números do log, há evidência de que entradas laterais (esquerda/direita e combinações) estão associadas a mudança de heading brusca e padrão de giro do barco.
+- Próximo passo técnico sugerido:
+  - incluir no debug o `yaw` do barco por tick e calcular `yaw_rate` (Δyaw/s) para separar com precisão “curva normal” vs “giro em círculo”.
+
+## 2026-05-16 22:50:00 UTC-3 — Correção no script para reduzir giro indevido com comando lateral (A/D)
+- Solicitação: o giro em círculo não deveria ocorrer com comandos laterais; ajustar o script para remover esse comportamento errado.
+- Alteração aplicada em `packs/BP_Barco3Jogadores/scripts/main.js`:
+  - adicionada regra `shouldSuppressSpin` para detectar cenário de comando **somente lateral** (`A` ou `D`) com baixa velocidade horizontal;
+  - adicionada rotina `clampSpinForLateralOnly` para amortecer velocidade horizontal do barco (`x/z * 0.35`) nesses casos, reduzindo tendência de rotação contínua;
+  - adicionado log `ANTI_GIRO` com `velAntes` e `velDepois` para auditoria;
+  - campo `antiGiro=sim/nao` incluído na linha `CONTROLE`.
+- Objetivo técnico:
+  - impedir que entrada lateral isolada mantenha o barco em padrão de órbita/giro quando não há avanço efetivo.
+- Versionamento atualizado (regra BP/RP pareados):
+  - `packs/BP_Barco3Jogadores/manifest.json`: `0.1.32` -> `0.1.33` (header + módulos `data` e `script`);
+  - `packs/RP_Barco3Jogadores/manifest.json`: `0.1.31` -> `0.1.32` (header + módulo `resources`).
+- Validação local:
+  - `node --check packs/BP_Barco3Jogadores/scripts/main.js` (ok).
+- Próximo passo de validação em jogo:
+  - reproduzir teste com `A`/`D` isolados e `W+A`/`W+D`, confirmando no `bedrock.log` a ocorrência de `ANTI_GIRO` e redução do giro contínuo.
