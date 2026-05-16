@@ -26,14 +26,6 @@
       },
       "minecraft:is_collidable": {},
       "minecraft:is_stackable": {},
-      "minecraft:physics": {
-        "has_gravity": true,
-        "has_collision": true
-      },
-      "minecraft:movement": {
-        "value": 0.18,
-        "max": 0.45
-      },
       "minecraft:pushable": {
         "is_pushable": true,
         "is_pushable_by_piston": true
@@ -76,17 +68,6 @@
             "max_rider_count": 1
           }
         ]
-      },
-      "minecraft:buoyant": {
-        "apply_gravity": true,
-        "base_buoyancy": 1.0,
-        "big_wave_probability": 0.03,
-        "big_wave_speed": 10.0,
-        "liquid_blocks": [
-          "minecraft:water",
-          "minecraft:flowing_water"
-        ],
-        "simulate_waves": true
       },
       "minecraft:damage_sensor": {
         "triggers": {
