@@ -21,10 +21,15 @@
         "max": 18
       },
       "minecraft:collision_box": {
-        "width": 1.35,
-        "height": 0.6
+        "width": 1.4,
+        "height": 0.455
       },
       "minecraft:is_collidable": {},
+      "minecraft:is_stackable": {},
+      "minecraft:physics": {
+        "has_gravity": true,
+        "has_collision": true
+      },
       "minecraft:pushable": {
         "is_pushable": true,
         "is_pushable_by_piston": true
@@ -68,14 +73,24 @@
           }
         ]
       },
+      "minecraft:buoyant": {
+        "base_buoyancy": 1.0,
+        "apply_gravity": true,
+        "simulate_waves": true,
+        "big_wave_probability": 0.03,
+        "big_wave_speed": 10.0,
+        "liquid_blocks": [
+          "minecraft:water",
+          "minecraft:flowing_water"
+        ]
+      },
       "minecraft:damage_sensor": {
         "triggers": {
           "cause": "all",
           "deals_damage": true
         }
       },
-      "minecraft:nameable": {},
-      "minecraft:persistent": {}
+      "minecraft:nameable": {}
     }
   }
 }
