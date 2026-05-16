@@ -1043,3 +1043,50 @@ Checklist executado no host via MCP readonly/projeto:
   - `node --check packs/BP_Barco3Jogadores/scripts/main.js` (ok).
 - Próximo passo operacional:
   - publicar pack no servidor, reproduzir o controle em jogo e revalidar no `bedrock.log` se cessaram os `TypeError` na função `clampSpinForLateralOnly`.
+
+## 2026-05-16 23:05:00 UTC-3 — Nova leitura do log após movimentos contínuos sem padrão
+- Solicitação: pesquisar o log mais recente após teste com movimentos contínuos “sem padrão”.
+- Coleta via MCP Readonly (`http://186.202.209.206/mcp`):
+  - `tools/list`: disponível com intermitência de timeout nas tentativas 1 e 3; sucesso nas tentativas 2 e 4.
+  - `run_read_command` com `tail -n 250 /root/MinecraftServer/logging/bedrock.log`: sucesso.
+- Janela observada no log: aproximadamente `2026-05-16 01:51:41` até `2026-05-16 01:53:21` (UTC do servidor no próprio log).
+- Evidências encontradas:
+  - não houve `TypeError`/`SyntaxError` nesta janela;
+  - eventos `CONTROLE` e `PROXIMIDADE` foram emitidos continuamente para o piloto `Buck9523`;
+  - alternância intensa de teclas inferidas (`W+A`, `W+D`, `S+D`, `D`, `nenhuma`) compatível com movimento “sem padrão”;
+  - `ANTI_GIRO` apareceu pontualmente (ex.: `01:52:49` e `01:53:14`), sem novo erro associado;
+  - ao final, ocorreu `Player disconnected` em `01:53:21`.
+- Leitura técnica: o comportamento recente indica execução estável do script de controle com telemetria ativa, sem repetição do erro crítico anterior em `clampSpinForLateralOnly`.
+
+## 2026-05-16 23:18:00 UTC-3 — Ajuste do anti-giro para reduzir falso positivo em movimento sem padrão
+- Solicitação: "mas precisamos consertar isso" após insatisfação com o resultado anterior.
+- Correção aplicada em `packs/BP_Barco3Jogadores/scripts/main.js`:
+  - adicionado controle de estabilidade (`lateralOnlyStreak`) para só ativar `ANTI_GIRO` após 3 ciclos consecutivos de entrada lateral inferida (`A`/`D`);
+  - `shouldSuppressSpin` agora exige simultaneamente: entrada lateral, baixa velocidade horizontal e estabilidade mínima da entrada lateral;
+  - objetivo: evitar acionamento prematuro do anti-giro em transições rápidas de comando durante movimentos contínuos sem padrão.
+- Versionamento atualizado (BP/RP pareados):
+  - `packs/BP_Barco3Jogadores/manifest.json`: `0.1.34` -> `0.1.35` (header + módulos `data` e `script`);
+  - `packs/RP_Barco3Jogadores/manifest.json`: `0.1.33` -> `0.1.34` (header + módulo `resources`).
+- Validação local:
+  - `node --check packs/BP_Barco3Jogadores/scripts/main.js` (ok).
+- Próximo passo recomendado em servidor:
+  - publicar pack, repetir teste com movimentos randômicos e revalidar no `bedrock.log` a frequência de `ANTI_GIRO` versus `CONTROLE`.
+
+## 2026-05-16 23:32:00 UTC-3 — Reintrodução de parâmetros de diagnóstico para descobrir causa raiz do giro
+- Solicitação: não focar apenas em “consertar o giro”, e sim descobrir o motivo do giro acontecer; reintroduzir parâmetros de diagnóstico removidos anteriormente.
+- Ajuste aplicado em `packs/BP_Barco3Jogadores/scripts/main.js` (linha `CONTROLE`):
+  - inclusão de `yaw` do barco normalizado em graus (`-180..180`);
+  - inclusão de `deltaYaw` (variação angular entre amostras);
+  - inclusão de `yawRate` em `deg/s` (neste loop, equivalente ao `deltaYaw`, pois o intervalo é ~1s);
+  - inclusão de `speed2D` (magnitude horizontal da velocidade);
+  - inclusão de `desloc2D` (magnitude horizontal do deslocamento por ciclo);
+  - manutenção de `lateralStreak` para correlacionar persistência de input lateral com rotação.
+- Objetivo técnico:
+  - permitir separar com dados objetivos “curva normal” de “giro em órbita”, correlacionando entrada inferida, rotação, velocidade e deslocamento no mesmo evento de log.
+- Versionamento atualizado (BP/RP pareados):
+  - `packs/BP_Barco3Jogadores/manifest.json`: `0.1.35` -> `0.1.36` (header + módulos);
+  - `packs/RP_Barco3Jogadores/manifest.json`: `0.1.34` -> `0.1.35` (header + módulo).
+- Validação local:
+  - `node --check packs/BP_Barco3Jogadores/scripts/main.js` (ok).
+- Próximo passo recomendado:
+  - reproduzir o problema em jogo e coletar `tail -n 600` do `bedrock.log` para medir limiares de `yawRate`/`deltaYaw` que caracterizam giro anômalo.

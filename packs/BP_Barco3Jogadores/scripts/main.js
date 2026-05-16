@@ -19,6 +19,17 @@ function vecToStr(v) {
   return `x=${round(v.x)} y=${round(v.y)} z=${round(v.z)}`;
 }
 
+function normalizeYawDegrees(yaw) {
+  let y = yaw % 360;
+  if (y > 180) y -= 360;
+  if (y < -180) y += 360;
+  return y;
+}
+
+function deltaYawDegrees(currentYaw, previousYaw) {
+  return normalizeYawDegrees(currentYaw - previousYaw);
+}
+
 function getPassengers(boat) {
   try {
     const rideable = boat.getComponent("minecraft:rideable");
@@ -64,14 +75,16 @@ function inferPressedKeys(pilot, delta) {
   return pressed;
 }
 
-function shouldSuppressSpin(inferredKeys, velocity) {
+function shouldSuppressSpin(inferredKeys, velocity, lateralOnlyStreak) {
   const lateralOnly = inferredKeys.length > 0 && inferredKeys.every((k) => k === "A" || k === "D");
   const horizontalSpeed = Math.hypot(velocity.x, velocity.z);
-  return lateralOnly && horizontalSpeed < 0.12;
+  const lowSpeed = horizontalSpeed < 0.12;
+  const stableLateralInput = lateralOnlyStreak >= 3;
+  return lateralOnly && lowSpeed && stableLateralInput;
 }
 
-function clampSpinForLateralOnly(boat, inferredKeys, velocity) {
-  if (!shouldSuppressSpin(inferredKeys, velocity)) return false;
+function clampSpinForLateralOnly(boat, inferredKeys, velocity, lateralOnlyStreak) {
+  if (!shouldSuppressSpin(inferredKeys, velocity, lateralOnlyStreak)) return false;
 
   const dampedVelocity = {
     x: velocity.x * 0.35,
@@ -158,12 +171,16 @@ system.runInterval(() => {
       const direction = directionFromVelocity(velocity);
       const currentLocation = boat.location;
       const previous = boatState.get(boat.id);
+      const currentRotation = boat.getRotation();
+      const yaw = normalizeYawDegrees(currentRotation.y);
 
       if (!previous || previous.riderKey !== riderKey) {
         log(
           `ASSENTOS boat=${boat.id} -> riders=[${ridersNames.join(", ") || "vazio"}] | piloto=${ridersNames[0] ?? "nenhum"}`
         );
       }
+
+      let nextLateralOnlyStreak = 0;
 
       if (riders.length > 0) {
         const pilot = riders[0];
@@ -176,16 +193,26 @@ system.runInterval(() => {
           : { x: 0, y: 0, z: 0 };
 
         const inferredKeys = inferPressedKeys(pilot, delta);
-        const antiGiroAplicado = clampSpinForLateralOnly(boat, inferredKeys, velocity);
+        const previousStreak = previous?.lateralOnlyStreak ?? 0;
+        const lateralOnly = inferredKeys.length > 0 && inferredKeys.every((k) => k === "A" || k === "D");
+        const lateralOnlyStreak = lateralOnly ? previousStreak + 1 : 0;
+        nextLateralOnlyStreak = lateralOnlyStreak;
+        const antiGiroAplicado = clampSpinForLateralOnly(boat, inferredKeys, velocity, lateralOnlyStreak);
+        const deltaYaw = previous ? deltaYawDegrees(yaw, previous.yaw) : 0;
+        const yawRate = deltaYaw; // loop a cada 20 ticks (~1s)
+        const horizontalSpeed = Math.hypot(velocity.x, velocity.z);
+        const delta2D = Math.hypot(delta.x, delta.z);
 
         log(
-          `CONTROLE piloto=${pilot?.name ?? "desconhecido"} | teclas(inferidas)=[${inferredKeys.join("+") || "nenhuma"}] | boatPos=${vecToStr(currentLocation)} | vel=${vecToStr(velocity)} | desloc=${vecToStr(delta)} | direcao=${direction} | antiGiro=${antiGiroAplicado ? "sim" : "nao"}`
+          `CONTROLE piloto=${pilot?.name ?? "desconhecido"} | teclas(inferidas)=[${inferredKeys.join("+") || "nenhuma"}] | boatPos=${vecToStr(currentLocation)} | vel=${vecToStr(velocity)} | desloc=${vecToStr(delta)} | desloc2D=${round(delta2D)} | speed2D=${round(horizontalSpeed)} | yaw=${round(yaw)} | deltaYaw=${round(deltaYaw)} | yawRate=${round(yawRate)}deg/s | lateralStreak=${lateralOnlyStreak} | direcao=${direction} | antiGiro=${antiGiroAplicado ? "sim" : "nao"}`
         );
       }
 
       boatState.set(boat.id, {
         riderKey,
-        location: { ...currentLocation }
+        location: { ...currentLocation },
+        yaw,
+        lateralOnlyStreak: nextLateralOnlyStreak
       });
     }
   }
