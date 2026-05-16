@@ -41,6 +41,28 @@ function summarizeBoat(boat) {
   ].join(" | ");
 }
 
+
+function normalize2D(v) {
+  const mag = Math.hypot(v.x, v.z);
+  if (mag < 1e-6) return { x: 0, z: 0 };
+  return { x: v.x / mag, z: v.z / mag };
+}
+
+function inferPressedKeys(pilot, delta) {
+  const pressed = [];
+  const move2D = normalize2D(delta);
+  if (move2D.z < -0.25) pressed.push("W");
+  if (move2D.z > 0.25) pressed.push("S");
+  if (move2D.x > 0.25) pressed.push("D");
+  if (move2D.x < -0.25) pressed.push("A");
+
+  if (delta.y > 0.12) pressed.push("SPACE");
+
+  const isSneaking = typeof pilot?.isSneaking === "boolean" ? pilot.isSneaking : false;
+  if (isSneaking) pressed.push("SHIFT");
+
+  return pressed;
+}
 function directionFromVelocity(v) {
   const ax = Math.abs(v.x);
   const az = Math.abs(v.z);
@@ -106,7 +128,6 @@ system.runInterval(() => {
 
       if (riders.length > 0) {
         const pilot = riders[0];
-        const pilotDirection = pilot?.getViewDirection?.();
         const delta = previous
           ? {
               x: currentLocation.x - previous.location.x,
@@ -115,8 +136,10 @@ system.runInterval(() => {
             }
           : { x: 0, y: 0, z: 0 };
 
+        const inferredKeys = inferPressedKeys(pilot, delta);
+
         log(
-          `CONTROLE piloto=${pilot?.name ?? "desconhecido"} | view=${pilotDirection ? vecToStr(pilotDirection) : "n/d"} | vel=${vecToStr(velocity)} | desloc=${vecToStr(delta)} | direcao=${direction}`
+          `CONTROLE piloto=${pilot?.name ?? "desconhecido"} | teclas(inferidas)=[${inferredKeys.join("+") || "nenhuma"}] | boatPos=${vecToStr(currentLocation)} | vel=${vecToStr(velocity)} | desloc=${vecToStr(delta)} | direcao=${direction}`
         );
       }
 
