@@ -1111,3 +1111,10 @@ Checklist executado no host via MCP readonly/projeto:
   - `packs/RP_Barco3Jogadores/manifest.json`: `0.1.37` -> `0.1.38` (header + módulo `resources`).
 - Validação local executada:
   - `node --check packs/BP_Barco3Jogadores/scripts/main.js` (ok).
+
+## 2026-05-16 09:20:00 UTC-3 — Bump de versão do Barco 3 Jogadores
+- Solicitação: realizar bump de versão do módulo "barco 3 jogadores".
+- Alterações aplicadas:
+  - `packs/BP_Barco3Jogadores/manifest.json`: `header.version` e `modules[].version` incrementados de `0.1.38` para `0.1.39`.
+  - `packs/RP_Barco3Jogadores/manifest.json`: `header.version` e `modules[].version` incrementados de `0.1.38` para `0.1.39`.
+- Objetivo: garantir rastreabilidade de deploy e sincronização BP/RP no mesmo commit.
