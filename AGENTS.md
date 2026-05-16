@@ -217,6 +217,15 @@ Quando houver criação/alteração de **texturas** (`textures/**/*.png`), segui
 ## Regra de versionamento de objetos
 Sempre que alterar qualquer objeto do projeto (entidades, blocos, itens, scripts, manifests ou definições relacionadas), atualizar a versão correspondente no arquivo impactado para garantir rastreabilidade e deploy consistente.
 
+### Regra fixa para BP/RP do mesmo módulo
+Sempre que houver alteração em qualquer arquivo de um módulo que possua **Behavior Pack (BP)** e **Resource Pack (RP)** pareados, atualizar **sempre os 2 manifests** no mesmo commit:
+- `packs/<BP>/manifest.json`
+- `packs/<RP>/manifest.json`
+
+Diretriz de versionamento:
+- incrementar ao menos o patch em `header.version` e em todos os `modules[].version` de ambos os manifests;
+- não entregar alteração de módulo com bump em apenas um dos manifests (BP ou RP).
+
 ## MUITO IMPORTANTE — caminho efetivo de PNG no servidor (prioridade alta)
 Para itens/blocos com textura custom em mundos ativos, o PNG **deve existir no pack do mundo** (não apenas no pack global), respeitando exatamente o path referenciado no JSON de textura.
 
