@@ -1021,3 +1021,25 @@ Checklist executado no host via MCP readonly/projeto:
   - `node --check packs/BP_Barco3Jogadores/scripts/main.js` (ok).
 - Próximo passo de validação em jogo:
   - reproduzir teste com `A`/`D` isolados e `W+A`/`W+D`, confirmando no `bedrock.log` a ocorrência de `ANTI_GIRO` e redução do giro contínuo.
+
+## 2026-05-16 22:58:00 UTC-3 — Diagnóstico do log recente e correção de imprecisão no controle do Barco 3
+- Solicitação: validar o log mais recente para explicar comportamento incoerente (mesma seta levando a direções diferentes).
+- Coleta via MCP Readonly (`http://186.202.209.206/mcp`):
+  - `tools/list`: sucesso com uma intermitência prévia de timeout;
+  - `run_read_command` com `tail -n 250 /root/MinecraftServer/logging/bedrock.log`: sucesso na 2ª tentativa.
+- Evidência principal no log:
+  - repetição de erro de script: `TypeError: not a function at clampSpinForLateralOnly (main.js:82)` entre `01:38:49` e `01:38:53`.
+  - esse erro ocorre exatamente na rotina anti-giro, interrompendo o ajuste de movimento e degradando a consistência percebida do controle.
+- Correção aplicada em `packs/BP_Barco3Jogadores/scripts/main.js`:
+  - mantida a lógica anti-giro, mas com fallback seguro por API:
+    - usa `boat.setVelocity(...)` quando disponível;
+    - fallback para `clearVelocity + applyImpulse` quando `setVelocity` não existe;
+    - log explícito quando nenhuma API de ajuste está disponível;
+  - removido ponto único de falha que disparava `TypeError` em loop.
+- Versionamento atualizado (regra BP/RP pareados):
+  - `packs/BP_Barco3Jogadores/manifest.json`: `0.1.33` -> `0.1.34` (header + módulos);
+  - `packs/RP_Barco3Jogadores/manifest.json`: `0.1.32` -> `0.1.33` (header + módulo `resources`).
+- Validação local:
+  - `node --check packs/BP_Barco3Jogadores/scripts/main.js` (ok).
+- Próximo passo operacional:
+  - publicar pack no servidor, reproduzir o controle em jogo e revalidar no `bedrock.log` se cessaram os `TypeError` na função `clampSpinForLateralOnly`.
