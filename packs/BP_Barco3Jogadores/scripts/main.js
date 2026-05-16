@@ -63,6 +63,29 @@ function inferPressedKeys(pilot, delta) {
 
   return pressed;
 }
+
+function shouldSuppressSpin(inferredKeys, velocity) {
+  const lateralOnly = inferredKeys.length > 0 && inferredKeys.every((k) => k === "A" || k === "D");
+  const horizontalSpeed = Math.hypot(velocity.x, velocity.z);
+  return lateralOnly && horizontalSpeed < 0.12;
+}
+
+function clampSpinForLateralOnly(boat, inferredKeys, velocity) {
+  if (!shouldSuppressSpin(inferredKeys, velocity)) return false;
+
+  const dampedVelocity = {
+    x: velocity.x * 0.35,
+    y: velocity.y,
+    z: velocity.z * 0.35
+  };
+
+  boat.setVelocity(dampedVelocity);
+  log(
+    `ANTI_GIRO boat=${boat.id} | teclas=[${inferredKeys.join("+")}] | velAntes=${vecToStr(velocity)} | velDepois=${vecToStr(dampedVelocity)}`
+  );
+  return true;
+}
+
 function directionFromVelocity(v) {
   const ax = Math.abs(v.x);
   const az = Math.abs(v.z);
@@ -137,9 +160,10 @@ system.runInterval(() => {
           : { x: 0, y: 0, z: 0 };
 
         const inferredKeys = inferPressedKeys(pilot, delta);
+        const antiGiroAplicado = clampSpinForLateralOnly(boat, inferredKeys, velocity);
 
         log(
-          `CONTROLE piloto=${pilot?.name ?? "desconhecido"} | teclas(inferidas)=[${inferredKeys.join("+") || "nenhuma"}] | boatPos=${vecToStr(currentLocation)} | vel=${vecToStr(velocity)} | desloc=${vecToStr(delta)} | direcao=${direction}`
+          `CONTROLE piloto=${pilot?.name ?? "desconhecido"} | teclas(inferidas)=[${inferredKeys.join("+") || "nenhuma"}] | boatPos=${vecToStr(currentLocation)} | vel=${vecToStr(velocity)} | desloc=${vecToStr(delta)} | direcao=${direction} | antiGiro=${antiGiroAplicado ? "sim" : "nao"}`
         );
       }
 
