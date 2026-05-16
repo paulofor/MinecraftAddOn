@@ -1097,3 +1097,17 @@ Checklist executado no host via MCP readonly/projeto:
   - `packs/BP_Barco3Jogadores/manifest.json`: `0.1.36` -> `0.1.37` (header + módulos `data` e `script`);
   - `packs/RP_Barco3Jogadores/manifest.json`: `0.1.35` -> `0.1.37` (header + módulo `resources`).
 - Observação: atualização executada para manter rastreabilidade de deploy e sincronismo entre manifests BP/RP do mesmo módulo.
+
+## 2026-05-16 02:32:54 UTC-3 — Diagnóstico de sumiço do Barco 3 Jogadores
+- Solicitação: verificar possível problema de código no cenário "barco foi criado e sumiu".
+- Análise de código identificou dois pontos de risco em `packs/BP_Barco3Jogadores/entities/barco_3_jogadores.json`:
+  - presença de `minecraft:is_stackable` em entidade baseada em `runtime_identifier: "minecraft:boat"` (componente inadequado para entidade de barco);
+  - ausência de `minecraft:persistent`, permitindo comportamento de descarte/despawn em condições de runtime/chunk.
+- Correção aplicada:
+  - removido `minecraft:is_stackable`;
+  - adicionado `minecraft:persistent: {}` para manter a entidade persistente.
+- Versionamento obrigatório BP/RP atualizado no mesmo commit:
+  - `packs/BP_Barco3Jogadores/manifest.json`: `0.1.37` -> `0.1.38` (header + módulos `data` e `script`);
+  - `packs/RP_Barco3Jogadores/manifest.json`: `0.1.37` -> `0.1.38` (header + módulo `resources`).
+- Validação local executada:
+  - `node --check packs/BP_Barco3Jogadores/scripts/main.js` (ok).
