@@ -1118,3 +1118,10 @@ Checklist executado no host via MCP readonly/projeto:
   - `packs/BP_Barco3Jogadores/manifest.json`: `header.version` e `modules[].version` incrementados de `0.1.38` para `0.1.39`.
   - `packs/RP_Barco3Jogadores/manifest.json`: `header.version` e `modules[].version` incrementados de `0.1.38` para `0.1.39`.
 - Objetivo: garantir rastreabilidade de deploy e sincronização BP/RP no mesmo commit.
+
+## 2026-05-16 15:47:40 UTC-3
+- Ajuste solicitado no módulo do Barco 3 Jogadores para restringir comandos de direção ao eixo frente/trás, removendo efeito de setas laterais/outros comandos de curva.
+- Alteração em `packs/BP_Barco3Jogadores/entities/barco_3_jogadores.json`: adicionado componente `minecraft:input_ground_controlled` com `side_movement_modifier: 0.0` e `max_turn: 0.0`, mantendo somente deslocamento longitudinal (frente e ré) para o piloto.
+- Versionamento atualizado por alteração de objeto em módulo pareado BP/RP:
+  - `packs/BP_Barco3Jogadores/manifest.json`: `0.1.39` -> `0.1.40` (header + modules);
+  - `packs/RP_Barco3Jogadores/manifest.json`: `0.1.39` -> `0.1.40` (header + module).

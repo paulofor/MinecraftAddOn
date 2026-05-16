@@ -90,7 +90,14 @@
           "deals_damage": true
         }
       },
-      "minecraft:nameable": {}
+      "minecraft:nameable": {},
+      "minecraft:input_ground_controlled": {
+        "max_turn": 0.0,
+        "move_speed": 1.0,
+        "forward_movement_modifier": 1.0,
+        "backward_movement_modifier": 0.6,
+        "side_movement_modifier": 0.0
+      }
     }
   }
 }
