@@ -933,3 +933,27 @@ Checklist executado no host via MCP readonly/projeto:
   - formaliza obrigatoriedade de bump em `packs/<BP>/manifest.json` e `packs/<RP>/manifest.json` no mesmo commit;
   - define incremento mínimo de patch em `header.version` e `modules[].version` de ambos.
 - Objetivo: evitar divergência de versão entre packs pareados e melhorar rastreabilidade de deploy.
+
+## 2026-05-16 00:12:00 UTC-3 — Debug do Barco 3 Jogadores: log de teclas inferidas + posição do barco
+- Solicitação: registrar no log quais teclas estão sendo pressionadas (inclusive combinações) e a posição do barco para investigar comportamento em jogo.
+- Ajuste aplicado em `packs/BP_Barco3Jogadores/scripts/main.js`:
+  - adição de função de inferência de teclas por vetor de deslocamento relativo à direção de visão do piloto;
+  - log contínuo `CONTROLE` agora inclui `teclas(inferidas)` com combinações (`W`, `A`, `S`, `D`, `SPACE`, `SHIFT`);
+  - inclusão explícita da posição do barco em `boatPos=x,y,z` no mesmo evento de controle.
+- Observação técnica: o Bedrock Script API não expõe de forma direta todas as teclas físicas; por isso o log usa **inferência por movimento** para estudo de comportamento.
+- Versionamento atualizado para rastreabilidade de deploy:
+  - `packs/BP_Barco3Jogadores/manifest.json`: `0.1.30` -> `0.1.31` (header + módulos);
+  - `packs/RP_Barco3Jogadores/manifest.json`: `0.1.29` -> `0.1.30` (header + módulo `resources`).
+- Próximo passo sugerido: reproduzir navegação com combinações (`W+D`, `W+A`, `S+A`) e cruzar com `bedrock.log` para verificar divergência entre intenção de controle e deslocamento real.
+
+## 2026-05-16 00:28:00 UTC-3 — Ajuste do debug do Barco 3 Jogadores: remoção total de influência da visão do piloto
+- Solicitação: retirar tudo relacionado à visão/direção de olhar do piloto para que isso não influencie a análise.
+- Ajuste aplicado em `packs/BP_Barco3Jogadores/scripts/main.js`:
+  - removido uso de `getViewDirection()`;
+  - removida dependência de produto escalar com vetor de visão na inferência de teclas;
+  - inferência de `W/A/S/D` agora é feita apenas por deslocamento do barco no plano X/Z (referência fixa de mundo);
+  - campo `view=...` removido da linha de log `CONTROLE`.
+- Resultado esperado: logs de entrada inferida e posição passam a refletir somente o movimento observado do barco, sem qualquer correlação com direção de câmera do piloto.
+- Versionamento atualizado para rastreabilidade:
+  - `packs/BP_Barco3Jogadores/manifest.json`: `0.1.31` -> `0.1.32` (header + módulos);
+  - `packs/RP_Barco3Jogadores/manifest.json`: `0.1.30` -> `0.1.31` (header + módulo `resources`).
