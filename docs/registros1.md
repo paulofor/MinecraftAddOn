@@ -1125,3 +1125,53 @@ Checklist executado no host via MCP readonly/projeto:
 - Versionamento atualizado por alteração de objeto em módulo pareado BP/RP:
   - `packs/BP_Barco3Jogadores/manifest.json`: `0.1.39` -> `0.1.40` (header + modules);
   - `packs/RP_Barco3Jogadores/manifest.json`: `0.1.39` -> `0.1.40` (header + module).
+
+## 2026-05-17 01:46:59 UTC-3
+- Solicitação atendida: revisão da implementação do barco de 3 lugares para retirar interpretação de “ser vivo”.
+- Pesquisa realizada na biblioteca/documentação oficial Microsoft Learn (MCP/Docs) para validar base técnica:
+  - `minecraft:rideable` (capacidade de montaria/assento de controle em entidade);
+  - `EntityRideableComponent.controllingSeat` (assento controlador);
+  - `minecraft:entity_placer` (item que coloca entidade no mundo).
+- Atualização de diretriz canônica em `docs/barco_3_personagem_mcp_entidade.md`:
+  - barco 3 lugares definido como **veículo/objeto interativo**;
+  - entidade mantida apenas como suporte técnico de montaria/física (sem semântica pedagógica de ser vivo);
+  - reforçado padrão de uso por item de colocação + checklist de revisão.
+
+## 2026-05-17 01:51:05 UTC-3
+- Correção aplicada no módulo do Barco 3 Jogadores para impedir que o veículo “morra” ao receber ataque de arma.
+- Alteração em `packs/BP_Barco3Jogadores/entities/barco_3_jogadores.json`: componente `minecraft:damage_sensor` ajustado para `deals_damage: false` com `cause: all`, tornando a entidade imune a dano direto.
+- Versionamento obrigatório BP/RP do mesmo módulo atualizado no mesmo commit:
+  - `packs/BP_Barco3Jogadores/manifest.json`: `0.1.40` -> `0.1.41` (header e modules);
+  - `packs/RP_Barco3Jogadores/manifest.json`: `0.1.40` -> `0.1.41` (header e module).
+- Objetivo: garantir que o barco permaneça como objeto/veículo persistente e não se comporte como entidade “viva” vulnerável a combate.
+
+## 2026-05-17 01:55:36 UTC-3
+- Solicitação atendida para revisar **navegabilidade** do Barco 3 Jogadores após correção de dano.
+- Tentativa de análise de logs remotos via MCP (`http://186.202.209.206/mcp`) falhou no momento com `connection timeout` em `tools/list` e `run_read_command`, caracterizando indisponibilidade/intermitência do endpoint.
+- Ajuste aplicado em `packs/BP_Barco3Jogadores/entities/barco_3_jogadores.json` para melhorar dirigibilidade sem voltar a strafe lateral:
+  - `minecraft:input_ground_controlled.max_turn`: `0.0` -> `0.35` (permite curva);
+  - `minecraft:input_ground_controlled.move_speed`: `1.0` -> `1.05` (leve ganho de resposta);
+  - `side_movement_modifier` mantido em `0.0` para preservar restrição de movimento lateral direto.
+- Versionamento obrigatório BP/RP atualizado no mesmo commit:
+  - BP `0.1.41` -> `0.1.42`;
+  - RP `0.1.41` -> `0.1.42`.
+- Próximo passo recomendado: quando MCP estabilizar, reexecutar `tail` do `bedrock.log` durante teste em jogo para validar comportamento do piloto em curva.
+
+## 2026-05-17 01:58:44 UTC-3
+- Resposta à dúvida de navegabilidade: documentados, no canônico do Barco 3 Jogadores, os atributos que influenciam pilotagem além de `max_turn`.
+- Incluídos no guia os parâmetros de `minecraft:input_ground_controlled` (`move_speed`, `forward_movement_modifier`, `backward_movement_modifier`, `side_movement_modifier`, `max_turn`), `minecraft:rideable` (`controlling_seat`, assentos e limites) e componentes físicos (`buoyant`, `physics`, `collision_box`).
+- Objetivo: facilitar tuning iterativo da dirigibilidade com base em controle, assentos e física do veículo.
+
+## 2026-05-17 02:11:13 UTC-3
+- Ajuste solicitado de navegabilidade: redução de curva do Barco 3 Jogadores.
+- Alteração em `packs/BP_Barco3Jogadores/entities/barco_3_jogadores.json`: `minecraft:input_ground_controlled.max_turn` alterado de `0.35` para `0.1` para curva mais suave/contida.
+- Versionamento obrigatório do módulo pareado BP/RP atualizado no mesmo commit:
+  - BP `0.1.42` -> `0.1.43` (header + modules);
+  - RP `0.1.42` -> `0.1.43` (header + module).
+
+## 2026-05-17 02:17:04 UTC-3
+- Ajuste solicitado de navegabilidade aplicado: `max_turn` reduzido para `0.07` no Barco 3 Jogadores para minimizar giro excessivo.
+- Alteração em `packs/BP_Barco3Jogadores/entities/barco_3_jogadores.json`: `minecraft:input_ground_controlled.max_turn` alterado de `0.1` para `0.07`.
+- Versionamento obrigatório BP/RP atualizado no mesmo commit:
+  - BP `0.1.43` -> `0.1.44` (header + modules);
+  - RP `0.1.43` -> `0.1.44` (header + module).
