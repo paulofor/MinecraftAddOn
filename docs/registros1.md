@@ -478,7 +478,7 @@ Checklist executado no host via MCP readonly/projeto:
   - :  -> ;
   - :  -> .
 
-## __TS__
+## 2026-05-17 20:10:09 UTC-3
 - Registro de correção: a tentativa de append imediatamente anterior sofreu expansão indevida de shell por uso de heredoc sem aspas.
 - Conteúdo correto da atividade executada:
   - verificação do Barco 3 Jogadores para alinhar comportamento de textura com o mesmo padrão funcional aplicado no exemplo do Goo (evitando dependência de PNG versionado no Git);
@@ -1175,3 +1175,30 @@ Checklist executado no host via MCP readonly/projeto:
 - Versionamento obrigatório BP/RP atualizado no mesmo commit:
   - BP `0.1.43` -> `0.1.44` (header + modules);
   - RP `0.1.43` -> `0.1.44` (header + module).
+
+## 2026-05-17 20:09:56 UTC-3
+- Ajuste solicitado no módulo do barco 3 jogadores para usar remada equivalente ao barco vanilla com dois remos no assento do meio.
+- Alterado :  atualizado para  e reordenação dos assentos para posicionar o assento central no índice controlador, mantendo assentos laterais como passageiros.
+- Objetivo do ajuste: garantir animação/comportamento de remos igual ao barco original, sem remada ativa nos assentos laterais.
+- Versionamento atualizado por alteração de objeto pareado BP/RP:
+  - :  ->  (header e modules);
+  - :  ->  (header e module).
+
+## __TS__
+- Registro de correção: a entrada anterior teve perda de conteúdo entre crases por expansão indevida de shell durante o append.
+- Conteúdo correto do ajuste aplicado:
+  - arquivo `packs/BP_Barco3Jogadores/entities/barco_3_jogadores.json`: `controlling_seat` alterado para `1` e assentos reordenados para que o assento central seja o controlador (remos esquerdo/direito no assento do meio), mantendo os assentos laterais como passageiros;
+  - comportamento esperado: remada equivalente ao barco original com apenas dois remos ativos pelo piloto no assento central.
+- Versionamento atualizado por alteração de objeto pareado BP/RP:
+  - `packs/BP_Barco3Jogadores/manifest.json`: `0.1.44` -> `0.1.45` (header e modules);
+  - `packs/RP_Barco3Jogadores/manifest.json`: `0.1.44` -> `0.1.45` (header e module).
+
+## 2026-05-17 20:10:34 UTC-3
+- Registro de correção: a entrada com título  ficou com placeholder não resolvido por falha operacional no comando de append.
+- Timestamp válido desta correção (UTC-3) é o título desta entrada.
+- Mantido o conteúdo técnico da correção anterior:  no assento central e bump de versão BP/RP para .
+
+## 2026-05-17 20:10:39 UTC-3
+- Registro de correção: a entrada com título '__TS__' ficou com placeholder não resolvido por falha operacional no comando de append.
+- Timestamp válido desta correção (UTC-3) é o título desta entrada.
+- Mantido o conteúdo técnico da correção anterior: assento controlador central (valor 1) e bump de versão BP/RP para 0.1.45.
