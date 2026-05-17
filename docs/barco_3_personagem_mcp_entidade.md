@@ -124,3 +124,60 @@ Esperado:
 5. Criar PNG da entidade em `textures/entity/...png` (local de trabalho).
 6. Fazer upload do PNG via MCP para `worlds/<mundo>/resource_packs/<RP>/textures/entity/...png`.
 7. Validar no jogo e no log, ajustando UV/render se necessário.
+
+---
+
+## 7) Diretriz canônica atualizada — Barco de 3 lugares não deve ser tratado como “ser vivo”
+
+Com base na documentação oficial da Microsoft Learn (consultada via biblioteca/MCP), o uso de `minecraft:rideable` existe no ecossistema de **entidades** para tornar um objeto montável, mas isso **não obriga** que o design pedagógico trate o barco como “ser vivo”.
+
+Para este projeto, a decisão canônica é:
+- o **barco de 3 lugares é um veículo/objeto interativo**;
+- a entidade deve ser usada apenas como **suporte técnico de montaria/física**, sem IA/atributos de criatura;
+- a experiência do jogador deve começar por **item de invocação/colocação** (inventário) usando componente de item apropriado para colocar a entidade no mundo.
+
+### Fundamentos oficiais usados na decisão
+- `minecraft:rideable` adiciona capacidade de montar uma entidade e controlar assento (`controlling_seat`) — isso descreve mecânica de montaria, não classificação pedagógica como ser vivo.
+- Em itens, `minecraft:entity_placer` é o componente oficial para um item colocar entidade no mundo.
+
+### Padrão recomendado para o módulo Barco 3 Lugares
+1. Manter a entidade técnica do barco (sem comportamentos de mob vivo desnecessários).
+2. Expor ao jogador um item de colocação (spawn/placer) com nomenclatura de veículo.
+3. Documentar o barco como **objeto de mobilidade** em todos os materiais didáticos e técnicos.
+4. Evitar linguagem de “criatura”, “mob vivo”, “animal” ou similares para esse módulo.
+
+### Critérios de revisão (checklist)
+- [ ] O item de inventário do barco usa componente de colocação de entidade.
+- [ ] A entidade não possui metas/IA de ser vivo que não sejam necessárias ao veículo.
+- [ ] Textos de UI/documentação classificam o barco como veículo/objeto.
+- [ ] Assento de controle (`controlling_seat`) permanece explícito e validado.
+
+---
+
+## 8) Navegabilidade — além de `max_turn`, o que mais influencia a pilotagem
+
+Para o barco de 3 lugares (entidade montável), a pilotagem depende de um conjunto de componentes e propriedades, não apenas de `max_turn`.
+
+### Atributos principais de controle de movimento (`minecraft:input_ground_controlled`)
+- `move_speed`: velocidade base de deslocamento do veículo.
+- `forward_movement_modifier`: multiplicador da velocidade ao avançar.
+- `backward_movement_modifier`: multiplicador da velocidade em ré.
+- `side_movement_modifier`: intensidade de movimento lateral (strafe) quando houver input lateral.
+- `max_turn`: limite de curva/rotação durante o controle.
+
+### Atributos de montaria que impactam controle (`minecraft:rideable`)
+- `controlling_seat`: define qual assento controla o veículo.
+- `seat_count` e `seats[]`: distribuição de assentos pode afetar percepção de controle e ocupação.
+- `pull_in_entities`: influencia facilidade de embarque no assento.
+- `passenger_max_width`: restringe quais passageiros conseguem montar.
+
+### Atributos físicos que alteram “sensação” de pilotagem
+- `minecraft:buoyant.base_buoyancy`, `apply_gravity`, `simulate_waves`: alteram resposta na água.
+- `minecraft:physics.has_gravity` e `has_collision`: alteram interação com terreno/obstáculos.
+- `minecraft:collision_box` (largura/altura): muda colisão, passagem e percepção de estabilidade.
+
+### Diretriz prática para tuning do barco
+1. Ajustar primeiro `controlling_seat` e `seats` (garantir piloto correto).
+2. Em seguida calibrar `max_turn` + `move_speed` (curva vs resposta).
+3. Só depois ajustar `forward/backward/side_movement_modifier`.
+4. Finalizar com ajustes de flutuação (`buoyant`) para comportamento em água.
