@@ -1261,3 +1261,23 @@ Checklist executado no host via MCP readonly/projeto:
 - Versionamento obrigatório de módulo pareado atualizado no mesmo commit:
   - `packs/BP_Barco3Jogadores/manifest.json`: `0.1.47` -> `0.1.48`;
   - `packs/RP_Barco3Jogadores/manifest.json`: `0.1.47` -> `0.1.48`.
+
+## 2026-05-18 19:18:04 UTC-3
+- Solicitação atendida: analisar os logs recentes e melhorar a navegabilidade do **Barco 3 Jogadores**.
+- Fonte da análise: `bedrock.log` via MCP Readonly (`http://186.202.209.206/mcp`), com `tools/list` intermitente (`503`/timeout) e leitura bem-sucedida por `run_read_command` em `/root/MinecraftServer/logging/bedrock.log`.
+- Diagnóstico do recorte analisado (`2026-05-18 17:44` a `17:46`):
+  - não foram encontrados `TypeError` ou `SyntaxError` do módulo;
+  - os resumos de telemetria indicaram `W` muito acelerado (`dist` média aproximada entre `4.80` e `6.83`), enquanto `S` ficou próximo de `0.90`;
+  - comando lateral isolado `A` teve `giro%=100` e deslocamento médio aproximado de `2.79` a `2.90`, compatível com sensação de barco entrando em curva/orbitagem em vez de apenas orientar;
+  - com `nenhuma`, ainda houve deslocamento residual relevante em parte das amostras, sugerindo inércia/deriva acumulada.
+- Ajuste aplicado em `packs/BP_Barco3Jogadores/entities/barco_3_jogadores.json`:
+  - redução de `minecraft:input_ground_controlled.max_turn` de `0.07` para `0.035` para suavizar curvas e diminuir giro lateral;
+  - redução de `move_speed` de `1.05` para `0.85`;
+  - redução de `forward_movement_modifier` de `1.0` para `0.55` para controlar a aceleração excessiva no `W`;
+  - ajuste de `backward_movement_modifier` de `0.6` para `0.55` para manter ré proporcional ao novo controle;
+  - manutenção de `side_movement_modifier: 0.0` para não transformar `A/D` em propulsão lateral;
+  - desativação de ondas (`simulate_waves: false`, `big_wave_probability: 0.0`, `big_wave_speed: 0.0`) para reduzir deriva visual/física durante calibração.
+- Versionamento atualizado por alteração de objeto pareado BP/RP:
+  - `packs/BP_Barco3Jogadores/manifest.json`: `0.1.48` -> `0.1.49`;
+  - `packs/RP_Barco3Jogadores/manifest.json`: `0.1.48` -> `0.1.49`.
+- Próximo passo recomendado após deploy: testar sequência curta `W`, `S`, `A`, `D`, `W+A`, `W+D` e comparar novos `resumo_controles`; meta inicial é `W` menos explosivo e `A/D` com menor `giro%`/menor deslocamento isolado.

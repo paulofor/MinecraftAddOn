@@ -76,9 +76,9 @@
       "minecraft:buoyant": {
         "base_buoyancy": 1.0,
         "apply_gravity": true,
-        "simulate_waves": true,
-        "big_wave_probability": 0.03,
-        "big_wave_speed": 10.0,
+        "simulate_waves": false,
+        "big_wave_probability": 0.0,
+        "big_wave_speed": 0.0,
         "liquid_blocks": [
           "minecraft:water",
           "minecraft:flowing_water"
@@ -92,10 +92,10 @@
       },
       "minecraft:nameable": {},
       "minecraft:input_ground_controlled": {
-        "max_turn": 0.07,
-        "move_speed": 1.05,
-        "forward_movement_modifier": 1.0,
-        "backward_movement_modifier": 0.6,
+        "max_turn": 0.035,
+        "move_speed": 0.85,
+        "forward_movement_modifier": 0.55,
+        "backward_movement_modifier": 0.55,
         "side_movement_modifier": 0.0
       }
     }
