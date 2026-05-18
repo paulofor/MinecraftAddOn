@@ -1234,3 +1234,30 @@ Checklist executado no host via MCP readonly/projeto:
 - Regras de versionamento aplicadas no módulo pareado BP/RP:
   - `packs/BP_Barco3Jogadores/manifest.json`: `0.1.46` -> `0.1.47` (header + módulos);
   - `packs/RP_Barco3Jogadores/manifest.json`: `0.1.46` -> `0.1.47` (header + módulo).
+
+## 2026-05-18 17:03:07 UTC-3
+- Análise de logs do comportamento do Barco 3 Jogadores via MCP Readonly (`http://186.202.209.206/mcp`) com retentativas por intermitência (`503`/timeout) e sucesso em `tools/list` e `run_read_command`.
+- Fonte analisada: `tail -n 800 /root/MinecraftServer/logging/bedrock.log`.
+- Janela principal de teste observada: `2026-05-18 16:57:37` até `2026-05-18 16:59:48` (piloto `Buck9523`, entidade `boat=-816043786086`).
+- Mapeamento por comando de direção (pelos logs `[Scripting] [Barco3Teste] movimento ... teclas=... input=(x,y)`):
+  - **Frente (`W`)**: deslocamento forte e consistente com grande variação por tick (ex.: `x` sobe de `6.08` para `39.35` e `z` cai de `443.25` para `396.25` entre `16:59:22` e `16:59:30`), indicando aceleração intensa.
+  - **Trás (`S`)**: deslocamento consistente em sentido oposto (ex.: de `(-9.24, 437.43)` para `(4.54, 442.81)` entre `16:58:56` e `16:59:12`), comportamento estável comparado ao `W`.
+  - **Esquerda (`A`)**: movimento com oscilação/"zig-zag" evidente entre ticks (saltos alternando eixos `x`/`z`, p.ex. `(-7.68, 438.32)` -> `(-7.72, 435.43)` -> `(-5.05, 436.56)`), sugerindo instabilidade lateral.
+  - **Direita (`D`)**: padrão semelhante ao `A`, com alternância frequente de posição e trajetória irregular (p.ex. `(-4.59, 439.43)` -> `(-1.72, 438.96)` -> `(-3.29, 436.53)`), também sugerindo oscilação lateral.
+  - **Combinação `W+A`**: apareceu pontualmente (`16:58:54`, input `(-0.49, 1.00)`), sem sequência longa para concluir estabilidade.
+  - **Combinação `S+A`**: registrada entre `16:59:17` e `16:59:21`, com curva progressiva e incremento de `z` (até `444.30`), aparente comportamento de ré com curva à esquerda.
+  - **Combinação `W+D`**: registrada entre `16:59:31` e `16:59:46`, com deslocamento em curva, porém com oscilações frequentes de posição entre ticks (trajetória não suave).
+- Observação complementar: com `teclas=nenhuma`, o barco ainda apresenta pequenos deslocamentos residuais (inércia/deriva), em alguns pontos com salto maior isolado.
+- Conclusão operacional do log: avanço (`W`) e ré (`S`) respondem; componentes laterais (`A`/`D`) e combinações com curva mostram instabilidade de trajetória, merecendo ajuste fino de física/controle.
+
+## 2026-05-18 17:24:27 UTC-3
+- Ajuste solicitado no script do `BP_Barco3Jogadores` para transformar o debug em telemetria útil para calibrar controle/física com base no mapeamento de logs anterior.
+- Alterações em `packs/BP_Barco3Jogadores/scripts/main.js`:
+  - adição de classificação explícita de comandos (`W`, `S`, `A`, `D`, `W+A`, `W+D`, `S+A`, `S+D`, `nenhuma`, `sem_input`);
+  - inclusão de métricas agregadas por comando (`amostras`, `% com movimento`, `distância média por tick com movimento`, `% de giros bruscos`);
+  - emissão periódica de `resumo_controles ...` a cada 100 ticks para facilitar leitura no `bedrock.log` sem depender de inspeção manual linha a linha;
+  - manutenção do log detalhado de movimento por tick, agora com o campo `comando=` para correlação direta de entrada x deslocamento.
+- Objetivo do ajuste: acelerar diagnóstico de instabilidade lateral (`A`/`D`) e curvas (`W+D`, `S+A`) com evidência numérica recorrente em runtime.
+- Versionamento obrigatório de módulo pareado atualizado no mesmo commit:
+  - `packs/BP_Barco3Jogadores/manifest.json`: `0.1.47` -> `0.1.48`;
+  - `packs/RP_Barco3Jogadores/manifest.json`: `0.1.47` -> `0.1.48`.
