@@ -1214,3 +1214,23 @@ Checklist executado no host via MCP readonly/projeto:
 - Versionamento obrigatório BP/RP do módulo pareado atualizado no mesmo commit:
   - `packs/BP_Barco3Jogadores/manifest.json`: `0.1.45` -> `0.1.46` (header + módulos);
   - `packs/RP_Barco3Jogadores/manifest.json`: `0.1.45` -> `0.1.46` (header + módulo).
+
+## 2026-05-18 15:22:26 UTC-3
+- Verificação solicitada dos últimos logs do servidor para investigar comportamento do **Barco 3 Jogadores** “ficando em círculos”.
+- Consulta ao MCP Readonly (`http://186.202.209.206/mcp`) com `tools/list` e leitura de `/root/MinecraftServer/logging/bedrock.log` via `run_read_command` (`tail -n 400`).
+- Evidências recentes no log:
+  - servidor reiniciado às `2026-05-18 11:30:16` com `BP Barco 3 Jogadores` versão `0.1.46` carregada;
+  - sessão de teste de jogador `Buck9523` em `2026-05-18 15:02:19`;
+  - linhas de debug do barco alternando rapidamente entre `riders=[vazio] piloto=nenhum` e `riders=[Buck9523] piloto=Buck9523` (ex.: `15:02:26`, `15:03:56`, `15:04:40`), indicando perda/intermitência de vínculo do piloto durante a navegação;
+  - não foram observados `TypeError`/`SyntaxError` associados ao módulo do barco neste recorte.
+- Diagnóstico registrado: há indício de oscilação de estado de montaria/controle (entrada e saída do assento do piloto) durante o uso, compatível com relato de navegação em círculos.
+
+## 2026-05-18 15:27:32 UTC-3
+- Solicitação atendida: adicionar mais logs no módulo do **Barco 3 Jogadores** para capturar movimentação em runtime.
+- Alteração em `packs/BP_Barco3Jogadores/scripts/main.js`:
+  - novo log por movimento detectado do barco (`movimento ...`) com coordenadas atuais `x,y,z`;
+  - tentativa de leitura de input do piloto via `inputInfo.getMovementVector()` e mapeamento para teclas `W/A/S/D` pressionadas;
+  - log inclui `teclas`, vetor bruto de input `(x,y)` e identificação do piloto.
+- Regras de versionamento aplicadas no módulo pareado BP/RP:
+  - `packs/BP_Barco3Jogadores/manifest.json`: `0.1.46` -> `0.1.47` (header + módulos);
+  - `packs/RP_Barco3Jogadores/manifest.json`: `0.1.46` -> `0.1.47` (header + módulo).
