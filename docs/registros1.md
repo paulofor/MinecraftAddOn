@@ -1202,3 +1202,15 @@ Checklist executado no host via MCP readonly/projeto:
 - Registro de correção: a entrada com título '__TS__' ficou com placeholder não resolvido por falha operacional no comando de append.
 - Timestamp válido desta correção (UTC-3) é o título desta entrada.
 - Mantido o conteúdo técnico da correção anterior: assento controlador central (valor 1) e bump de versão BP/RP para 0.1.45.
+
+## 2026-05-18 00:00:00 UTC-3
+- Ajuste solicitado: barco 3 jogadores ficou sem navegação e com ocupação incorreta quando havia apenas 1 jogador.
+- Correção aplicada em `packs/BP_Barco3Jogadores/entities/barco_3_jogadores.json`:
+  - `minecraft:rideable.controlling_seat` alterado de `1` para `0` para garantir que o primeiro ocupante assuma o assento do piloto;
+  - reordenação de `seats` para colocar o assento do piloto no índice `0` (posição central), mantendo os dois assentos laterais/traseiros como passageiros.
+- Navegação lateral continua controlada para evitar giro ao tentar mover para os lados:
+  - mantido `minecraft:input_ground_controlled.side_movement_modifier: 0.0`;
+  - mantido `minecraft:input_ground_controlled.max_turn: 0.07` para curva suave sem orbitagem contínua.
+- Versionamento obrigatório BP/RP do módulo pareado atualizado no mesmo commit:
+  - `packs/BP_Barco3Jogadores/manifest.json`: `0.1.45` -> `0.1.46` (header + módulos);
+  - `packs/RP_Barco3Jogadores/manifest.json`: `0.1.45` -> `0.1.46` (header + módulo).

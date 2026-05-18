@@ -42,22 +42,22 @@
         ],
         "pull_in_entities": false,
         "passenger_max_width": 1.375,
-        "controlling_seat": 1,
+        "controlling_seat": 0,
         "seats": [
           {
             "position": [
-              -0.45,
+              0.0,
               -0.2,
-              0.45
+              0.0
             ],
             "min_rider_count": 0,
             "max_rider_count": 1
           },
           {
             "position": [
-              0.0,
+              -0.45,
               -0.2,
-              0.0
+              0.45
             ],
             "min_rider_count": 0,
             "max_rider_count": 1
