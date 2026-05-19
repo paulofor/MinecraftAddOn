@@ -1,10 +1,11 @@
 import { system, world } from "@minecraft/server";
 
-const BOAT_ID = "minecraftaddon:barco_3_jogadores";
+const MONITORED_BOAT_TYPES = ["minecraftaddon:barco_3_jogadores", "minecraftaddon:barco_simples"];
 const LOG_PREFIX = "[Barco3Teste]";
 const POSITION_EPSILON = 0.05;
 const SUMMARY_INTERVAL_TICKS = 100;
 const SIGNIFICANT_TURN_DEGREES = 35;
+const MISSING_LOG_TICKS = 60;
 
 function log(message) {
   console.warn(`${LOG_PREFIX} ${message}`);
@@ -119,54 +120,75 @@ function emitSummaryIfNeeded() {
   metrics.clear();
 }
 
-system.runInterval(() => {
-  tickCounter += 1;
+function scanBoats() {
+  const activeBoatIds = new Set();
 
   for (const dimensionId of ["overworld", "nether", "the_end"]) {
     const dimension = world.getDimension(dimensionId);
 
-    for (const boat of dimension.getEntities({ type: BOAT_ID })) {
-      const riders = getPassengers(boat);
-      const names = riders.map((r) => r.name ?? r.typeId);
-      const key = names.join("|");
-      const location = boat.location;
-      const pilot = riders[0];
-      const input = getMovementInput(pilot);
-      const command = classifyCommand(input);
+    for (const typeId of MONITORED_BOAT_TYPES) {
+      for (const boat of dimension.getEntities({ type: typeId })) {
+        activeBoatIds.add(boat.id);
+        const riders = getPassengers(boat);
+        const names = riders.map((r) => r.name ?? r.typeId);
+        const key = names.join("|");
+        const location = boat.location;
+        const pilot = riders[0];
+        const input = getMovementInput(pilot);
+        const command = classifyCommand(input);
 
-      const old = state.get(boat.id);
-      if (!old || old.key !== key) {
-        log(`boat=${boat.id} riders=[${names.join(", ") || "vazio"}] piloto=${names[0] ?? "nenhum"}`);
+        const old = state.get(boat.id);
+        if (!old || old.key !== key) {
+          log(`boat=${boat.id} type=${typeId} riders=[${names.join(", ") || "vazio"}] piloto=${names[0] ?? "nenhum"} dim=${dimensionId}`);
+        }
+
+        if (pilot && old?.location) {
+          const dx = location.x - old.location.x;
+          const dy = location.y - old.location.y;
+          const dz = location.z - old.location.z;
+          const movedDistance = Math.sqrt(dx * dx + dy * dy + dz * dz);
+          const yawDelta = getYawDelta(old.yaw, boat.getRotation().y);
+          recordMetric(command, movedDistance, yawDelta);
+        }
+
+        if (pilot && hasMoved(old?.location, location)) {
+          log(
+            `movimento boat=${boat.id} type=${typeId} pos=(${formatNumber(location.x)}, ${formatNumber(location.y)}, ${formatNumber(location.z)}) teclas=${getPressedKeysLabel(input)} comando=${command} input=(${formatNumber(input?.x)}, ${formatNumber(input?.y)}) piloto=${pilot.name ?? pilot.typeId} dim=${dimensionId}`,
+          );
+        }
+
+        state.set(boat.id, {
+          key,
+          typeId,
+          dimensionId,
+          yaw: boat.getRotation().y,
+          location: {
+            x: location.x,
+            y: location.y,
+            z: location.z,
+          },
+          missingTicks: 0,
+        });
       }
-
-      if (pilot && old?.location) {
-        const dx = location.x - old.location.x;
-        const dy = location.y - old.location.y;
-        const dz = location.z - old.location.z;
-        const movedDistance = Math.sqrt(dx * dx + dy * dy + dz * dz);
-        const yawDelta = getYawDelta(old.yaw, boat.getRotation().y);
-        recordMetric(command, movedDistance, yawDelta);
-      }
-
-      if (pilot && hasMoved(old?.location, location)) {
-        log(
-          `movimento boat=${boat.id} pos=(${formatNumber(location.x)}, ${formatNumber(location.y)}, ${formatNumber(location.z)}) teclas=${getPressedKeysLabel(input)} comando=${command} input=(${formatNumber(input?.x)}, ${formatNumber(input?.y)}) piloto=${pilot.name ?? pilot.typeId}`,
-        );
-      }
-
-      state.set(boat.id, {
-        key,
-        yaw: boat.getRotation().y,
-        location: {
-          x: location.x,
-          y: location.y,
-          z: location.z,
-        },
-      });
     }
   }
 
+  for (const [boatId, boatState] of state.entries()) {
+    if (activeBoatIds.has(boatId)) continue;
+    boatState.missingTicks = (boatState.missingTicks ?? 0) + 1;
+
+    if (boatState.missingTicks === MISSING_LOG_TICKS) {
+      log(
+        `barco_nao_encontrado boat=${boatId} type=${boatState.typeId ?? "desconhecido"} ultima_pos=(${formatNumber(boatState.location?.x)}, ${formatNumber(boatState.location?.y)}, ${formatNumber(boatState.location?.z)}) ultima_dim=${boatState.dimensionId ?? "desconhecida"} sem_scan=${MISSING_LOG_TICKS}s`,
+      );
+    }
+  }
+}
+
+system.runInterval(() => {
+  tickCounter += 1;
+  scanBoats();
   emitSummaryIfNeeded();
 }, 20);
 
-log("Debug simples do barco 3 lugares carregado com resumo de comandos.");
+log("Monitor de barcos carregado (barco_3_jogadores + barco_simples), com log de desaparecimento.");
