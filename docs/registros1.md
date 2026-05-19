@@ -1307,3 +1307,34 @@ Checklist executado no host via MCP readonly/projeto:
   - `packs/BP_Barco3Jogadores/manifest.json`: `0.1.51` -> `0.1.52` (header + módulos `data` e `script`);
   - `packs/RP_Barco3Jogadores/manifest.json`: `0.1.51` -> `0.1.52` (header + módulo `resources`).
 - Objetivo operacional: garantir refresh de cache de packs no cliente e facilitar confirmação visual do spawn do `minecraftaddon:barco_simples`.
+
+## 2026-05-19 16:05:00 UTC-3
+- Solicitação atendida: diagnóstico via MCP Readonly para localizar coordenadas dos **barcos simples** já criados no mundo ativo.
+- Verificação de disponibilidade MCP: executado `tools/list` em `http://186.202.209.206/mcp`, com intermitência inicial (`timeout`) e sucesso nas retentativas.
+- Fonte consultada: `/root/MinecraftServer/logging/bedrock.log` (via `run_read_command` com `tail -n 500`).
+- Evidências encontradas no log para barcos existentes:
+  - `boat=-816043786086` (apareceu com piloto e movimentação detalhada);
+  - `boat=-605590388682` (apareceu vazio em múltiplos trechos).
+- Últimas coordenadas explícitas de movimentação encontradas para barco com telemetria (`boat=-816043786086`):
+  - `pos=(19.62, 62.62, 435.83)` em `2026-05-19 02:03:02` (log de movimento);
+  - em sessões mais recentes (18:38 e 19:30), os IDs aparecem como existentes (`riders=[vazio]`), porém sem linha `pos=(x,y,z)` naquele recorte.
+- Limitação observada: o MCP disponível não expõe consulta direta de entidades em tempo real por coordenada; com as tools atuais, a coordenada vem apenas quando o script grava no log.
+- Próximo passo recomendado: entrar no mundo e interagir/mover cada barco simples por alguns segundos para gerar novas linhas `movimento ... pos=(x,y,z)` e então reler o `bedrock.log` via MCP para obter a posição atualizada.
+
+## 2026-05-19 16:20:00 UTC-3
+- Solicitação atendida: investigar por que o **barco simples** pode ter sido criado e depois “sumido”, com foco em monitoramento por log e hipótese visual.
+- Diagnóstico técnico:
+  - o script de debug anterior monitorava apenas `minecraftaddon:barco_3_jogadores`, portanto o `minecraftaddon:barco_simples` podia existir/desaparecer sem trilha própria no log;
+  - isso dificultava separar cenário de **despawn/descarregamento de chunk** de cenário de **problema visual** (entidade presente, mas não renderizada).
+- Ajuste aplicado em `packs/BP_Barco3Jogadores/scripts/main.js`:
+  - monitoramento estendido para os tipos `minecraftaddon:barco_3_jogadores` e `minecraftaddon:barco_simples`;
+  - inclusão de `type` e `dim` nas linhas de presença/movimento;
+  - novo evento de desaparecimento: `barco_nao_encontrado ...` após 60s sem encontrar o mesmo `boat.id`, com última posição/dimensão registradas.
+- Regra de versionamento de módulo pareado BP/RP aplicada no mesmo commit:
+  - `packs/BP_Barco3Jogadores/manifest.json`: `0.1.52` -> `0.1.53` (header + módulos `data` e `script`);
+  - `packs/RP_Barco3Jogadores/manifest.json`: `0.1.52` -> `0.1.53` (header + módulo `resources`).
+- Próxima validação recomendada em campo:
+  1. executar summon do `minecraftaddon:barco_simples`;
+  2. aguardar e observar no `bedrock.log` linhas `boat=... type=minecraftaddon:barco_simples`;
+  3. se desaparecer, confirmar ocorrência de `barco_nao_encontrado` e usar `ultima_pos` para teleporte/inspeção;
+  4. se houver presença contínua no log sem visual no jogo, priorizar investigação de cliente/RP (render/textura/geometry) como causa visual.
