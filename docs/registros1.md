@@ -1281,3 +1281,20 @@ Checklist executado no host via MCP readonly/projeto:
   - `packs/BP_Barco3Jogadores/manifest.json`: `0.1.48` -> `0.1.49`;
   - `packs/RP_Barco3Jogadores/manifest.json`: `0.1.48` -> `0.1.49`.
 - Próximo passo recomendado após deploy: testar sequência curta `W`, `S`, `A`, `D`, `W+A`, `W+D` e comparar novos `resumo_controles`; meta inicial é `W` menos explosivo e `A/D` com menor `giro%`/menor deslocamento isolado.
+
+## 2026-05-18 21:02:13 UTC-3
+- Solicitação atendida: verificação dos logs recentes do servidor via MCP Readonly e correção de movimento do **Barco 3 Jogadores**.
+- Evidências observadas em `/root/MinecraftServer/logging/bedrock.log`:
+  - não houve `TypeError`/`SyntaxError` no recorte analisado;
+  - `W+D` com entrada diagonal forte (`input=(0.85, 0.66)`) gerou trajetória em órbita/zig-zag, alternando coordenadas ao redor do mesmo ponto;
+  - mesmo após o ajuste anterior, os resumos ainda indicavam deslocamento alto em `W` (`dist` média próxima de `6.26` a `6.66`) e curva relevante em diagonais (`W+D` com `giro%=63`).
+- Ajuste aplicado em `packs/BP_Barco3Jogadores/entities/barco_3_jogadores.json` para priorizar navegação estável e reduzir giro/orbitagem:
+  - `minecraft:input_ground_controlled.max_turn`: `0.035` -> `0.012`;
+  - `move_speed`: `0.85` -> `0.55`;
+  - `forward_movement_modifier`: `0.55` -> `0.35`;
+  - `backward_movement_modifier`: `0.55` -> `0.30`;
+  - `side_movement_modifier` mantido em `0.0`, impedindo strafe lateral.
+- Versionamento obrigatório do módulo pareado BP/RP atualizado no mesmo commit:
+  - `packs/BP_Barco3Jogadores/manifest.json`: `0.1.49` -> `0.1.50` (header + módulos);
+  - `packs/RP_Barco3Jogadores/manifest.json`: `0.1.49` -> `0.1.50` (header + módulo).
+- Próximo passo recomendado após deploy: repetir teste em jogo com `W`, `S`, `A`, `D`, `W+A` e `W+D`; validar no `resumo_controles` se diagonais deixaram de orbitar e se `W` ficou com deslocamento médio menor.
