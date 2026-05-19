@@ -1298,3 +1298,5 @@ Checklist executado no host via MCP readonly/projeto:
   - `packs/BP_Barco3Jogadores/manifest.json`: `0.1.49` -> `0.1.50` (header + módulos);
   - `packs/RP_Barco3Jogadores/manifest.json`: `0.1.49` -> `0.1.50` (header + módulo).
 - Próximo passo recomendado após deploy: repetir teste em jogo com `W`, `S`, `A`, `D`, `W+A` e `W+D`; validar no `resumo_controles` se diagonais deixaram de orbitar e se `W` ficou com deslocamento médio menor.
+
+- [2026-05-19 05:10:44 UTC] Criado novo barco "barco simples" herdando runtime do barco nativo (minecraft:boat), com entidade BP/RP, função summon e bump de versão dos manifests BP/RP_Barco3Jogadores.

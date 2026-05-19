@@ -1,3 +1,4 @@
 pack.name=RP Barco 3 Jogadores
 pack.description=Base visual do barco customizado de 3 jogadores.
 entity.minecraftaddon:barco_3_jogadores.name=Barco para 3 Jogadores
+entity.minecraftaddon:barco_simples.name=Barco Simples
