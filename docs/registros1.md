@@ -1300,3 +1300,10 @@ Checklist executado no host via MCP readonly/projeto:
 - Próximo passo recomendado após deploy: repetir teste em jogo com `W`, `S`, `A`, `D`, `W+A` e `W+D`; validar no `resumo_controles` se diagonais deixaram de orbitar e se `W` ficou com deslocamento médio menor.
 
 - [2026-05-19 05:10:44 UTC] Criado novo barco "barco simples" herdando runtime do barco nativo (minecraft:boat), com entidade BP/RP, função summon e bump de versão dos manifests BP/RP_Barco3Jogadores.
+
+## 2026-05-19 18:54:51 UTC-3
+- Solicitação atendida: bump de versão do módulo pareado **Barco 3 Jogadores** para forçar atualização no cliente durante validação do **barco simples**.
+- Alterações de versionamento aplicadas:
+  - `packs/BP_Barco3Jogadores/manifest.json`: `0.1.51` -> `0.1.52` (header + módulos `data` e `script`);
+  - `packs/RP_Barco3Jogadores/manifest.json`: `0.1.51` -> `0.1.52` (header + módulo `resources`).
+- Objetivo operacional: garantir refresh de cache de packs no cliente e facilitar confirmação visual do spawn do `minecraftaddon:barco_simples`.
