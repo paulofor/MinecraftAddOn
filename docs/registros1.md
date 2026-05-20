@@ -1405,3 +1405,14 @@ Checklist executado no host via MCP readonly/projeto:
   - `packs/RP_Barco3Jogadores/manifest.json`: `0.1.57` -> `0.1.58` (header + módulo).
 - Validação local executada:
   - `node --check packs/BP_Barco3Jogadores/scripts/main.js` (ok).
+
+## 2026-05-20 13:05:00 UTC-3 — Giro no próprio eixo com setas laterais no Barco 3 Jogadores
+- Solicitação atendida: quando usar setas laterais (`A`/`D`) no `minecraftaddon:barco_3_jogadores`, o barco não deve deslocar de posição; deve apenas girar o bico para esquerda/direita.
+- Alteração aplicada em `packs/BP_Barco3Jogadores/scripts/main.js`:
+  - adicionada função `stabilizeInPlaceTurn(...)` para detectar input lateral puro (`A` ou `D` sem `W`/`S`) e executar `boat.clearVelocity()`, removendo deslocamento lateral/residual durante o giro.
+  - chamada dessa função no loop principal de varredura antes do log de movimento.
+- Versionamento pareado atualizado (BP/RP do mesmo módulo):
+  - `packs/BP_Barco3Jogadores/manifest.json`: `0.1.58` -> `0.1.59` (header + módulos `data` e `script`);
+  - `packs/RP_Barco3Jogadores/manifest.json`: `0.1.58` -> `0.1.59` (header + módulo `resources`).
+- Validação local:
+  - `node --check packs/BP_Barco3Jogadores/scripts/main.js` (ok).
