@@ -1338,3 +1338,29 @@ Checklist executado no host via MCP readonly/projeto:
   2. aguardar e observar no `bedrock.log` linhas `boat=... type=minecraftaddon:barco_simples`;
   3. se desaparecer, confirmar ocorrência de `barco_nao_encontrado` e usar `ultima_pos` para teleporte/inspeção;
   4. se houver presença contínua no log sem visual no jogo, priorizar investigação de cliente/RP (render/textura/geometry) como causa visual.
+
+## 2026-05-19 22:05:47 UTC-3
+- Solicitação atendida: correção do `barco_simples` que estava spawnando e desaparecendo (queda para Y negativo no `barco_nao_encontrado`).
+- Esclarecimento técnico: `runtime_identifier: "minecraft:boat"` **não** importa automaticamente todos os componentes de física/assento/flutuação da entidade vanilla para o arquivo custom; ele define base de runtime, mas a estabilidade depende dos componentes declarados na entidade custom.
+- Correção aplicada em `packs/BP_Barco3Jogadores/entities/barco_simples.json`:
+  - adicionados componentes de estabilidade equivalentes ao padrão já validado no módulo (família, colisão, física, `rideable`, `buoyant`, `input_ground_controlled`, etc.);
+  - `seat_count` mantido em `1` para o perfil de barco simples.
+- Regra de versionamento de módulo pareado BP/RP aplicada no mesmo commit:
+  - `packs/BP_Barco3Jogadores/manifest.json`: `0.1.53` -> `0.1.54` (header + módulos `data` e `script`);
+  - `packs/RP_Barco3Jogadores/manifest.json`: `0.1.53` -> `0.1.54` (header + módulo `resources`).
+- Próximo passo de validação em campo:
+  1. `/summon minecraftaddon:barco_simples 46 64 439`;
+  2. confirmar visualização imediata;
+  3. entrar e mover por alguns segundos;
+  4. reler `bedrock.log` e validar ausência de `barco_nao_encontrado` com Y negativo.
+
+## 2026-05-20 01:15:00 UTC-3
+- Ajuste solicitado após validação em jogo: o `barco_simples` custom continuou inconsistente enquanto o `minecraft:boat` vanilla funcionou normalmente.
+- Decisão técnica aplicada: para o fluxo de "barco simples", parar de depender de entidade custom e usar spawn direto do barco vanilla.
+- Alterações:
+  - `packs/BP_Barco3Jogadores/functions/veiculos/summon_barco_simples.mcfunction`: trocado `summon minecraftaddon:barco_simples` por `summon minecraft:boat` para comportamento 100% nativo.
+  - `packs/BP_Barco3Jogadores/scripts/main.js`: monitoramento ajustado para `minecraft:boat` no lugar de `minecraftaddon:barco_simples`.
+- Esclarecimento ao time: no JSON de entidade custom não existe uma chave única que "importe tudo" da entidade vanilla; quando a exigência é comportamento totalmente nativo, o caminho mais confiável é invocar a própria entidade vanilla.
+- Regra de versionamento de módulo pareado BP/RP aplicada no mesmo commit:
+  - `packs/BP_Barco3Jogadores/manifest.json`: `0.1.54` -> `0.1.55` (header + módulos);
+  - `packs/RP_Barco3Jogadores/manifest.json`: `0.1.54` -> `0.1.55` (header + módulo).
