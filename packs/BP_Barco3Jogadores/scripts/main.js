@@ -120,6 +120,16 @@ function emitSummaryIfNeeded() {
   metrics.clear();
 }
 
+
+function stabilizeInPlaceTurn(boat, typeId, input) {
+  if (typeId !== "minecraftaddon:barco_3_jogadores" || !input) return;
+
+  const onlyLateral = Math.abs(input.x) > 0.1 && Math.abs(input.y) <= 0.1;
+  if (!onlyLateral) return;
+
+  boat.clearVelocity();
+}
+
 function scanBoats() {
   const activeBoatIds = new Set();
 
@@ -136,6 +146,7 @@ function scanBoats() {
         const pilot = riders[0];
         const input = getMovementInput(pilot);
         const command = classifyCommand(input);
+        stabilizeInPlaceTurn(boat, typeId, input);
 
         const old = state.get(boat.id);
         if (!old || old.key !== key) {
