@@ -1416,3 +1416,15 @@ Checklist executado no host via MCP readonly/projeto:
   - `packs/RP_Barco3Jogadores/manifest.json`: `0.1.58` -> `0.1.59` (header + módulo `resources`).
 - Validação local:
   - `node --check packs/BP_Barco3Jogadores/scripts/main.js` (ok).
+
+## 2026-05-20 15:53:54 UTC-3 — Log com posição de proa e popa no Barco 3 Jogadores
+- Solicitação atendida: incluir no log de movimentação a posição da **proa** e da **popa** do barco 3 lugares em cada instante, junto com os dados de controle.
+- Alteração aplicada em `packs/BP_Barco3Jogadores/scripts/main.js`:
+  - adicionado `BOAT_END_OFFSET` para definir a distância longitudinal usada no cálculo das extremidades do casco;
+  - criada função `getBoatEnds(location, yaw)` para calcular coordenadas de proa/popa a partir da posição atual e rotação `yaw` do barco;
+  - enriquecido log `movimento ...` com os campos `proa=(x,y,z)` e `popa=(x,y,z)`, mantendo no mesmo evento os dados de `teclas`, `comando` e `input`.
+- Versionamento pareado atualizado no mesmo commit (regra BP/RP):
+  - `packs/BP_Barco3Jogadores/manifest.json`: `0.1.59` -> `0.1.60` (header + módulos `data` e `script`);
+  - `packs/RP_Barco3Jogadores/manifest.json`: `0.1.59` -> `0.1.60` (header + módulo `resources`).
+- Validação local:
+  - `node --check packs/BP_Barco3Jogadores/scripts/main.js` (ok).
