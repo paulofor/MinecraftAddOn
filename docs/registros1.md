@@ -1373,3 +1373,17 @@ Checklist executado no host via MCP readonly/projeto:
   - `packs/BP_Barco3Jogadores/manifest.json`: `0.1.55` -> `0.1.56` (header + módulos `data` e `script`);
   - `packs/RP_Barco3Jogadores/manifest.json`: `0.1.55` -> `0.1.56` (header + módulo `resources`).
 - Resultado esperado em jogo: `barco_simples` aparece com visual de madeira cerejeira, facilitando diferenciação imediata dos barcos comuns de carvalho.
+
+
+## 2026-05-20 11:38:22 UTC-3 — Regra nova de rotação para `barco_3_jogadores`
+- Solicitação atendida: ajustar a movimentação do barco para que comandos laterais sejam usados para **giro no próprio eixo**:
+  - tecla da direita: gira para a direita no próprio eixo;
+  - tecla da esquerda: gira para a esquerda no próprio eixo.
+- Alteração aplicada em `packs/BP_Barco3Jogadores/entities/barco_3_jogadores.json`:
+  - `minecraft:input_ground_controlled.max_turn`: `0.012` -> `0.25` para aumentar resposta de rotação lateral;
+  - `minecraft:input_ground_controlled.side_movement_modifier`: mantido em `0.0` para evitar deslocamento lateral (strafe) e priorizar rotação.
+- Versionamento pareado BP/RP atualizado no mesmo commit:
+  - `packs/BP_Barco3Jogadores/manifest.json`: `0.1.56` -> `0.1.57` (header + módulos);
+  - `packs/RP_Barco3Jogadores/manifest.json`: `0.1.56` -> `0.1.57` (header + módulo).
+- Validação local executada:
+  - `node --check packs/BP_Barco3Jogadores/scripts/main.js` (ok).
