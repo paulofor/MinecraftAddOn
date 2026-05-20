@@ -6,6 +6,7 @@ const POSITION_EPSILON = 0.05;
 const SUMMARY_INTERVAL_TICKS = 100;
 const SIGNIFICANT_TURN_DEGREES = 35;
 const MISSING_LOG_TICKS = 60;
+const BOAT_END_OFFSET = 0.9;
 
 function log(message) {
   console.warn(`${LOG_PREFIX} ${message}`);
@@ -87,6 +88,25 @@ function hasMoved(lastPosition, currentPosition) {
   );
 }
 
+function getBoatEnds(location, yaw) {
+  const rad = (yaw * Math.PI) / 180;
+  const dirX = -Math.sin(rad);
+  const dirZ = Math.cos(rad);
+
+  return {
+    proa: {
+      x: location.x + dirX * BOAT_END_OFFSET,
+      y: location.y,
+      z: location.z + dirZ * BOAT_END_OFFSET,
+    },
+    popa: {
+      x: location.x - dirX * BOAT_END_OFFSET,
+      y: location.y,
+      z: location.z - dirZ * BOAT_END_OFFSET,
+    },
+  };
+}
+
 function recordMetric(command, movedDistance, yawDelta) {
   const entry = metrics.get(command) ?? { samples: 0, moved: 0, distance: 0, turns: 0 };
   entry.samples += 1;
@@ -163,8 +183,10 @@ function scanBoats() {
         }
 
         if (pilot && hasMoved(old?.location, location)) {
+          const yaw = boat.getRotation().y;
+          const ends = getBoatEnds(location, yaw);
           log(
-            `movimento boat=${boat.id} type=${typeId} pos=(${formatNumber(location.x)}, ${formatNumber(location.y)}, ${formatNumber(location.z)}) teclas=${getPressedKeysLabel(input)} comando=${command} input=(${formatNumber(input?.x)}, ${formatNumber(input?.y)}) piloto=${pilot.name ?? pilot.typeId} dim=${dimensionId}`,
+            `movimento boat=${boat.id} type=${typeId} pos=(${formatNumber(location.x)}, ${formatNumber(location.y)}, ${formatNumber(location.z)}) proa=(${formatNumber(ends.proa.x)}, ${formatNumber(ends.proa.y)}, ${formatNumber(ends.proa.z)}) popa=(${formatNumber(ends.popa.x)}, ${formatNumber(ends.popa.y)}, ${formatNumber(ends.popa.z)}) teclas=${getPressedKeysLabel(input)} comando=${command} input=(${formatNumber(input?.x)}, ${formatNumber(input?.y)}) piloto=${pilot.name ?? pilot.typeId} dim=${dimensionId}`,
           );
         }
 
