@@ -1373,3 +1373,11 @@ Checklist executado no host via MCP readonly/projeto:
   - `packs/BP_Barco3Jogadores/manifest.json`: `0.1.55` -> `0.1.56` (header + módulos `data` e `script`);
   - `packs/RP_Barco3Jogadores/manifest.json`: `0.1.55` -> `0.1.56` (header + módulo `resources`).
 - Resultado esperado em jogo: `barco_simples` aparece com visual de madeira cerejeira, facilitando diferenciação imediata dos barcos comuns de carvalho.
+
+## 2026-05-20 11:37:09 UTC-3
+- Correção para o `minecraftaddon:barco_simples` que continuava sem aparecer.
+- Ajuste no `client_entity` em `packs/RP_Barco3Jogadores/entity/barco_simples.entity.json`: textura alterada de `textures/entity/boat/cherry` para `textures/entity/boat/boat_oak` (lookup vanilla conhecido), evitando caminho inválido de textura no cliente.
+- Versionamento atualizado por alteração de objeto no módulo Barco 3 Jogadores, mantendo BP/RP pareados:
+  - `packs/BP_Barco3Jogadores/manifest.json`: `0.1.56` -> `0.1.57` (header + modules);
+  - `packs/RP_Barco3Jogadores/manifest.json`: `0.1.56` -> `0.1.57` (header + modules).
+- Próximo passo operacional: publicar/deploy dos packs no servidor e validar spawn com `/function veiculos/summon_barco_simples`.
