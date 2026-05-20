@@ -7,6 +7,79 @@
       "is_summonable": true,
       "is_experimental": false,
       "runtime_identifier": "minecraft:boat"
+    },
+    "components": {
+      "minecraft:type_family": {
+        "family": [
+          "boat",
+          "inanimate",
+          "minecraftaddon_barco"
+        ]
+      },
+      "minecraft:health": {
+        "value": 18,
+        "max": 18
+      },
+      "minecraft:collision_box": {
+        "width": 1.4,
+        "height": 0.455
+      },
+      "minecraft:is_collidable": {},
+      "minecraft:is_stackable": {},
+      "minecraft:physics": {
+        "has_gravity": true,
+        "has_collision": true
+      },
+      "minecraft:pushable": {
+        "is_pushable": true,
+        "is_pushable_by_piston": true
+      },
+      "minecraft:rideable": {
+        "seat_count": 1,
+        "interact_text": "action.interact.ride.boat",
+        "family_types": [
+          "player"
+        ],
+        "pull_in_entities": false,
+        "passenger_max_width": 1.375,
+        "controlling_seat": 0,
+        "seats": [
+          {
+            "position": [
+              0.0,
+              -0.2,
+              0.0
+            ],
+            "min_rider_count": 0,
+            "max_rider_count": 1
+          }
+        ]
+      },
+      "minecraft:buoyant": {
+        "base_buoyancy": 1.0,
+        "apply_gravity": true,
+        "simulate_waves": false,
+        "big_wave_probability": 0.0,
+        "big_wave_speed": 0.0,
+        "liquid_blocks": [
+          "minecraft:water",
+          "minecraft:flowing_water"
+        ]
+      },
+      "minecraft:damage_sensor": {
+        "triggers": {
+          "cause": "all",
+          "deals_damage": false
+        }
+      },
+      "minecraft:nameable": {},
+      "minecraft:input_ground_controlled": {
+        "max_turn": 0.012,
+        "move_speed": 0.55,
+        "forward_movement_modifier": 0.35,
+        "backward_movement_modifier": 0.3,
+        "side_movement_modifier": 0.0
+      }
     }
   }
 }
