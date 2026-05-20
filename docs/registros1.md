@@ -1394,3 +1394,14 @@ Checklist executado no host via MCP readonly/projeto:
   - `packs/RP_Barco3Jogadores/manifest.json`: `0.1.56` -> `0.1.57` (header + módulo).
 - Validação local executada:
   - `node --check packs/BP_Barco3Jogadores/scripts/main.js` (ok).
+
+## 2026-05-20 12:24:46 UTC-3 — Redução do raio de curva lateral no Barco 3 Jogadores
+- Solicitação atendida: diminuir o raio da curva quando o piloto usa setas laterais (`A/D`) no `minecraftaddon:barco_3_jogadores`.
+- Ajuste aplicado em `packs/BP_Barco3Jogadores/entities/barco_3_jogadores.json`:
+  - `minecraft:input_ground_controlled.max_turn`: `0.25` -> `0.14` para reduzir a agressividade da rotação e deixar a curva mais aberta/suave.
+  - `side_movement_modifier` mantido em `0.0`, preservando ausência de strafe lateral.
+- Versionamento pareado atualizado (BP/RP do mesmo módulo):
+  - `packs/BP_Barco3Jogadores/manifest.json`: `0.1.57` -> `0.1.58` (header + módulos);
+  - `packs/RP_Barco3Jogadores/manifest.json`: `0.1.57` -> `0.1.58` (header + módulo).
+- Validação local executada:
+  - `node --check packs/BP_Barco3Jogadores/scripts/main.js` (ok).
