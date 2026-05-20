@@ -1364,3 +1364,12 @@ Checklist executado no host via MCP readonly/projeto:
 - Regra de versionamento de módulo pareado BP/RP aplicada no mesmo commit:
   - `packs/BP_Barco3Jogadores/manifest.json`: `0.1.54` -> `0.1.55` (header + módulos);
   - `packs/RP_Barco3Jogadores/manifest.json`: `0.1.54` -> `0.1.55` (header + módulo).
+
+## 2026-05-20 00:15:00 UTC-3 — Diferenciação visual do `barco_simples`
+- Solicitação atendida: tornar o `barco_simples` visualmente mais fácil de distinguir do barco padrão utilizado anteriormente.
+- Alteração aplicada em `packs/RP_Barco3Jogadores/entity/barco_simples.entity.json`:
+  - textura padrão trocada de `textures/entity/boat/oak` para `textures/entity/boat/cherry` (asset vanilla com coloração distinta).
+- Versionamento pareado atualizado no mesmo commit (regra BP/RP):
+  - `packs/BP_Barco3Jogadores/manifest.json`: `0.1.55` -> `0.1.56` (header + módulos `data` e `script`);
+  - `packs/RP_Barco3Jogadores/manifest.json`: `0.1.55` -> `0.1.56` (header + módulo `resources`).
+- Resultado esperado em jogo: `barco_simples` aparece com visual de madeira cerejeira, facilitando diferenciação imediata dos barcos comuns de carvalho.
