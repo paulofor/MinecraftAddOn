@@ -1531,3 +1531,22 @@ Checklist executado no host via MCP readonly/projeto:
   1. executar `/summon minecraftaddon:barco_simples ~ ~1 ~` com jogador presente no local;
   2. executar `tp @s <x> <y> <z>` para o ponto do summon e montar imediatamente;
   3. coletar `tail -n 200 /root/MinecraftServer/logging/bedrock.log` via MCP logo após o summon para correlacionar ID/posição sem janela de atraso.
+
+## 2026-05-24 00:42:10 UTC-3
+- Verificação solicitada de logs após criação de “mais dois que sumiram”.
+- Consulta ao MCP Readonly em `http://186.202.209.206/mcp` com `tools/list` e leitura de `tail -n 300 /root/MinecraftServer/logging/bedrock.log`.
+- Evidência encontrada no horário recente (UTC do servidor):
+  - criação/detecção de dois novos `minecraftaddon:barco_simples` com IDs `-893353197543` (00:40:05) e `-893353197538` (00:40:48);
+  - em seguida ambos aparecem como `barco_nao_encontrado` após 60s sem scan (00:41:54), indicando desaparecimento/despawn.
+- Também persistem entradas de `barco_nao_encontrado` para outras instâncias antigas, incluindo `minecraftaddon:barco_3_jogadores`.
+
+## 2026-05-24 01:01:30 UTC-3
+- Correção aplicada para os barcos que “somem” após unload/chunk scan.
+- Pesquisa em documentação oficial Microsoft Learn (Minecraft Creator) confirmou o componente `minecraft:persistent` como mecanismo para manter entidade persistente no mundo.
+- Ajustes aplicados:
+  - `packs/BP_Barco3Jogadores/entities/barco_simples.json`: adicionado `"minecraft:persistent": {}`.
+  - `packs/BP_Barco3Jogadores/entities/barco_3_jogadores.json`: adicionado `"minecraft:persistent": {}`.
+- Versionamento pareado atualizado no mesmo commit (regra BP/RP do módulo):
+  - `packs/BP_Barco3Jogadores/manifest.json`: patch incrementado (header e modules);
+  - `packs/RP_Barco3Jogadores/manifest.json`: patch incrementado (header e modules).
+- Validação local executada: `node --check packs/BP_Barco3Jogadores/scripts/main.js` sem erro.
