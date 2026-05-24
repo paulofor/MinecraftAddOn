@@ -1,6 +1,6 @@
 import { system, world } from "@minecraft/server";
 
-const MONITORED_BOAT_TYPES = ["minecraftaddon:barco_3_jogadores", "minecraft:boat"];
+const MONITORED_BOAT_TYPES = ["minecraftaddon:barco_3_jogadores", "minecraftaddon:barco_simples", "minecraft:boat"];
 const LOG_PREFIX = "[Barco3Teste]";
 const POSITION_EPSILON = 0.05;
 const SUMMARY_INTERVAL_TICKS = 100;
@@ -224,4 +224,4 @@ system.runInterval(() => {
   emitSummaryIfNeeded();
 }, 20);
 
-log("Monitor de barcos carregado (barco_3_jogadores + minecraft:boat), com log de desaparecimento.");
+log("Monitor de barcos carregado (barco_3_jogadores + barco_simples + minecraft:boat), com log de desaparecimento.");

@@ -1428,3 +1428,72 @@ Checklist executado no host via MCP readonly/projeto:
   - `packs/RP_Barco3Jogadores/manifest.json`: `0.1.59` -> `0.1.60` (header + módulo `resources`).
 - Validação local:
   - `node --check packs/BP_Barco3Jogadores/scripts/main.js` (ok).
+
+## 2026-05-23 21:32:16 UTC-3 — Diagnóstico remoto do `barco_simples` (summon não aparece)
+- Contexto recebido: comando executado em jogo `/summon minecraftaddon:barco_simples 45 63 431` (tentado duas vezes) e entidade não visível.
+- Verificações executadas via MCP Readonly (`http://186.202.209.206/mcp`):
+  1. `tools/list` retornou OK com as tools esperadas (`list_directory`, `read_file`, `run_read_command`, etc.).
+  2. `list_directory /root/MinecraftServer/worlds` confirmou mundo ativo `Bedrock level`.
+  3. `tail -n 400 /root/MinecraftServer/logging/bedrock.log` retornou OK, porém sem eventos recentes de `barco_simples`; o trecho contém apenas logs até `2026-05-23 21:30` com eventos de `minecraftaddon:barco_3_jogadores` e `minecraft:boat`.
+  4. Tentativas de busca direcionada (`grep/rg barco_simples` no `bedrock.log`) e leitura direta de arquivo do pack do mundo sofreram timeout do MCP (`upstream connect error ... connection timeout`).
+- Evidência principal: no log retornado, o monitor `[Barco3Teste]` registra apenas `minecraftaddon:barco_3_jogadores` e `minecraft:boat`, sem linhas de `minecraftaddon:barco_simples` no recorte analisado.
+- Hipótese operacional mais provável: o tipo `minecraftaddon:barco_simples` não está sendo instanciado no runtime atual (ou está falhando antes de gerar trilha no log), enquanto o fluxo atualmente ativo/observável está em `minecraft:boat` + `minecraftaddon:barco_3_jogadores`.
+- Pendências/Bloqueios:
+  - intermitência do endpoint MCP (timeouts) impediu busca completa no `bedrock.log` e leitura direta do `barco_simples.json` no host durante esta rodada.
+- Próximo passo recomendado:
+  1. repetir `tools/list` até estabilizar o MCP;
+  2. executar busca completa por `barco_simples` no `bedrock.log`;
+  3. validar no host o conteúdo de `worlds/Bedrock level/behavior_packs/BP_Barco3Jogadores/entities/barco_simples.json` e `world_behavior_packs.json`;
+  4. reexecutar o summon e colher imediatamente as últimas 200 linhas do log para correlação temporal.
+
+## 2026-05-23 21:35:32 UTC-3 — Nova tentativa de acesso MCP para investigar `barco_simples`
+- Solicitação: nova tentativa de acesso ao MCP Server para continuar a análise do `minecraftaddon:barco_simples`.
+- Resultado da conectividade:
+  - `tools/list` respondeu com sucesso (MCP online no momento da consulta).
+- Coleta adicional realizada:
+  1. `read_file` em `/root/MinecraftServer/logging/bedrock.log` com `max_bytes=300000` retornou conteúdo.
+  2. Análise local desse retorno indicou contagem: `barco_simples=0`, `barco_3_jogadores=15`, `minecraft:boat=0` (nesse recorte específico lido).
+  3. O trecho final retornado do arquivo está concentrado em logs antigos de `2026-05-12` (`[Barco3Debug] PROXIMIDADE ...`), sem evidência do summon recente informado pelo usuário.
+- Interpretação operacional:
+  - o MCP voltou a responder para chamadas básicas e leitura parcial de log;
+  - porém a leitura recebida não contém janela temporal recente suficiente para confirmar o summon atual de `barco_simples`.
+- Bloqueio ainda presente:
+  - tentativa de leitura direta de `/root/MinecraftServer/worlds/Bedrock level/behavior_packs/BP_Barco3Jogadores/entities/barco_simples.json` voltou a falhar por timeout de upstream.
+- Próximo passo recomendado:
+  1. repetir leitura do log em janelas menores e/ou com comando permitido de cauda (quando disponível) imediatamente após novo `/summon`;
+  2. confirmar no host o arquivo `entities/barco_simples.json` do pack do mundo assim que o timeout estabilizar;
+  3. correlacionar horário exato do summon com as linhas de log obtidas na mesma janela.
+
+## 2026-05-23 21:43:54 UTC-3 — Verificação no mundo do barco no local informado
+- Solicitação: verificar no mundo se existe barco no local criado pelo usuário (referência anterior: `/summon minecraftaddon:barco_simples 45 63 431`).
+- Acesso MCP:
+  - primeira tentativa de `tools/list` retornou timeout;
+  - nova tentativa em seguida retornou sucesso (MCP ativo com tools disponíveis).
+- Checagem de evidência no mundo/log:
+  1. executado `tail -n 300 /root/MinecraftServer/logging/bedrock.log` via `run_read_command`;
+  2. no recorte retornado, não há linha de spawn/monitor para `minecraftaddon:barco_simples`;
+  3. aparecem apenas eventos de `minecraftaddon:barco_3_jogadores` e `minecraft:boat`, incluindo `barco_nao_encontrado` para os barcos monitorados;
+  4. último evento com posição próxima do ponto informado é `minecraft:boat` em `ultima_pos=(42.93, 62.61, 432.98)` e `minecraftaddon:barco_3_jogadores` em `ultima_pos=(40.98, 62.62, 445.22)` — ambos diferentes do ponto `(45,63,431)`.
+- Conclusão operacional nesta coleta:
+  - não foi encontrada evidência de existência do `minecraftaddon:barco_simples` no local informado na janela de log disponível;
+  - no estado atual de logs, o que aparece perto da região são barcos de outros tipos e depois ambos entram como `barco_nao_encontrado`.
+- Próximo passo recomendado para confirmação definitiva:
+  1. executar novamente o summon em jogo;
+  2. imediatamente coletar `tail -n 200` do `bedrock.log`;
+  3. buscar linha com `type=minecraftaddon:barco_simples` e coordenada inicial correlata para validar presença/remoção.
+
+## 2026-05-23 21:54:29 UTC-3 — Execução dos itens 2, 3 e 4 para ativar `barco_simples`
+- Solicitação atendida: executar os itens 2, 3 e 4 do plano operacional para fazer o `minecraftaddon:barco_simples` aparecer e ser utilizável.
+- Item 2 (pack ativo no mundo):
+  - MCP `tools/list` validado (com retentativa por intermitência);
+  - `list_directory /root/MinecraftServer/worlds/Bedrock level/behavior_packs` confirmou `BP_Barco3Jogadores` presente no mundo ativo.
+- Item 3 (monitorar tipo custom no script):
+  - arquivo `packs/BP_Barco3Jogadores/scripts/main.js` atualizado para monitorar também `minecraftaddon:barco_simples` em `MONITORED_BOAT_TYPES`;
+  - log de inicialização atualizado para refletir monitoramento de `barco_3_jogadores + barco_simples + minecraft:boat`.
+- Item 4 (summon do barco custom no function):
+  - arquivo `packs/BP_Barco3Jogadores/functions/veiculos/summon_barco_simples.mcfunction` ajustado para `summon minecraftaddon:barco_simples ~ ~1 ~`.
+- Versionamento pareado BP/RP (regra obrigatória do módulo):
+  - `packs/BP_Barco3Jogadores/manifest.json`: `0.1.60` -> `0.1.61` (header + módulos);
+  - `packs/RP_Barco3Jogadores/manifest.json`: `0.1.60` -> `0.1.61` (header + módulo resources).
+- Validação local:
+  - `node --check packs/BP_Barco3Jogadores/scripts/main.js` (ok).
