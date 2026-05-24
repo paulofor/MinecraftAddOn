@@ -1497,3 +1497,37 @@ Checklist executado no host via MCP readonly/projeto:
   - `packs/RP_Barco3Jogadores/manifest.json`: `0.1.60` -> `0.1.61` (header + módulo resources).
 - Validação local:
   - `node --check packs/BP_Barco3Jogadores/scripts/main.js` (ok).
+
+## 2026-05-23 23:56:45 UTC-3
+- Verificação de logs após relato de duas execuções do comando `/summon minecraftaddon:barco_simples 45 63 431`.
+- Consulta via MCP Readonly em `http://186.202.209.206/mcp` com retentativa: primeira chamada `tools/list` falhou por timeout upstream e a segunda confirmou disponibilidade.
+- Leitura de `tail -n 300 /root/MinecraftServer/logging/bedrock.log` mostrou criação de novas entidades `minecraftaddon:barco_simples` às `23:53:29` e `23:53:37` (UTC do servidor), sem `TypeError`/`SyntaxError` associado ao spawn.
+- Evidências no log indicam entidades na região esperada do summon (ex.: `ultima_pos=(45.26, 63.00, 431.00)` e `ultima_pos=(45.26, 63.00, 430.99)`), confirmando que o comando foi processado.
+- Também houve evento posterior de `barco_nao_encontrado ... sem_scan=60s` para esses IDs, compatível com descarregamento/saída de área após desconexão do jogador.
+
+## 2026-05-24 00:04:42 UTC-3
+- Verificação técnica e correção de parâmetros do `minecraftaddon:barco_simples` após solicitação de investigação de física/colisão.
+- Diagnóstico comparativo entre `barco_simples.json` e `barco_3_jogadores.json` identificou divergência crítica em `minecraft:input_ground_controlled.max_turn`:
+  - `barco_simples`: `0.012` (muito baixo para esterço prático);
+  - `barco_3_jogadores`: `0.14`.
+- Correção aplicada em `packs/BP_Barco3Jogadores/entities/barco_simples.json`:
+  - `max_turn` ajustado de `0.012` para `0.14` para alinhar dirigibilidade ao perfil funcional já validado no módulo.
+- Verificação dos demais pontos solicitados no `barco_simples`:
+  - `runtime_identifier` permanece `minecraft:boat`;
+  - `collision_box` permanece `width: 1.4`, `height: 0.455`;
+  - `buoyant` permanece com `base_buoyancy: 1.0`, `apply_gravity: true` e líquidos de água.
+- Versionamento pareado atualizado no mesmo commit (regra BP/RP):
+  - `packs/BP_Barco3Jogadores/manifest.json`: `0.1.61` -> `0.1.62` (header + módulos);
+  - `packs/RP_Barco3Jogadores/manifest.json`: `0.1.61` -> `0.1.62` (header + módulo resources).
+
+## 2026-05-24 00:27:19 UTC-3
+- Investigação direcionada solicitada para `minecraftaddon:barco_simples` em três eixos: `collision_box`, `buoyant` e condições de spawn.
+- Resultado da revisão do arquivo `packs/BP_Barco3Jogadores/entities/barco_simples.json`:
+  - `collision_box` está em `width: 1.4` e `height: 0.455`, igual ao perfil usado no `barco_3_jogadores` do mesmo módulo;
+  - `buoyant` está com `base_buoyancy: 1.0`, `apply_gravity: true`, líquidos `water/flowing_water`, sem parâmetro extremo que indique afundamento/despawn imediato;
+  - flags de summon estão ativas (`is_spawnable: true`, `is_summonable: true`) e `runtime_identifier` permanece `minecraft:boat`.
+- Conclusão técnica desta rodada: não foi encontrado indício estrutural de “sumiço” nesses três blocos de configuração; o comportamento de desaparecimento observado em logs permanece mais compatível com ausência no scan por descarregamento de chunk/área após spawn (evento `barco_nao_encontrado` do monitor).
+- Próximo passo operacional recomendado para validar condição de spawn em runtime:
+  1. executar `/summon minecraftaddon:barco_simples ~ ~1 ~` com jogador presente no local;
+  2. executar `tp @s <x> <y> <z>` para o ponto do summon e montar imediatamente;
+  3. coletar `tail -n 200 /root/MinecraftServer/logging/bedrock.log` via MCP logo após o summon para correlacionar ID/posição sem janela de atraso.

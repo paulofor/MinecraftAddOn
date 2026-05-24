@@ -74,7 +74,7 @@
       },
       "minecraft:nameable": {},
       "minecraft:input_ground_controlled": {
-        "max_turn": 0.012,
+        "max_turn": 0.14,
         "move_speed": 0.55,
         "forward_movement_modifier": 0.35,
         "backward_movement_modifier": 0.3,
