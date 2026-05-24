@@ -1,2 +1,2 @@
-# Gera barco vanilla diretamente (comportamento 100% nativo)
-summon minecraft:boat ~ ~1 ~
+# Gera barco simples customizado
+summon minecraftaddon:barco_simples ~ ~1 ~
