@@ -79,7 +79,8 @@
         "forward_movement_modifier": 0.35,
         "backward_movement_modifier": 0.3,
         "side_movement_modifier": 0.0
-      }
+      },
+      "minecraft:persistent": {}
     }
   }
 }
