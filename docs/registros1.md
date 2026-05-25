@@ -1603,3 +1603,23 @@ Checklist executado no host via MCP readonly/projeto:
   3. comparação estrita entre `WORLD_DIR` e `/root/MinecraftServer/worlds/<level-name>`;
   4. fail-fast com mensagem explícita caso o workflow esteja publicando no mundo errado.
 - Objetivo: impedir “falso positivo” de deploy verde quando os arquivos são sincronizados para um mundo diferente do carregado pelo servidor.
+
+## 2026-05-25 16:08:34 UTC-3
+- Solicitação: verificar após workflow “sucesso” se a versão do `barco_simples` no **servidor do mundo ativo** foi atualizada.
+- Tentativa de validação remota via MCP Readonly:
+  1. `curl -sS -X POST 'http://186.202.209.206/mcp' ... method=tools/list`.
+  2. Resposta recebida: `upstream connect error or disconnect/reset before headers. reset reason: connection timeout`.
+- Resultado desta rodada: **não foi possível confirmar no servidor** se o `barco_simples` está atualizado, por indisponibilidade momentânea do endpoint MCP.
+- Referência local (repositório atual): manifests de `BP_Barco3Jogadores` e `RP_Barco3Jogadores` estão em versão `0.1.65`.
+- Próximo passo recomendado: repetir a checagem MCP assim que o endpoint estabilizar e ler diretamente:
+  - `/root/MinecraftServer/worlds/Bedrock level/behavior_packs/BP_Barco3Jogadores/entities/barco_simples.json`;
+  - `/root/MinecraftServer/worlds/Bedrock level/behavior_packs/BP_Barco3Jogadores/manifest.json`.
+
+## 2026-05-25 16:13:26 UTC-3
+- Solicitação: nova tentativa de validação pós-workflow para confirmar atualização do `barco_simples` no servidor do mundo ativo.
+- MCP Readonly respondeu com sucesso (`tools/list`), sem timeout nesta rodada.
+- Evidências remotas coletadas no mundo `Bedrock level`:
+  1. `read_file .../behavior_packs/BP_Barco3Jogadores/manifest.json` -> `header.version: [0,1,65]` e `modules[].version: [0,1,65]`.
+  2. `read_file .../resource_packs/RP_Barco3Jogadores/manifest.json` -> `header.version: [0,1,65]` e `modules[].version: [0,1,65]`.
+  3. `read_file .../behavior_packs/BP_Barco3Jogadores/entities/barco_simples.json` confirmou arquivo atualizado com parâmetros corrigidos (ex.: `has_gravity: false`, `base_buoyancy: 1.8`, `apply_gravity: false`, `minecraft:persistent`).
+- Conclusão: **sim**, nesta verificação o servidor/mundo ativo está atualizado para a versão `0.1.65` do módulo do barco, incluindo `barco_simples` com configuração corrigida.
