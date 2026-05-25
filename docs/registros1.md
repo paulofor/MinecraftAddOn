@@ -1623,3 +1623,21 @@ Checklist executado no host via MCP readonly/projeto:
   2. `read_file .../resource_packs/RP_Barco3Jogadores/manifest.json` -> `header.version: [0,1,65]` e `modules[].version: [0,1,65]`.
   3. `read_file .../behavior_packs/BP_Barco3Jogadores/entities/barco_simples.json` confirmou arquivo atualizado com parâmetros corrigidos (ex.: `has_gravity: false`, `base_buoyancy: 1.8`, `apply_gravity: false`, `minecraft:persistent`).
 - Conclusão: **sim**, nesta verificação o servidor/mundo ativo está atualizado para a versão `0.1.65` do módulo do barco, incluindo `barco_simples` com configuração corrigida.
+
+## 2026-05-25 16:59:32 UTC-3
+- Diagnóstico solicitado: "barco afundou e sumiu" após nova tentativa de criação.
+- MCP Readonly validado em `http://186.202.209.206/mcp` com `tools/list` (disponível), seguido de leitura de log via `run_read_command` (`tail -n 250 /root/MinecraftServer/logging/bedrock.log`).
+- Intermitência observada no endpoint MCP: primeira tentativa de leitura do log retornou timeout de upstream; retentativa automática obteve sucesso.
+- Evidências no `bedrock.log`:
+  - warnings de script `Barco3Teste` monitorando `minecraftaddon:barco_simples`/`minecraft:boat`;
+  - erros de componente `minecraft:buoyant` para `base_buoyancy` fora da faixa (`"should be between 0 and 1, setting to 1.0"`), indicando configuração inválida sendo clampada pelo engine;
+  - múltiplos eventos `barco_nao_encontrado ... sem_scan=60s` para barcos recém-monitorados, com últimas posições registradas no Overworld (ex.: `(-0.50, 62.18, 377.50)`, `(45.19, 64.33, 430.83)`, `(72.70, 62.62, 354.24)`).
+- Conclusão preliminar registrada: o comportamento de "afundar e sumir" está consistente com descarte/desaparecimento da entidade após spawn/monitoramento, e há forte indício de ajuste necessário na física de flutuação (`minecraft:buoyant`) do(s) barco(s).
+- Próximo passo recomendado: revisar imediatamente os JSONs das entidades de barco no BP do mundo ativo para normalizar `base_buoyancy` (0..1), redeploy e repetir teste com nova coleta de log.
+
+## 2026-05-25 17:02:37 UTC-3
+- Ajuste solicitado: aplicar correção de `base_buoyancy` **somente** no `barco_simples`.
+- Alterado `packs/BP_Barco3Jogadores/entities/barco_simples.json`: `minecraft:buoyant.base_buoyancy` de `1.8` para `1.0` (faixa válida 0..1), evitando clamp/erro de componente no log.
+- Versionamento de objetos atualizado conforme regra BP/RP pareados do módulo:
+  - `packs/BP_Barco3Jogadores/manifest.json`: `0.1.65` -> `0.1.66` (header e modules);
+  - `packs/RP_Barco3Jogadores/manifest.json`: `0.1.65` -> `0.1.66` (header e modules).
