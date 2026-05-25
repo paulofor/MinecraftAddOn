@@ -1550,3 +1550,56 @@ Checklist executado no host via MCP readonly/projeto:
   - `packs/BP_Barco3Jogadores/manifest.json`: patch incrementado (header e modules);
   - `packs/RP_Barco3Jogadores/manifest.json`: patch incrementado (header e modules).
 - Validação local executada: `node --check packs/BP_Barco3Jogadores/scripts/main.js` sem erro.
+
+
+## 2026-05-24 01:18:00 UTC-3
+- Correção aplicada após relato de que dois barcos simples “afundam e somem”.
+- Ajustes de flutuabilidade realizados em ambos os barcos do módulo (`barco_simples` e `barco_3_jogadores`) para manter comportamento estável na água:
+  - `minecraft:buoyant.base_buoyancy`: `1.0` -> `1.35`;
+  - `minecraft:buoyant.apply_gravity`: `true` -> `false`.
+- Objetivo técnico: evitar perda gradual de altura na água e impedir afundamento que termina em desaparecimento (out-of-world/chunk unload após submersão).
+- Versionamento pareado BP/RP atualizado no mesmo commit (regra do módulo):
+  - `packs/BP_Barco3Jogadores/manifest.json`: patch incrementado em `header.version` e `modules[].version`;
+  - `packs/RP_Barco3Jogadores/manifest.json`: patch incrementado em `header.version` e `modules[].version`.
+- Próxima validação recomendada em jogo:
+  1. summon de 2x `minecraftaddon:barco_simples` em água profunda;
+  2. aguardar 2-3 minutos sem montar;
+  3. confirmar permanência visual e ausência de afundamento.
+
+
+## 2026-05-24 01:36:00 UTC-3
+- Ajuste fino aplicado após novo feedback: `barco_3_jogadores` flutua corretamente, mas `barco_simples` ainda afunda.
+- Correção **somente no `barco_simples`** para aumentar sustentação vertical real:
+  - `minecraft:buoyant.base_buoyancy`: `1.35` -> `1.8`;
+  - `minecraft:physics.has_gravity`: `true` -> `false`.
+- Racional técnico: reduzir força descendente residual e elevar a margem de flutuação do casco simples sem alterar o comportamento já estável do `barco_3_jogadores`.
+- Versionamento pareado atualizado no módulo (regra BP/RP): patch incrementado em `header.version` e `modules[].version` de ambos manifests.
+- Validação recomendada em jogo:
+  1. summon `minecraftaddon:barco_simples` em água funda e em água corrente;
+  2. observar por 3-5 minutos sem montar;
+  3. repetir com jogador montado para confirmar estabilidade.
+
+
+## 2026-05-24 01:55:00 UTC-3
+- Verificação solicitada usando MCP Readonly para confirmar se o pack do `barco_simples` está no mundo e carregado corretamente.
+- Endpoint consultado: `http://186.202.209.206/mcp`.
+- Evidências coletadas:
+  1. `tools/list` respondeu com sucesso (MCP disponível).
+  2. `list_directory /root/MinecraftServer/worlds/Bedrock level/behavior_packs` confirmou `BP_Barco3Jogadores` presente no mundo ativo.
+  3. `read_file /root/MinecraftServer/worlds/Bedrock level/behavior_packs/BP_Barco3Jogadores/entities/barco_simples.json` retornou configuração **antiga** no servidor do mundo:
+     - `minecraft:physics.has_gravity: true`;
+     - `minecraft:buoyant.base_buoyancy: 1.0`;
+     - `minecraft:buoyant.apply_gravity: true`.
+- Conclusão: o pack está no mundo, porém **não está com a versão corrigida** que existe no repositório local (onde `base_buoyancy` foi elevado e gravidade ajustada).
+- Ação recomendada: publicar/sincronizar novamente o BP no caminho do mundo e reiniciar/recarregar o servidor para aplicar os arquivos atualizados.
+
+
+## 2026-05-25 00:25:00 UTC-3
+- Investigação profunda do problema de deploy onde workflow conclui com sucesso, mas mundo ativo permanece com arquivos antigos do `barco_simples`.
+- Causa raiz provável identificada: possibilidade de mismatch entre `WORLD_DIR` configurado no workflow e o mundo efetivamente ativo em `server.properties` (`level-name`).
+- Hardening aplicado no workflow `publish-server.yml`:
+  1. nova etapa **Validar mundo alvo ativo do Bedrock** antes da promoção dos packs;
+  2. leitura de `/root/MinecraftServer/server.properties` para extrair `level-name`;
+  3. comparação estrita entre `WORLD_DIR` e `/root/MinecraftServer/worlds/<level-name>`;
+  4. fail-fast com mensagem explícita caso o workflow esteja publicando no mundo errado.
+- Objetivo: impedir “falso positivo” de deploy verde quando os arquivos são sincronizados para um mundo diferente do carregado pelo servidor.

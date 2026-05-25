@@ -27,7 +27,7 @@
       "minecraft:is_collidable": {},
       "minecraft:is_stackable": {},
       "minecraft:physics": {
-        "has_gravity": true,
+        "has_gravity": false,
         "has_collision": true
       },
       "minecraft:pushable": {
@@ -56,8 +56,8 @@
         ]
       },
       "minecraft:buoyant": {
-        "base_buoyancy": 1.0,
-        "apply_gravity": true,
+        "base_buoyancy": 1.8,
+        "apply_gravity": false,
         "simulate_waves": false,
         "big_wave_probability": 0.0,
         "big_wave_speed": 0.0,
