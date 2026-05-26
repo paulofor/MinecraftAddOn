@@ -1642,6 +1642,20 @@ Checklist executado no host via MCP readonly/projeto:
   - `packs/BP_Barco3Jogadores/manifest.json`: `0.1.65` -> `0.1.66` (header e modules);
   - `packs/RP_Barco3Jogadores/manifest.json`: `0.1.65` -> `0.1.66` (header e modules).
 
+## 2026-05-26 13:18:34 UTC-3 — Verificação de atualização dos JSONs `barco_simples` no mundo vs repositório
+- Solicitação atendida: comparar arquivos `.json` do `barco_simples` no **mundo ativo** com o conteúdo do repositório.
+- Validação via MCP Readonly (`http://186.202.209.206/mcp`) com `read_file` nos caminhos do mundo:
+  - `/root/MinecraftServer/worlds/Bedrock level/behavior_packs/BP_Barco3Jogadores/entities/barco_simples.json`
+  - `/root/MinecraftServer/worlds/Bedrock level/resource_packs/RP_Barco3Jogadores/entity/barco_simples.entity.json`
+  - `/root/MinecraftServer/worlds/Bedrock level/behavior_packs/BP_Barco3Jogadores/manifest.json`
+  - `/root/MinecraftServer/worlds/Bedrock level/resource_packs/RP_Barco3Jogadores/manifest.json`
+- Comparação executada localmente com `diff -u` entre mundo e repositório para os dois arquivos do `barco_simples`.
+- Resultado:
+  - `barco_simples.json` (BP do mundo) **igual** ao arquivo do repositório (`sem diff`);
+  - `barco_simples.entity.json` (RP do mundo) **igual** ao arquivo do repositório (`sem diff`);
+  - manifests do mundo e do repositório em `header.version: [0,1,66]` para BP e RP.
+- Observação operacional: houve intermitência/timeout pontual no endpoint MCP durante tentativas, contornada com retentativas até obter leitura válida.
+- Conclusão desta rodada: **sim, os JSONs do `barco_simples` no mundo estão atualizados em relação ao repositório**.
 
 ## 2026-05-26 18:07:50 UTC-3 — Melhoria de estabilidade do `barco_simples`
 - Solicitação: melhorar o `barco_simples`, que continuava com falhas de aparição/estabilidade.
