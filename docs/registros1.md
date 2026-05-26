@@ -1656,3 +1656,17 @@ Checklist executado no host via MCP readonly/projeto:
   - manifests do mundo e do repositório em `header.version: [0,1,66]` para BP e RP.
 - Observação operacional: houve intermitência/timeout pontual no endpoint MCP durante tentativas, contornada com retentativas até obter leitura válida.
 - Conclusão desta rodada: **sim, os JSONs do `barco_simples` no mundo estão atualizados em relação ao repositório**.
+
+## 2026-05-26 18:07:50 UTC-3 — Melhoria de estabilidade do `barco_simples`
+- Solicitação: melhorar o `barco_simples`, que continuava com falhas de aparição/estabilidade.
+- Ajuste aplicado em `packs/BP_Barco3Jogadores/entities/barco_simples.json`:
+  - entidade deixou de usar `components` vazio e passou a declarar explicitamente componentes críticos de runtime de barco (`collision_box`, `rideable`, `buoyant`, `physics`, `input_ground_controlled`, `persistent`), mantendo `runtime_identifier: "minecraft:boat"`;
+  - configuração de assento simples (`seat_count: 1`) com `controlling_seat: 0`;
+  - parâmetros de flutuabilidade definidos com faixa segura (`base_buoyancy: 1.0`, `apply_gravity: false`) para evitar comportamento de afundamento/despawn por física inconsistente.
+- Versionamento pareado BP/RP (regra do módulo com packs pareados):
+  - `packs/BP_Barco3Jogadores/manifest.json`: `0.1.66` -> `0.1.67` (header + módulos `data`/`script`);
+  - `packs/RP_Barco3Jogadores/manifest.json`: `0.1.66` -> `0.1.67` (header + módulo `resources`).
+- Próximos passos operacionais:
+  1. deploy dos packs atualizados no mundo ativo;
+  2. validar spawn com `/summon minecraftaddon:barco_simples ~ ~1 ~`;
+  3. confirmar no `bedrock.log` presença de `type=minecraftaddon:barco_simples` sem erro subsequente.
