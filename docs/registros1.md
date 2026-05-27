@@ -1677,3 +1677,10 @@ Checklist executado no host via MCP readonly/projeto:
 - Versionamento pareado BP/RP atualizado conforme regra do módulo:
   - `packs/BP_Barco3Jogadores/manifest.json`: `0.1.67` -> `0.1.68` (header e modules).
   - `packs/RP_Barco3Jogadores/manifest.json`: `0.1.67` -> `0.1.68` (header e modules).
+
+## 2026-05-27 00:10:00 UTC-3 — Ajuste adicional de flutuabilidade do `barco_simples`
+- Solicitação: ajustar `base_buoyancy` para `1.3`.
+- Alteração aplicada em `packs/BP_Barco3Jogadores/entities/barco_simples.json`: `minecraft:buoyant.base_buoyancy` de `1.1` para `1.3`.
+- Versionamento pareado BP/RP atualizado conforme regra do módulo:
+  - `packs/BP_Barco3Jogadores/manifest.json`: `0.1.68` -> `0.1.69` (header e modules).
+  - `packs/RP_Barco3Jogadores/manifest.json`: `0.1.68` -> `0.1.69` (header e modules).
