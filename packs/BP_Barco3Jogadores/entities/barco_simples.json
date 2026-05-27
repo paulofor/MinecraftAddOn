@@ -56,7 +56,7 @@
         ]
       },
       "minecraft:buoyant": {
-        "base_buoyancy": 1.0,
+        "base_buoyancy": 1.3,
         "apply_gravity": false,
         "simulate_waves": false,
         "big_wave_probability": 0.0,
