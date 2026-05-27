@@ -1670,3 +1670,10 @@ Checklist executado no host via MCP readonly/projeto:
   1. deploy dos packs atualizados no mundo ativo;
   2. validar spawn com `/summon minecraftaddon:barco_simples ~ ~1 ~`;
   3. confirmar no `bedrock.log` presença de `type=minecraftaddon:barco_simples` sem erro subsequente.
+
+## 2026-05-27 00:00:00 UTC-3 — Ajuste de flutuabilidade solicitado para `barco_simples`
+- Solicitação: aumentar `base_buoyancy` do `barco_simples`.
+- Alteração aplicada em `packs/BP_Barco3Jogadores/entities/barco_simples.json`: `minecraft:buoyant.base_buoyancy` de `1.0` para `1.1`.
+- Versionamento pareado BP/RP atualizado conforme regra do módulo:
+  - `packs/BP_Barco3Jogadores/manifest.json`: `0.1.67` -> `0.1.68` (header e modules).
+  - `packs/RP_Barco3Jogadores/manifest.json`: `0.1.67` -> `0.1.68` (header e modules).
