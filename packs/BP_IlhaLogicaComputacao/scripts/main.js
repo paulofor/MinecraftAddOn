@@ -17,12 +17,24 @@ function logHub(message) {
 
 async function runCommandForPlayer(player, command) {
   const executor = player?.dimension;
-  if (!executor || typeof executor.runCommandAsync !== "function") {
-    throw new Error("dimension.runCommandAsync indisponível para este jogador.");
+  if (!executor) {
+    throw new Error("dimension indisponível para este jogador.");
   }
 
   const escapedName = String(player.name).replace(/"/g, '\\"');
-  await executor.runCommandAsync(`execute as "${escapedName}" run ${command}`);
+  const commandToRun = `execute as "${escapedName}" run ${command}`;
+
+  if (typeof executor.runCommand === "function") {
+    executor.runCommand(commandToRun);
+    return;
+  }
+
+  if (typeof executor.runCommandAsync === "function") {
+    await executor.runCommandAsync(commandToRun);
+    return;
+  }
+
+  throw new Error("dimension.runCommand/runCommandAsync indisponível para este jogador.");
 }
 
 async function runHub(player) {
