@@ -1684,3 +1684,49 @@ Checklist executado no host via MCP readonly/projeto:
 - Versionamento pareado BP/RP atualizado conforme regra do módulo:
   - `packs/BP_Barco3Jogadores/manifest.json`: `0.1.68` -> `0.1.69` (header e modules).
   - `packs/RP_Barco3Jogadores/manifest.json`: `0.1.68` -> `0.1.69` (header e modules).
+
+## 2026-05-31 23:15:44 UTC-3 — Orientação operacional para ativar a Ilha da Lógica
+- Solicitação: explicar como fazer a Ilha da Lógica funcionar no servidor/mundo ativo.
+- Verificações locais realizadas:
+  - `node --check packs/BP_IlhaLogicaComputacao/scripts/main.js` sem erro de sintaxe;
+  - validação JSON com `python -m json.tool` nos manifests BP/RP, bloco custom e arquivos de textura/blocks do RP;
+  - revisão do fluxo do script `packs/BP_IlhaLogicaComputacao/scripts/main.js`, que registra eventos de interação/quebra/uso em `digicomo:hub_lanterna_logica`, `minecraft:sea_lantern` e `minecraft:lectern`.
+- Verificação remota via MCP Readonly:
+  - `tools/list` em `http://186.202.209.206/mcp` respondeu com sucesso;
+  - leitura de `tail -n 200 /root/MinecraftServer/logging/bedrock.log` retornou timeout de upstream nesta rodada.
+- Orientação consolidada: publicar os packs `BP_IlhaLogicaComputacao` e `RP_IlhaLogicaComputacao` no mundo ativo `/root/MinecraftServer/worlds/Bedrock level`, garantir vínculos `world_behavior_packs.json`/`world_resource_packs.json`, reiniciar o Bedrock e testar com `/function ilha_logica/init`, `/function ilha_logica/hub` e interação em lectern/sea lantern/Lanterna Lógica.
+- Próximo passo recomendado: após reproduzir no jogo, repetir leitura do `bedrock.log` via MCP e buscar `[IlhaLogica][Hub]`, `TypeError`, `SyntaxError` e `runHub` para confirmar carregamento do Script API e eventos.
+
+## 2026-05-31 23:23:28 UTC-3 — Capacidades disponíveis via MCP Readonly
+- Solicitação: explicar o que é possível fazer usando o MCP Server listado para o ambiente Bedrock.
+- Verificação executada no endpoint `http://186.202.209.206/mcp` com `tools/list`:
+  - tentativas intermitentes: uma tentativa inicial retornou `upstream connect error ... connection timeout`;
+  - retentativas subsequentes retornaram as tools disponíveis: `list_directory`, `read_file`, `write_png_base64`, `restart_bedrock` e `run_read_command`.
+- Validações práticas executadas:
+  - `list_directory` em `/root/MinecraftServer/logging` confirmou `bedrock.log` com tamanho aproximado de `326079` bytes;
+  - `run_read_command` com `tail -n 30 /root/MinecraftServer/logging/bedrock.log` retornou últimas linhas do log, incluindo eventos de conexão/desconexão de jogador e warnings de script do módulo de barco.
+- Aplicação para Ilha da Lógica:
+  - diagnosticar carregamento/interação consultando `bedrock.log` e filtrando `[Scripting]`, `[IlhaLogica][Hub]`, `TypeError`, `SyntaxError` e `runHub`;
+  - validar diretórios e arquivos remotos permitidos;
+  - reiniciar o Bedrock quando necessário via `restart_bedrock`;
+  - publicar PNGs exclusivamente via `write_png_base64` quando houver textura, obedecendo a regra do projeto de não versionar PNG no Git.
+
+## 2026-05-31 23:28:17 UTC-3 — Diagnóstico e correção da Ilha da Lógica
+- Solicitação: executar diagnóstico da Ilha da Lógica usando o MCP Server disponível.
+- Diagnóstico via MCP Readonly (`http://186.202.209.206/mcp`):
+  - `list_directory` em `/root/MinecraftServer/logging` confirmou `bedrock.log` acessível com tamanho aproximado de `326136` bytes;
+  - `tail -n 120 /root/MinecraftServer/logging/bedrock.log` retornou logs recentes do servidor;
+  - leitura completa do `bedrock.log` via `read_file` retornou `326136` bytes sem truncamento;
+  - o log contém 97 ocorrências de `[IlhaLogica][Hub]`, 19 ocorrências de `interação válida`, 7 ocorrências de `triggerHub` e 7 ocorrências de `runHub`, confirmando que a interação no `minecraft:lectern` chegou ao script;
+  - não foram encontradas ocorrências de `TypeError` nem `SyntaxError` relacionadas ao diagnóstico;
+  - erro principal identificado após `runHub`: `Error: dimension.runCommandAsync indisponível para este jogador.`.
+- Diagnóstico dos packs no mundo ativo:
+  - `world_behavior_packs.json` referencia o BP `35b76ace-b514-401c-8994-0678e4e6f68c` na versão `[0,3,0]`;
+  - `world_resource_packs.json` referencia o RP `66900c78-d108-4a3f-9433-4f8daf304c9b` na versão `[0,3,0]`;
+  - o diretório do mundo contém `BP_IlhaLogicaComputacao` e o `scripts/main.js` remoto corresponde ao fluxo que ainda chamava `dimension.runCommandAsync`.
+- Causa raiz: o manifest usa `@minecraft/server` `2.0.0`, versão em que `Dimension.runCommandAsync` foi removido/depreciado em favor de `Dimension.runCommand`; por isso o clique é detectado, mas a execução da function falha.
+- Correção aplicada no repositório:
+  - `packs/BP_IlhaLogicaComputacao/scripts/main.js`: `runCommandForPlayer` agora usa `dimension.runCommand` quando disponível e mantém fallback legado para `runCommandAsync`;
+  - versionamento pareado atualizado conforme regra do módulo: BP e RP `0.3.0` -> `0.3.1` em `header.version` e `modules[].version`.
+- Validações locais: `node --check packs/BP_IlhaLogicaComputacao/scripts/main.js` e `python -m json.tool` nos manifests/JSONs relacionados executaram sem erro.
+- Deploy ainda pendente nesta rodada: não há `~/.ssh/id_ed25519` disponível no ambiente local para executar `tools/deploy_world_remote.sh`; próximo passo operacional é publicar os packs `0.3.1` no mundo ativo e reiniciar o Bedrock.
