@@ -1730,3 +1730,32 @@ Checklist executado no host via MCP readonly/projeto:
   - versionamento pareado atualizado conforme regra do módulo: BP e RP `0.3.0` -> `0.3.1` em `header.version` e `modules[].version`.
 - Validações locais: `node --check packs/BP_IlhaLogicaComputacao/scripts/main.js` e `python -m json.tool` nos manifests/JSONs relacionados executaram sem erro.
 - Deploy ainda pendente nesta rodada: não há `~/.ssh/id_ed25519` disponível no ambiente local para executar `tools/deploy_world_remote.sh`; próximo passo operacional é publicar os packs `0.3.1` no mundo ativo e reiniciar o Bedrock.
+
+## 2026-06-02 14:33:42 UTC-3 — Orientação de próximo passo após abertura do hub da Ilha da Lógica
+- Solicitação: usuário enviou captura do Minecraft mostrando o hub visual da Ilha da Lógica ativo, com mensagens de objetivo, sequência guiada e instrução para usar a Lanterna Lógica/Lectern.
+- Verificações locais realizadas:
+  - revisão de `packs/BP_IlhaLogicaComputacao/functions/ilha_logica/hub.mcfunction`, que informa o objetivo do Bloco 1 e a sequência A) Pertinência, B) Subconjuntos, C) Operações, D) Produto Cartesiano;
+  - revisão de `packs/BP_IlhaLogicaComputacao/functions/ilha_logica/gerar_versao_teste.mcfunction`, que mostra os cadernos V1–V4 com os valores dos exercícios;
+  - revisão dos arquivos `packs/BP_IlhaLogicaComputacao/functions/ilha_logica/modulos/*`, que confirmam os comandos de resposta correta/incorreta para cada fase e o desbloqueio posterior do bloco de Lógica Proposicional.
+- Orientação consolidada: o próximo passo no jogo é resolver a sequência do Bloco 1 executando, conforme a resposta escolhida pelo jogador, as functions `fase_a_correta/incorreta`, depois `fase_b_correta/incorreta`, `fase_c_correta/incorreta`, `fase_d_correta/incorreta` e, ao concluir as quatro fases, `/function ilha_logica/finalizar`.
+- Observação operacional: a captura indica que o hub já abriu corretamente; se o jogador só viu as instruções e não recebeu botões/placas de resposta no mundo, pode usar os comandos de function diretamente no chat com permissão de operador ou via bloco de comando.
+
+## 2026-06-02 14:48:14 UTC-3 — Trilha intuitiva com baús e objetos para Ilha da Lógica
+- Solicitação: substituir a orientação puramente por comandos por uma experiência mais intuitiva no mundo, usando comandos do add-on, baús e objetos.
+- Alterações aplicadas:
+  - `packs/BP_IlhaLogicaComputacao/functions/ilha_logica/visual_hub.mcfunction`: adicionada uma trilha lateral de baús de resposta para as fases A-D; cada fase usa uma base mineral própria (esmeralda, lápis, ouro e diamante), baú verde para registrar resposta correta e baú vermelho para pedir revisão/dica; os baús recebem objetos simples com `replaceitem` para reforçar o reconhecimento visual.
+  - `packs/BP_IlhaLogicaComputacao/scripts/main.js`: interação com baús/barrels passou a detectar a base colorida/mineral sob o contêiner e executar automaticamente a function da fase correspondente (`fase_a_correta`, `fase_a_incorreta`, etc.), sem o jogador precisar digitar os comandos manualmente.
+  - `packs/BP_IlhaLogicaComputacao/functions/ilha_logica/hub.mcfunction`: mensagens do hub atualizadas para explicar a trilha de baús.
+  - `packs/BP_IlhaLogicaComputacao/manifest.json` e `packs/RP_IlhaLogicaComputacao/manifest.json`: versão pareada atualizada de `0.3.1` para `0.3.2` conforme regra do módulo BP/RP.
+- Fluxo esperado no jogo: executar `/function ilha_logica/visual_hub`, ler o caderno no chat, caminhar até a trilha de baús, usar o baú verde da fase para avançar quando resolver corretamente ou o baú vermelho para receber revisão; o script chama a function de progresso automaticamente.
+- Validações locais planejadas/executadas nesta rodada: `node --check` no script principal, `python -m json.tool` nos manifests e `git diff --check`.
+
+## 2026-06-02 14:55:01 UTC-3 — Painel escuro de leitura na Ilha da Lógica
+- Solicitação: criar uma área mais escura na tela para melhorar a leitura dos textos da Ilha da Lógica.
+- Alterações aplicadas:
+  - `packs/BP_IlhaLogicaComputacao/scripts/main.js`: adicionado `GUIDE_PANEL_BODY` e a função `openReadingPanel(player)`, usando `ActionFormData` para exibir um painel modal de leitura com fundo escurecido; o menu do hub agora oferece `Painel escuro de leitura`, `Enviar caderno no chat`, `Diagnóstico rápido` e `Fechar`.
+  - `packs/BP_IlhaLogicaComputacao/scripts/main.js`: interação no `minecraft:lectern` passa a abrir diretamente o painel escuro; a dica de proximidade da Lanterna/Lectern também orienta o jogador a abrir esse painel.
+  - `packs/BP_IlhaLogicaComputacao/functions/ilha_logica/hub.mcfunction` e `visual_hub.mcfunction`: mensagens atualizadas para informar que a Lanterna/Lectern abre o Painel escuro de leitura.
+  - `packs/BP_IlhaLogicaComputacao/manifest.json` e `packs/RP_IlhaLogicaComputacao/manifest.json`: versão pareada atualizada de `0.3.2` para `0.3.3` conforme regra do módulo BP/RP.
+- Fluxo esperado no jogo: o jogador usa a Lanterna Lógica ou o Lectern; se quiser ler melhor, escolhe `Painel escuro de leitura`; a janela modal escurece o fundo e apresenta as instruções essenciais da trilha de baús.
+- Validações locais planejadas/executadas nesta rodada: `node --check` no script principal, `python -m json.tool` nos manifests e `git diff --check`.
