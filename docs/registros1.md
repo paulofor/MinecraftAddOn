@@ -1759,3 +1759,10 @@ Checklist executado no host via MCP readonly/projeto:
   - `packs/BP_IlhaLogicaComputacao/manifest.json` e `packs/RP_IlhaLogicaComputacao/manifest.json`: versão pareada atualizada de `0.3.2` para `0.3.3` conforme regra do módulo BP/RP.
 - Fluxo esperado no jogo: o jogador usa a Lanterna Lógica ou o Lectern; se quiser ler melhor, escolhe `Painel escuro de leitura`; a janela modal escurece o fundo e apresenta as instruções essenciais da trilha de baús.
 - Validações locais planejadas/executadas nesta rodada: `node --check` no script principal, `python -m json.tool` nos manifests e `git diff --check`.
+
+## 2026-06-02 14:58:02 UTC-3 — Esclarecimento sobre ilha existente e reconstrução do visual
+- Solicitação: esclarecer se a trilha de baús e o painel escuro aparecerão na ilha já criada ou se será necessário criar outra ilha.
+- Esclarecimento consolidado:
+  - O painel escuro de leitura não depende de recriar a ilha: após publicar o pack atualizado no servidor, basta usar a Lanterna Lógica ou o Lectern existente para abrir o menu/painel, pois esse fluxo é controlado pelo script `packs/BP_IlhaLogicaComputacao/scripts/main.js`.
+  - A trilha física de baús, bases minerais e objetos é criada por comandos em `packs/BP_IlhaLogicaComputacao/functions/ilha_logica/visual_hub.mcfunction`; portanto, em uma ilha que já existia antes dessa atualização, é necessário executar novamente `/function ilha_logica/visual_hub` no local desejado para reconstruir/atualizar a área visual com os novos baús.
+  - Não é necessário criar um novo mundo nem uma nova ilha manualmente; basta atualizar o pack no mundo ativo, reiniciar/recarregar conforme o fluxo de deploy e rodar a function visual no ponto onde a ilha deve ficar.
