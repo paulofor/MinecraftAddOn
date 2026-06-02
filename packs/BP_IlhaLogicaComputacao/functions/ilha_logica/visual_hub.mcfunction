@@ -101,4 +101,51 @@ setblock ~2 ~0 ~-4 enchanting_table
 setblock ~-2 ~0 ~4 crafting_table
 setblock ~2 ~0 ~4 lectern
 
-tellraw @s {"rawtext":[{"text":"[IlhaLogica] Hub visual ampliado: praia maior (anel seco acima do mar), base submersa reforcada, gramados, laguinhos, arvores e iluminacao ativados. Bem-vindo(a) a Ilha da Logica!"}]}
+# Trilha intuitiva com baus de resposta: base mineral = fase; verde = registrar correta; vermelho = pedir revisao
+fill ~-13 ~-1 ~-10 ~-6 ~-1 ~11 stone_bricks
+fill ~-12 ~-1 ~-9 ~-7 ~-1 ~-7 emerald_block
+fill ~-12 ~-1 ~-3 ~-7 ~-1 ~-1 lapis_block
+fill ~-12 ~-1 ~3 ~-7 ~-1 ~5 gold_block
+fill ~-12 ~-1 ~9 ~-7 ~-1 ~11 diamond_block
+
+# Fase A - Pertinencia
+setblock ~-12 ~0 ~-8 lime_concrete
+setblock ~-12 ~1 ~-8 chest
+setblock ~-8 ~0 ~-8 red_concrete
+setblock ~-8 ~1 ~-8 chest
+replaceitem block ~-12 ~1 ~-8 slot.container 0 emerald 1
+replaceitem block ~-12 ~1 ~-8 slot.container 1 paper 1
+replaceitem block ~-8 ~1 ~-8 slot.container 0 redstone 1
+replaceitem block ~-8 ~1 ~-8 slot.container 1 book 1
+
+# Fase B - Subconjuntos
+setblock ~-12 ~0 ~-2 lime_concrete
+setblock ~-12 ~1 ~-2 chest
+setblock ~-8 ~0 ~-2 red_concrete
+setblock ~-8 ~1 ~-2 chest
+replaceitem block ~-12 ~1 ~-2 slot.container 0 lapis_block 1
+replaceitem block ~-12 ~1 ~-2 slot.container 1 paper 1
+replaceitem block ~-8 ~1 ~-2 slot.container 0 redstone 1
+replaceitem block ~-8 ~1 ~-2 slot.container 1 book 1
+
+# Fase C - Operacoes
+setblock ~-12 ~0 ~4 lime_concrete
+setblock ~-12 ~1 ~4 chest
+setblock ~-8 ~0 ~4 red_concrete
+setblock ~-8 ~1 ~4 chest
+replaceitem block ~-12 ~1 ~4 slot.container 0 gold_ingot 1
+replaceitem block ~-12 ~1 ~4 slot.container 1 paper 1
+replaceitem block ~-8 ~1 ~4 slot.container 0 redstone 1
+replaceitem block ~-8 ~1 ~4 slot.container 1 book 1
+
+# Fase D - Produto Cartesiano
+setblock ~-12 ~0 ~10 lime_concrete
+setblock ~-12 ~1 ~10 chest
+setblock ~-8 ~0 ~10 red_concrete
+setblock ~-8 ~1 ~10 chest
+replaceitem block ~-12 ~1 ~10 slot.container 0 diamond 1
+replaceitem block ~-12 ~1 ~10 slot.container 1 paper 1
+replaceitem block ~-8 ~1 ~10 slot.container 0 redstone 1
+replaceitem block ~-8 ~1 ~10 slot.container 1 book 1
+
+tellraw @s {"rawtext":[{"text":"[IlhaLogica] Hub visual ampliado com trilha de baus. Para textos mais legiveis, use a Lanterna/Lectern e abra o Painel escuro de leitura."}]}
