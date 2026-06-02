@@ -1766,3 +1766,22 @@ Checklist executado no host via MCP readonly/projeto:
   - O painel escuro de leitura não depende de recriar a ilha: após publicar o pack atualizado no servidor, basta usar a Lanterna Lógica ou o Lectern existente para abrir o menu/painel, pois esse fluxo é controlado pelo script `packs/BP_IlhaLogicaComputacao/scripts/main.js`.
   - A trilha física de baús, bases minerais e objetos é criada por comandos em `packs/BP_IlhaLogicaComputacao/functions/ilha_logica/visual_hub.mcfunction`; portanto, em uma ilha que já existia antes dessa atualização, é necessário executar novamente `/function ilha_logica/visual_hub` no local desejado para reconstruir/atualizar a área visual com os novos baús.
   - Não é necessário criar um novo mundo nem uma nova ilha manualmente; basta atualizar o pack no mundo ativo, reiniciar/recarregar conforme o fluxo de deploy e rodar a function visual no ponto onde a ilha deve ficar.
+
+## 2026-06-02 15:16:50 UTC-3 — Verificação da atualização da Ilha da Lógica no mundo ativo
+- Solicitação: verificar se a Ilha da Lógica foi corretamente atualizada no mundo ativo do servidor Bedrock.
+- Endpoint validado: `http://186.202.209.206/mcp` respondeu a `tools/list` com as tools `list_directory`, `read_file`, `write_png_base64`, `restart_bedrock` e `run_read_command`; houve intermitência de upstream em algumas chamadas, contornada com retentativas.
+- Mundo verificado: `/root/MinecraftServer/worlds/Bedrock level`.
+- Vínculos do mundo:
+  - `world_behavior_packs.json` contém o BP da Ilha (`35b76ace-b514-401c-8994-0678e4e6f68c`) na versão `[0, 3, 3]`;
+  - `world_resource_packs.json` contém o RP da Ilha (`66900c78-d108-4a3f-9433-4f8daf304c9b`) na versão `[0, 3, 3]`;
+  - `python3 tools/validate_world_bindings.py --world-dir /tmp/ilha_remote_world` confirmou consistência entre os vínculos remotos e os manifests locais.
+- Arquivos do pack no mundo ativo:
+  - BP remoto em `/root/MinecraftServer/worlds/Bedrock level/behavior_packs/BP_IlhaLogicaComputacao` contém `manifest.json`, `scripts/main.js`, `blocks/hub_lanterna_logica.json` e functions de `ilha_logica`;
+  - RP remoto em `/root/MinecraftServer/worlds/Bedrock level/resource_packs/RP_IlhaLogicaComputacao` contém `manifest.json`, `blocks.json`, `texts/en_US.lang` e `textures/terrain_texture.json`;
+  - hashes SHA-256 dos arquivos-chave remotos conferem com os arquivos locais para `manifest.json` BP/RP, `scripts/main.js`, `blocks/hub_lanterna_logica.json`, `blocks.json` e `terrain_texture.json`.
+- Log do Bedrock:
+  - `tail -n 250 /root/MinecraftServer/logging/bedrock.log` mostra reinício em `2026-06-02 14:58:43 UTC` e carregamento do mundo `Bedrock level`;
+  - o Pack Stack carregou `BP Ilha Lógica e Computação` versão `0.3.3` a partir de `worlds/Bedrock level/behavior_packs/BP_IlhaLogicaComputacao`;
+  - o script da Ilha registrou `afterEvents.playerInteractWithBlock`, `afterEvents.playerBreakBlock` e `afterEvents.itemStartUseOn` às `2026-06-02 14:58:44 UTC`, sem `TypeError` ou `SyntaxError` nas linhas recentes verificadas.
+- Validação local complementar: `node --check packs/BP_IlhaLogicaComputacao/scripts/main.js` executou sem erro de sintaxe.
+- Conclusão: a atualização `0.3.3` da Ilha da Lógica está corretamente vinculada e carregada no mundo ativo. Não foi feita reprodução manual dentro do jogo nesta rodada; para validar a experiência final, entrar no mundo, usar a Lanterna/Lectern e, se necessário, executar `/function ilha_logica/visual_hub` para reconstruir a área visual com os baús da trilha.
