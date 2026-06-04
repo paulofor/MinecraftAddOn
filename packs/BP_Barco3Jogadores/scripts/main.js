@@ -142,12 +142,15 @@ function emitSummaryIfNeeded() {
 
 
 function stabilizeInPlaceTurn(boat, typeId, input) {
-  if (typeId !== "minecraftaddon:barco_3_jogadores" || !input) return;
-
-  const onlyLateral = Math.abs(input.x) > 0.1 && Math.abs(input.y) <= 0.1;
-  if (!onlyLateral) return;
-
-  boat.clearVelocity();
+  // A pilotagem do barco de 3 lugares deve ficar livre para o motor nativo do
+  // runtime_identifier minecraft:boat + minecraft:input_ground_controlled.
+  // Antes esta função chamava clearVelocity() quando o jogador usava apenas
+  // input lateral; isso anulava parte da resposta de curva e deixava o barco
+  // com controle irregular. Mantemos o hook sem ação para preservar o log de
+  // métricas sem interferir no movimento.
+  void boat;
+  void typeId;
+  void input;
 }
 
 function scanBoats() {
