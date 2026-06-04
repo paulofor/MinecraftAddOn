@@ -1,0 +1,36 @@
+name: Validate Pipeline Operational Contract
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'AGENTS.md'
+      - 'docker-compose.log-viewer.yml'
+      - 'docker-compose.mcp-bedrock-readonly.yml'
+      - 'docs/implementacao/backend/plano-pipelines-contrato-operacional.md'
+      - 'docs/registros1.md'
+      - 'tools/**'
+      - '.github/workflows/**'
+  push:
+    branches:
+      - work
+      - main
+    paths:
+      - 'AGENTS.md'
+      - 'docker-compose.log-viewer.yml'
+      - 'docker-compose.mcp-bedrock-readonly.yml'
+      - 'docs/implementacao/backend/plano-pipelines-contrato-operacional.md'
+      - 'docs/registros1.md'
+      - 'tools/**'
+      - '.github/workflows/**'
+
+jobs:
+  validate-contract:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout do repositório
+        uses: actions/checkout@v4
+
+      - name: Validar contrato operacional dos pipelines
+        run: |
+          python3 tools/validate_pipeline_contract.py

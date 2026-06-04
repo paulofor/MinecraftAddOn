@@ -1844,3 +1844,21 @@ Checklist executado no host via MCP readonly/projeto:
 - Versionamento: manifests pareados do módulo `BP_Barco3Jogadores` e `RP_Barco3Jogadores` incrementados de `0.1.70` para `0.1.71` em `header.version` e `modules[].version`.
 - Validação local: `node --check packs/BP_Barco3Jogadores/scripts/main.js` sem erro de sintaxe; `python3 -m json.tool` nos manifests BP/RP sem erro; busca confirmou que as functions não contêm mais `summon minecraftaddon:barco_*` direto.
 - Próximo passo operacional: executar deploy e revalidar `/root/MinecraftServer/logging/bedrock.log` para confirmar ausência de `Function veiculos/summon_barco_* failed to load` e presença de logs `[Barco3Teste] spawn_event_ok` ao chamar as functions.
+
+
+## 2026-06-04 17:06:11 UTC-3 — Contrato operacional de pipelines — Fase 1
+- Solicitação: executar a Fase 1 do plano `docs/implementacao/backend/plano-pipelines-contrato-operacional.md`.
+- Observação inicial: o arquivo do plano não existia no checkout local; a Fase 1 foi materializada no próprio plano para manter rastreabilidade do escopo executado.
+- Implementação aplicada:
+  - criado `tools/validate_pipeline_contract.py` para validar, sem acesso ao VPS, invariantes críticos dos workflows, compose files, scripts e documentação operacional;
+  - criado `.github/workflows/validate-pipeline-contract.yml` para rodar o contrato em `workflow_dispatch`, `pull_request` e `push` quando arquivos operacionais forem alterados;
+  - documentado o plano por fases com registro pós-conclusão obrigatório em `docs/implementacao/backend/plano-pipelines-contrato-operacional.md`.
+- Invariantes cobertos na Fase 1:
+  - host canônico `186.202.209.206`;
+  - mundo ativo padrão `/root/MinecraftServer/worlds/Bedrock level`;
+  - log canônico `/root/MinecraftServer/logging/bedrock.log`;
+  - MCP readonly e Log Viewer com caminhos esperados;
+  - exclusão de `.png` do fluxo GitHub Actions e preservação da regra de publicação via MCP;
+  - presença deste registro operacional.
+- PNG/texturas: nenhum arquivo `.png` foi criado, alterado ou commitado nesta execução.
+- Validação local executada: `python3 tools/validate_pipeline_contract.py`, `python3 -m py_compile tools/validate_pipeline_contract.py`, `git diff --check`.
