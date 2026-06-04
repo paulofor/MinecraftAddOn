@@ -8,6 +8,12 @@ const SIGNIFICANT_TURN_DEGREES = 35;
 const MISSING_LOG_TICKS = 60;
 const BOAT_END_OFFSET = 0.9;
 
+const SPAWN_SCRIPT_EVENT_ID = "minecraftaddon:spawn_boat";
+const BOAT_SPAWN_TYPES = new Map([
+  ["3_jogadores", "minecraftaddon:barco_3_jogadores"],
+  ["simples", "minecraftaddon:barco_simples"],
+]);
+
 function log(message) {
   console.warn(`${LOG_PREFIX} ${message}`);
 }
@@ -105,6 +111,37 @@ function getBoatEnds(location, yaw) {
       z: location.z - dirZ * BOAT_END_OFFSET,
     },
   };
+}
+
+function getSpawnType(message) {
+  const key = String(message ?? "").trim().toLowerCase();
+  return BOAT_SPAWN_TYPES.get(key);
+}
+
+function handleSpawnBoatEvent(event) {
+  if (event.id !== SPAWN_SCRIPT_EVENT_ID) return;
+
+  const typeId = getSpawnType(event.message);
+  if (!typeId) {
+    log(`spawn_event_ignorado message=${event.message ?? "vazio"}`);
+    return;
+  }
+
+  const source = event.sourceEntity;
+  if (!source) {
+    log(`spawn_event_sem_origem type=${typeId}`);
+    return;
+  }
+
+  const location = {
+    x: source.location.x,
+    y: source.location.y + 1,
+    z: source.location.z,
+  };
+  const boat = source.dimension.spawnEntity(typeId, location);
+  log(
+    `spawn_event_ok type=${typeId} boat=${boat.id} origem=${source.name ?? source.typeId} pos=(${formatNumber(location.x)}, ${formatNumber(location.y)}, ${formatNumber(location.z)})`,
+  );
 }
 
 function recordMetric(command, movedDistance, yawDelta) {
@@ -221,10 +258,12 @@ function scanBoats() {
   }
 }
 
+system.afterEvents.scriptEventReceive.subscribe(handleSpawnBoatEvent);
+
 system.runInterval(() => {
   tickCounter += 1;
   scanBoats();
   emitSummaryIfNeeded();
 }, 20);
 
-log("Monitor de barcos carregado (barco_3_jogadores + barco_simples + minecraft:boat), com log de desaparecimento.");
+log("Monitor de barcos carregado (barco_3_jogadores + barco_simples + minecraft:boat), com spawn via scriptevent e log de desaparecimento.");

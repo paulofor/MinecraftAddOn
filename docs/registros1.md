@@ -1836,3 +1836,11 @@ Checklist executado no host via MCP readonly/projeto:
   3. testar `/summon minecraftaddon:barco_simples ~ ~1 ~` em água parada e confirmar que não afunda/some;
   4. testar `/summon minecraftaddon:barco_3_jogadores ~ ~1 ~` com 1, 2 e 3 jogadores, validando controle pelo assento 0;
   5. reconsultar `/root/MinecraftServer/logging/bedrock.log` para confirmar ausência de erros de parsing dos componentes.
+
+## 2026-06-04 15:30:34 UTC-3 — Correção de parsing nas functions de summon dos barcos
+- Contexto: após deploy, o `bedrock.log` indicou falha de runtime/carregamento nas functions `veiculos/summon_barco_3_jogadores` e `veiculos/summon_barco_simples`, com erro de parsing no argumento `minecraftaddon:barco_*` do comando `summon`.
+- Ajuste aplicado em `packs/BP_Barco3Jogadores/functions/veiculos/summon_barco_3_jogadores.mcfunction` e `packs/BP_Barco3Jogadores/functions/veiculos/summon_barco_simples.mcfunction`: substituição do `summon` direto por `execute as @p at @s run scriptevent minecraftaddon:spawn_boat ...`, evitando a validação antecipada do enum `EntityType` customizado no carregamento das `.mcfunction`.
+- Ajuste aplicado em `packs/BP_Barco3Jogadores/scripts/main.js`: novo handler `system.afterEvents.scriptEventReceive` para receber `minecraftaddon:spawn_boat`, mapear `3_jogadores`/`simples` para os identifiers customizados e executar `dimension.spawnEntity` a partir da posição do jogador de origem.
+- Versionamento: manifests pareados do módulo `BP_Barco3Jogadores` e `RP_Barco3Jogadores` incrementados de `0.1.70` para `0.1.71` em `header.version` e `modules[].version`.
+- Validação local: `node --check packs/BP_Barco3Jogadores/scripts/main.js` sem erro de sintaxe; `python3 -m json.tool` nos manifests BP/RP sem erro; busca confirmou que as functions não contêm mais `summon minecraftaddon:barco_*` direto.
+- Próximo passo operacional: executar deploy e revalidar `/root/MinecraftServer/logging/bedrock.log` para confirmar ausência de `Function veiculos/summon_barco_* failed to load` e presença de logs `[Barco3Teste] spawn_event_ok` ao chamar as functions.
