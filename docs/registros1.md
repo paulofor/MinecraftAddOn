@@ -1786,6 +1786,26 @@ Checklist executado no host via MCP readonly/projeto:
 - Validação local complementar: `node --check packs/BP_IlhaLogicaComputacao/scripts/main.js` executou sem erro de sintaxe.
 - Conclusão: a atualização `0.3.3` da Ilha da Lógica está corretamente vinculada e carregada no mundo ativo. Não foi feita reprodução manual dentro do jogo nesta rodada; para validar a experiência final, entrar no mundo, usar a Lanterna/Lectern e, se necessário, executar `/function ilha_logica/visual_hub` para reconstruir a área visual com os baús da trilha.
 
+## 2026-06-04 15:15:00 UTC-3 — Verificação remota da Ilha da Lógica e orientação de atualização/uso
+- Solicitação: verificar se a Ilha da Lógica está correta no mundo ativo e, se estiver, orientar como atualizar e usar.
+- Verificações via MCP Readonly (`http://186.202.209.206/mcp`):
+  - `tools/list` respondeu com as tools `list_directory`, `read_file`, `write_png_base64`, `restart_bedrock` e `run_read_command`; houve intermitência `503 Service Unavailable` em algumas chamadas, contornada com retentativas.
+  - Mundo verificado: `/root/MinecraftServer/worlds/Bedrock level`.
+  - `world_behavior_packs.json` contém o BP da Ilha (`35b76ace-b514-401c-8994-0678e4e6f68c`) na versão `[0, 3, 3]`.
+  - `world_resource_packs.json` contém o RP da Ilha (`66900c78-d108-4a3f-9433-4f8daf304c9b`) na versão `[0, 3, 3]`.
+  - Os manifests remotos em `worlds/Bedrock level/behavior_packs/BP_IlhaLogicaComputacao/manifest.json` e `worlds/Bedrock level/resource_packs/RP_IlhaLogicaComputacao/manifest.json` também estão em `[0, 3, 3]`.
+  - O BP remoto contém `scripts/main.js`, `blocks/hub_lanterna_logica.json` e as functions principais de `ilha_logica`; o RP remoto contém `blocks.json`, `texts/` e `textures/terrain_texture.json`.
+- Validações locais executadas:
+  - `node --check packs/BP_IlhaLogicaComputacao/scripts/main.js` sem erro de sintaxe.
+  - `python3 tools/validate_world_bindings.py --world-dir /tmp/ilha_remote_world` confirmou consistência entre os vínculos remotos do mundo e os manifests locais.
+  - `python3 -m json.tool` nos manifests BP/RP e `git diff --check` sem erro.
+- Conclusão: a Ilha da Lógica está corretamente vinculada no mundo ativo com BP/RP `0.3.3`. Não foi possível confirmar por reprodução manual dentro do Minecraft nesta rodada; para validar a experiência final, entrar no mundo, usar a Lanterna/Lectern e/ou rodar `/function ilha_logica/visual_hub` no ponto desejado.
+- Orientação de atualização consolidada:
+  - alterar arquivos texto do módulo no repositório;
+  - incrementar as versões dos dois manifests pareados (`packs/BP_IlhaLogicaComputacao/manifest.json` e `packs/RP_IlhaLogicaComputacao/manifest.json`);
+  - validar localmente (`node --check`, `python3 -m json.tool`, `git diff --check`);
+  - publicar os packs no mundo ativo com `tools/deploy_world_remote.sh --host 186.202.209.206 --user <usuario> --world-dir "/root/MinecraftServer/worlds/Bedrock level"`;
+  - se a alteração envolver visual físico da ilha, executar no jogo `/function ilha_logica/visual_hub` para reconstruir a área.
 ## 2026-06-04 15:17:54 UTC-3 — Correção de flutuação e pilotagem dos barcos
 - Solicitação: investigar por que o `barco_simples` afunda/some e por que o `barco_3_jogadores` não tem bom controle.
 - Consulta oficial realizada via Microsoft Learn MCP (`https://learn.microsoft.com/api/mcp`):
