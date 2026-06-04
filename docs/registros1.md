@@ -1785,3 +1785,34 @@ Checklist executado no host via MCP readonly/projeto:
   - o script da Ilha registrou `afterEvents.playerInteractWithBlock`, `afterEvents.playerBreakBlock` e `afterEvents.itemStartUseOn` às `2026-06-02 14:58:44 UTC`, sem `TypeError` ou `SyntaxError` nas linhas recentes verificadas.
 - Validação local complementar: `node --check packs/BP_IlhaLogicaComputacao/scripts/main.js` executou sem erro de sintaxe.
 - Conclusão: a atualização `0.3.3` da Ilha da Lógica está corretamente vinculada e carregada no mundo ativo. Não foi feita reprodução manual dentro do jogo nesta rodada; para validar a experiência final, entrar no mundo, usar a Lanterna/Lectern e, se necessário, executar `/function ilha_logica/visual_hub` para reconstruir a área visual com os baús da trilha.
+
+## 2026-06-04 15:17:54 UTC-3 — Correção de flutuação e pilotagem dos barcos
+- Solicitação: investigar por que o `barco_simples` afunda/some e por que o `barco_3_jogadores` não tem bom controle.
+- Consulta oficial realizada via Microsoft Learn MCP (`https://learn.microsoft.com/api/mcp`):
+  - `microsoft_docs_search`/`microsoft_docs_fetch` para `minecraft:buoyant`, `minecraft:input_ground_controlled` e `minecraft:rideable`;
+  - conclusão técnica: em Bedrock 1.26.x, `minecraft:buoyant` usa `movement_type` no lugar de `simulate_waves`; `minecraft:rideable` define assentos/assento controlador; `minecraft:input_ground_controlled` controla entidade montável por WASD; notas de criador 1.26.10 indicam substituição de `minecraft:pushable` pelos componentes `minecraft:pushable_by_entity` e `minecraft:pushable_by_block`.
+- Evidência no MCP readonly do servidor (`http://186.202.209.206/mcp`):
+  - `tools/list` respondeu com sucesso;
+  - `tail -n 200 /root/MinecraftServer/logging/bedrock.log` retornou servidor Bedrock `1.26.20.5` e registros antigos `[Barco3Teste] barco_nao_encontrado` para `minecraftaddon:barco_simples` e `minecraftaddon:barco_3_jogadores`.
+- Ajustes aplicados em `packs/BP_Barco3Jogadores/entities/barco_simples.json`:
+  - `format_version` atualizado para `1.26.10`;
+  - `minecraft:buoyant` migrado de `simulate_waves: false` para `movement_type: "waves"`, com `apply_gravity: true` e `can_auto_step_from_liquid: true`;
+  - `minecraft:pushable` substituído por `minecraft:pushable_by_entity` com preset `legacy_boat` e `minecraft:pushable_by_block`;
+  - assento recebeu `lock_rider_rotation` e `rotate_rider_by` alinhados ao padrão de barco vanilla, além de `pull_in_entities: true` e `dismount_mode: "on_top_center"`.
+- Ajustes aplicados em `packs/BP_Barco3Jogadores/entities/barco_3_jogadores.json`:
+  - mesmas migrações de `format_version`, `buoyant` e `pushable`;
+  - `base_buoyancy` reduzido de `1.35` para `1.15` para diminuir excesso de subida/instabilidade;
+  - assentos configurados com rotação de passageiro e `max_rider_count: 3` para evitar restrição indevida em barco de três lugares;
+  - `input_ground_controlled` recalibrado para resposta mais firme (`max_turn: 0.22`, `move_speed: 0.62`, avanço `0.45`, ré `0.25`).
+- Ajuste aplicado em `packs/BP_Barco3Jogadores/scripts/main.js`:
+  - removida a interferência efetiva de `clearVelocity()` no giro parado/lateral do `barco_3_jogadores`, pois isso anulava parte da resposta de controle do motor nativo do barco.
+- Versionamento:
+  - `packs/BP_Barco3Jogadores/manifest.json`: `0.1.69` -> `0.1.70` (header + módulos `data`/`script`);
+  - `packs/RP_Barco3Jogadores/manifest.json`: `0.1.69` -> `0.1.70` (header + módulo `resources`).
+- Observação: nenhuma textura `.png` foi alterada nesta rodada; portanto não houve upload de PNG via MCP.
+- Próximos passos recomendados no servidor:
+  1. publicar os arquivos texto do BP/RP no mundo ativo;
+  2. reiniciar o Bedrock;
+  3. testar `/summon minecraftaddon:barco_simples ~ ~1 ~` em água parada e confirmar que não afunda/some;
+  4. testar `/summon minecraftaddon:barco_3_jogadores ~ ~1 ~` com 1, 2 e 3 jogadores, validando controle pelo assento 0;
+  5. reconsultar `/root/MinecraftServer/logging/bedrock.log` para confirmar ausência de erros de parsing dos componentes.
