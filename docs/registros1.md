@@ -1844,3 +1844,10 @@ Checklist executado no host via MCP readonly/projeto:
 - Versionamento: manifests pareados do módulo `BP_Barco3Jogadores` e `RP_Barco3Jogadores` incrementados de `0.1.70` para `0.1.71` em `header.version` e `modules[].version`.
 - Validação local: `node --check packs/BP_Barco3Jogadores/scripts/main.js` sem erro de sintaxe; `python3 -m json.tool` nos manifests BP/RP sem erro; busca confirmou que as functions não contêm mais `summon minecraftaddon:barco_*` direto.
 - Próximo passo operacional: executar deploy e revalidar `/root/MinecraftServer/logging/bedrock.log` para confirmar ausência de `Function veiculos/summon_barco_* failed to load` e presença de logs `[Barco3Teste] spawn_event_ok` ao chamar as functions.
+
+## 2026-06-04 17:01:20 UTC-3 — Ajuste da validação de logs pós-deploy do Bedrock
+- Contexto: a validação do workflow continuou falhando porque o passo `Validar logs de runtime (Script API / Functions)` varria `tail -n 1200` do `bedrock.log` e podia capturar erros antigos de carregamento das functions `veiculos/summon_barco_*` gerados antes do restart/deploy atual.
+- Ajuste aplicado em `.github/workflows/publish-server.yml`: o passo de restart agora registra em `/tmp/bedrock_log_pre_restart_line` a quantidade de linhas existente no `/root/MinecraftServer/logging/bedrock.log` antes de reiniciar o Bedrock.
+- Ajuste aplicado em `.github/workflows/publish-server.yml`: a validação final passou a ler o log com `tail -n +$scan_from`, iniciando apenas após a linha marcada antes do restart; caso o log seja truncado/rotacionado, o workflow avisa e valida o arquivo completo como fallback seguro.
+- Objetivo: manter a validação falhando para erros reais do deploy atual, mas evitar falso positivo causado por mensagens antigas já corrigidas no repositório.
+- Observação: nenhuma textura `.png` foi alterada nesta rodada; portanto não houve upload de PNG via MCP.
