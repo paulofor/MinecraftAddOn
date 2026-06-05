@@ -52,17 +52,16 @@ def main() -> int:
 
     errors: list[str] = []
 
-    for manifest in [
-        repo / "packs/BP_QuadroIdeias/manifest.json",
-        repo / "packs/RP_QuadroIdeias/manifest.json",
-    ]:
+    packs_dir = repo / "packs"
+
+    for manifest in sorted(packs_dir.glob("*/manifest.json")):
         mev = parse_manifest_min_engine(manifest)
         if mev and mev > server_version:
             errors.append(
                 f"{manifest.relative_to(repo)} min_engine_version={mev} > server={server_version}"
             )
 
-    for json_path, fv in iter_format_versions(repo / "packs/BP_QuadroIdeias"):
+    for json_path, fv in iter_format_versions(packs_dir):
         if fv > server_version:
             errors.append(f"{json_path.relative_to(repo)} format_version={fv} > server={server_version}")
 

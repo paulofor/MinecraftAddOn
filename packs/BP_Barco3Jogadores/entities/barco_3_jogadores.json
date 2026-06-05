@@ -1,5 +1,5 @@
 {
-  "format_version": "1.26.10",
+  "format_version": "1.20.80",
   "minecraft:entity": {
     "description": {
       "identifier": "minecraftaddon:barco_3_jogadores",
@@ -92,13 +92,7 @@
         }
       },
       "minecraft:nameable": {},
-      "minecraft:input_ground_controlled": {
-        "max_turn": 0.22,
-        "move_speed": 0.62,
-        "forward_movement_modifier": 0.45,
-        "backward_movement_modifier": 0.25,
-        "side_movement_modifier": 0.0
-      },
+      "minecraft:input_ground_controlled": {},
       "minecraft:persistent": {},
       "minecraft:pushable_by_entity": {
         "presets": [
