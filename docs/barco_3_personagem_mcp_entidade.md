@@ -180,3 +180,14 @@ A pilotagem deve ser calibrada preferencialmente pelo runtime nativo `minecraft:
 2. Ajustar flutuação (`buoyant`) para comportamento em água e estabilidade.
 3. Validar colisão (`collision_box`) e física (`physics`) em água rasa, água funda e margem.
 4. Usar os logs do script para comparar movimento/rotação real após cada deploy.
+
+## 9) Diagnóstico visual — entidade existe, mas fica invisível
+
+Se uma entidade customizada existe no mundo, aceita interação/montaria ou aparece nos logs, mas não fica visível no cliente, revisar primeiro o `client_entity` do RP:
+
+1. Evitar depender de aliases vanilla não definidos no pack customizado, como `geometry.boat`, `controller.render.boat` ou caminhos internos de textura vanilla.
+2. Preferir referências a assets realmente presentes no RP ativo: `models/entity/*.geo.json`, `render_controllers/*.json` e `textures/entity/*.png`.
+3. Para diagnóstico rápido, reutilizar temporariamente geometry/render controller/textura já conhecidos como funcionais no mesmo módulo.
+4. Se o PNG referenciado faltar no pack do mundo ativo, fazer upload somente via MCP `write_png_base64`, nunca por Git.
+
+No módulo atual, o `minecraftaddon:barco_simples` reutiliza os assets do `minecraftaddon:barco_3_jogadores` para evitar invisibilidade por dependência de geometry/render controller/textura vanilla indisponíveis no RP customizado.
