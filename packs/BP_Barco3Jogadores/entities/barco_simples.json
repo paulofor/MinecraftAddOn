@@ -1,5 +1,5 @@
 {
-  "format_version": "1.26.10",
+  "format_version": "1.20.80",
   "minecraft:entity": {
     "description": {
       "identifier": "minecraftaddon:barco_simples",
@@ -70,13 +70,7 @@
         }
       },
       "minecraft:nameable": {},
-      "minecraft:input_ground_controlled": {
-        "max_turn": 0.14,
-        "move_speed": 0.55,
-        "forward_movement_modifier": 0.35,
-        "backward_movement_modifier": 0.3,
-        "side_movement_modifier": 0.0
-      },
+      "minecraft:input_ground_controlled": {},
       "minecraft:persistent": {},
       "minecraft:pushable_by_entity": {
         "presets": [

@@ -158,12 +158,11 @@ Para este projeto, a decisão canônica é:
 
 Para o barco de 3 lugares (entidade montável), a pilotagem depende de um conjunto de componentes e propriedades, não apenas de `max_turn`.
 
-### Atributos principais de controle de movimento (`minecraft:input_ground_controlled`)
-- `move_speed`: velocidade base de deslocamento do veículo.
-- `forward_movement_modifier`: multiplicador da velocidade ao avançar.
-- `backward_movement_modifier`: multiplicador da velocidade em ré.
-- `side_movement_modifier`: intensidade de movimento lateral (strafe) quando houver input lateral.
-- `max_turn`: limite de curva/rotação durante o controle.
+### Controle de movimento (`minecraft:input_ground_controlled`)
+
+No servidor validado em 2026-06-05, o schema aceito para `minecraft:input_ground_controlled` não aceita subcampos como `move_speed`, `forward_movement_modifier`, `backward_movement_modifier`, `side_movement_modifier` e `max_turn`. Para evitar falha de registro da entidade custom, o componente deve permanecer como objeto vazio (`{}`) neste módulo.
+
+A pilotagem deve ser calibrada preferencialmente pelo runtime nativo `minecraft:boat`, pela configuração de assentos em `minecraft:rideable`, pela flutuação em `minecraft:buoyant` e pela telemetria do script, sem depender de subcampos rejeitados pelo schema atual.
 
 ### Atributos de montaria que impactam controle (`minecraft:rideable`)
 - `controlling_seat`: define qual assento controla o veículo.
@@ -172,12 +171,12 @@ Para o barco de 3 lugares (entidade montável), a pilotagem depende de um conjun
 - `passenger_max_width`: restringe quais passageiros conseguem montar.
 
 ### Atributos físicos que alteram “sensação” de pilotagem
-- `minecraft:buoyant.base_buoyancy`, `apply_gravity`, `simulate_waves`: alteram resposta na água.
+- `minecraft:buoyant.base_buoyancy`, `apply_gravity`, `movement_type`: alteram resposta na água.
 - `minecraft:physics.has_gravity` e `has_collision`: alteram interação com terreno/obstáculos.
 - `minecraft:collision_box` (largura/altura): muda colisão, passagem e percepção de estabilidade.
 
 ### Diretriz prática para tuning do barco
 1. Ajustar primeiro `controlling_seat` e `seats` (garantir piloto correto).
-2. Em seguida calibrar `max_turn` + `move_speed` (curva vs resposta).
-3. Só depois ajustar `forward/backward/side_movement_modifier`.
-4. Finalizar com ajustes de flutuação (`buoyant`) para comportamento em água.
+2. Ajustar flutuação (`buoyant`) para comportamento em água e estabilidade.
+3. Validar colisão (`collision_box`) e física (`physics`) em água rasa, água funda e margem.
+4. Usar os logs do script para comparar movimento/rotação real após cada deploy.
