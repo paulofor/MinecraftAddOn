@@ -4,6 +4,8 @@ const MONITORED_BOAT_TYPES = ["minecraftaddon:barco_3_jogadores", "minecraftaddo
 const LOG_PREFIX = "[Barco3Teste]";
 const POSITION_EPSILON = 0.05;
 const SUMMARY_INTERVAL_TICKS = 100;
+const COMMAND_LOG_INTERVAL_TICKS = 20;
+const IDLE_MOVEMENT_LOG_INTERVAL_TICKS = 5;
 const SIGNIFICANT_TURN_DEGREES = 35;
 const MISSING_LOG_TICKS = 60;
 const BOAT_END_OFFSET = 0.9;
@@ -74,6 +76,26 @@ function getPressedKeysLabel(input) {
   if (input.x < -0.1) pressed.push("A");
 
   return pressed.length ? pressed.join("+") : "nenhuma";
+}
+
+function getBoatVelocity(boat) {
+  try {
+    const velocity = boat.getVelocity?.();
+    if (!velocity) return null;
+
+    return {
+      x: velocity.x ?? 0,
+      y: velocity.y ?? 0,
+      z: velocity.z ?? 0,
+    };
+  } catch {
+    return null;
+  }
+}
+
+function getHorizontalSpeed(velocity) {
+  if (!velocity) return 0;
+  return Math.sqrt(velocity.x * velocity.x + velocity.z * velocity.z);
 }
 
 function getYawDelta(previous, current) {
@@ -160,6 +182,27 @@ function recordMetric(command, movedDistance, yawDelta) {
   metrics.set(command, entry);
 }
 
+function getInputSignature(input) {
+  if (!input) return "sem_input";
+  return `${classifyCommand(input)}:${formatNumber(input.x)},${formatNumber(input.y)}`;
+}
+
+function shouldLogCommand(old, commandSignature) {
+  if (!old) return true;
+  if (old.commandSignature !== commandSignature) return true;
+
+  return tickCounter - (old.lastCommandLogTick ?? 0) >= COMMAND_LOG_INTERVAL_TICKS;
+}
+
+function shouldLogMovement(old, movedDistance, yawDelta, speed) {
+  if (movedDistance > POSITION_EPSILON) return true;
+  if (Math.abs(yawDelta) >= 1) return true;
+  if (speed > 0.01) return true;
+  if (!old) return true;
+
+  return tickCounter - (old.lastMovementLogTick ?? 0) >= IDLE_MOVEMENT_LOG_INTERVAL_TICKS;
+}
+
 function emitSummaryIfNeeded() {
   if (tickCounter % SUMMARY_INTERVAL_TICKS !== 0) return;
   if (!metrics.size) return;
@@ -206,6 +249,10 @@ function scanBoats() {
         const pilot = riders[0];
         const input = getMovementInput(pilot);
         const command = classifyCommand(input);
+        const commandSignature = getInputSignature(input);
+        const yaw = boat.getRotation().y;
+        const velocity = getBoatVelocity(boat);
+        const speed = getHorizontalSpeed(velocity);
         stabilizeInPlaceTurn(boat, typeId, input);
 
         const old = state.get(boat.id);
@@ -213,28 +260,37 @@ function scanBoats() {
           log(`boat=${boat.id} type=${typeId} riders=[${names.join(", ") || "vazio"}] piloto=${names[0] ?? "nenhum"} dim=${dimensionId}`);
         }
 
-        if (pilot && old?.location) {
-          const dx = location.x - old.location.x;
-          const dy = location.y - old.location.y;
-          const dz = location.z - old.location.z;
-          const movedDistance = Math.sqrt(dx * dx + dy * dy + dz * dz);
-          const yawDelta = getYawDelta(old.yaw, boat.getRotation().y);
-          recordMetric(command, movedDistance, yawDelta);
-        }
+        const dx = old?.location ? location.x - old.location.x : 0;
+        const dy = old?.location ? location.y - old.location.y : 0;
+        const dz = old?.location ? location.z - old.location.z : 0;
+        const movedDistance = old?.location ? Math.sqrt(dx * dx + dy * dy + dz * dz) : 0;
+        const yawDelta = getYawDelta(old?.yaw, yaw);
 
-        if (pilot && hasMoved(old?.location, location)) {
-          const yaw = boat.getRotation().y;
-          const ends = getBoatEnds(location, yaw);
-          log(
-            `movimento boat=${boat.id} type=${typeId} pos=(${formatNumber(location.x)}, ${formatNumber(location.y)}, ${formatNumber(location.z)}) proa=(${formatNumber(ends.proa.x)}, ${formatNumber(ends.proa.y)}, ${formatNumber(ends.proa.z)}) popa=(${formatNumber(ends.popa.x)}, ${formatNumber(ends.popa.y)}, ${formatNumber(ends.popa.z)}) teclas=${getPressedKeysLabel(input)} comando=${command} input=(${formatNumber(input?.x)}, ${formatNumber(input?.y)}) piloto=${pilot.name ?? pilot.typeId} dim=${dimensionId}`,
-          );
+        if (pilot) {
+          recordMetric(command, movedDistance, yawDelta);
+
+          if (shouldLogCommand(old, commandSignature)) {
+            log(
+              `comando_jogador boat=${boat.id} type=${typeId} piloto=${pilot.name ?? pilot.typeId} teclas=${getPressedKeysLabel(input)} comando=${command} input=(${formatNumber(input?.x)}, ${formatNumber(input?.y)}) yaw=${formatNumber(yaw)} vel=(${formatNumber(velocity?.x)}, ${formatNumber(velocity?.y)}, ${formatNumber(velocity?.z)}) speed=${formatNumber(speed)} riders=${riders.length} dim=${dimensionId}`,
+            );
+          }
+
+          if (shouldLogMovement(old, movedDistance, yawDelta, speed)) {
+            const ends = getBoatEnds(location, yaw);
+            log(
+              `movimento boat=${boat.id} type=${typeId} pos=(${formatNumber(location.x)}, ${formatNumber(location.y)}, ${formatNumber(location.z)}) delta=(${formatNumber(dx)}, ${formatNumber(dy)}, ${formatNumber(dz)}) dist=${formatNumber(movedDistance)} yaw=${formatNumber(yaw)} yaw_delta=${formatNumber(yawDelta)} vel=(${formatNumber(velocity?.x)}, ${formatNumber(velocity?.y)}, ${formatNumber(velocity?.z)}) speed=${formatNumber(speed)} proa=(${formatNumber(ends.proa.x)}, ${formatNumber(ends.proa.y)}, ${formatNumber(ends.proa.z)}) popa=(${formatNumber(ends.popa.x)}, ${formatNumber(ends.popa.y)}, ${formatNumber(ends.popa.z)}) teclas=${getPressedKeysLabel(input)} comando=${command} input=(${formatNumber(input?.x)}, ${formatNumber(input?.y)}) piloto=${pilot.name ?? pilot.typeId} dim=${dimensionId}`,
+            );
+          }
         }
 
         state.set(boat.id, {
           key,
           typeId,
           dimensionId,
-          yaw: boat.getRotation().y,
+          yaw,
+          commandSignature,
+          lastCommandLogTick: pilot && shouldLogCommand(old, commandSignature) ? tickCounter : (old?.lastCommandLogTick ?? 0),
+          lastMovementLogTick: pilot && shouldLogMovement(old, movedDistance, yawDelta, speed) ? tickCounter : (old?.lastMovementLogTick ?? 0),
           location: {
             x: location.x,
             y: location.y,
@@ -266,4 +322,4 @@ system.runInterval(() => {
   emitSummaryIfNeeded();
 }, 20);
 
-log("Monitor de barcos carregado (barco_3_jogadores + barco_simples + minecraft:boat), com spawn via scriptevent e log de desaparecimento.");
+log("Monitor de barcos carregado (barco_3_jogadores + barco_simples + minecraft:boat), com spawn via scriptevent, logs de comando, movimento e desaparecimento.");
