@@ -1869,3 +1869,13 @@ Checklist executado no host via MCP readonly/projeto:
 - Validação remota: `tools/list` do MCP readonly respondeu com sucesso; a tentativa de leitura do `bedrock.log` para evidência adicional teve timeout/intermitência de upstream, então a correção foi feita por inspeção dos assets locais e deve ser confirmada após deploy/restart.
 - Validações locais executadas: `python3 -m json.tool` nos JSON alterados, `node --check packs/BP_Barco3Jogadores/scripts/main.js`, `python3 tools/validate_engine_compat.py --server-version 1.20.80` e `git diff --check`.
 - Observação: nenhuma textura `.png` foi criada ou alterada nesta rodada; portanto não houve upload de PNG via MCP e nenhum PNG deve ser incluído no commit.
+
+## 2026-06-15 11:39:16 UTC-3 — Telemetria de comandos e movimento dos barcos
+- Solicitação: adicionar logs no `barco_simples` e no `barco_3_jogadores` para registrar movimento do barco e comandos do jogador antes da análise de controle.
+- Ajuste aplicado em `packs/BP_Barco3Jogadores/scripts/main.js`:
+  - adicionados logs `comando_jogador` para registrar piloto, teclas/comando detectado, vetor de input, yaw, velocidade e quantidade de passageiros;
+  - enriquecidos logs `movimento` com delta de posição, distância por amostra, variação de yaw, velocidade horizontal, proa/popa e comando correlacionado;
+  - adicionada amostragem periódica mesmo quando o barco está parado/lento, permitindo diagnosticar casos em que o jogador envia comando mas o barco não responde;
+  - mantido monitoramento para `minecraftaddon:barco_simples`, `minecraftaddon:barco_3_jogadores` e `minecraft:boat` como referência comparativa.
+- Versionamento atualizado em `packs/BP_Barco3Jogadores/manifest.json` e `packs/RP_Barco3Jogadores/manifest.json`: `0.1.73` -> `0.1.74` (header e módulos), conforme regra de bump pareado BP/RP.
+- Próximo passo operacional: publicar/deploy, reproduzir comandos W/A/S/D e combinações nos dois barcos, coletar `/root/MinecraftServer/logging/bedrock.log` e comparar `comando_jogador` vs `movimento` para identificar por que a resposta de controle diverge do input dos jogadores.
