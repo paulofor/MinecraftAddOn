@@ -1879,3 +1879,36 @@ Checklist executado no host via MCP readonly/projeto:
   - mantido monitoramento para `minecraftaddon:barco_simples`, `minecraftaddon:barco_3_jogadores` e `minecraft:boat` como referência comparativa.
 - Versionamento atualizado em `packs/BP_Barco3Jogadores/manifest.json` e `packs/RP_Barco3Jogadores/manifest.json`: `0.1.73` -> `0.1.74` (header e módulos), conforme regra de bump pareado BP/RP.
 - Próximo passo operacional: publicar/deploy, reproduzir comandos W/A/S/D e combinações nos dois barcos, coletar `/root/MinecraftServer/logging/bedrock.log` e comparar `comando_jogador` vs `movimento` para identificar por que a resposta de controle diverge do input dos jogadores.
+
+## 2026-06-16 12:28:16 UTC-3 — Análise do log após uso do barco de 3 lugares
+- Solicitação: analisar o `bedrock.log` após uso prolongado do `barco_3_jogadores`.
+- Evidências coletadas via MCP Readonly em `http://186.202.209.206/mcp`:
+  - `tools/list` confirmou disponibilidade das tools `list_directory`, `read_file`, `write_png_base64`, `restart_bedrock` e `run_read_command`.
+  - `tail -n 400 /root/MinecraftServer/logging/bedrock.log` mostrou telemetria recente de pilotagem principalmente do `minecraftaddon:barco_simples`, com inputs `W`, `W+A`, `W+D`, velocidade horizontal próxima de `0.14` a `0.38` e deslocamentos por amostra geralmente entre ~5 e ~8 blocos enquanto havia piloto.
+  - `tail -n 2000 /root/MinecraftServer/logging/bedrock.log` filtrado localmente mostrou presença recente de vários `minecraftaddon:barco_3_jogadores` vazios no Overworld às `2026-06-16 12:18:54`, `12:20:36` e `12:20:37`.
+  - Não apareceram registros recentes de `comando_jogador`/`movimento` com piloto montado no `minecraftaddon:barco_3_jogadores`; os eventos do barco de 3 lugares recentes estavam sem riders (`riders=[vazio]`).
+  - Às `2026-06-16 12:23:17`, o monitor registrou `barco_nao_encontrado` para quatro instâncias recentes de `minecraftaddon:barco_3_jogadores`, com últimas posições `(-0.63, 62.62, 383.56)`, `(-70.59, 62.55, 429.79)`, `(40.11, 62.56, 440.65)`, `(-91.03, 62.55, 419.50)` e `(-89.63, 62.55, 420.96)` no Overworld.
+  - O mesmo bloco de log também registrou `barco_nao_encontrado` para barcos simples customizados e barcos vanilla (`minecraft:boat`), portanto o evento não é exclusivo do `barco_3_jogadores`; ele indica que o monitor deixou de encontrar as entidades após 60s sem scan.
+  - O log ainda contém erros de carregamento anteriores (`2026-06-14` e `2026-06-15`) para `minecraft:pushable_by_entity.presets` inválido e `minecraft:buoyant.base_buoyancy` fora da faixa 0..1 em ambos os barcos; esses erros aparecem no histórico recente ampliado e devem ser corrigidos em próxima rodada, pois o arquivo atual do repositório ainda declara `base_buoyancy: 1.15` e usa `pushable_by_entity.presets` no `barco_3_jogadores`.
+- Conclusão: o log confirma que houve entidades do `barco_3_jogadores` no mundo, mas não confirma uso com piloto nos trechos coletados; as instâncias vistas estavam vazias e depois ficaram fora do scan. A prioridade técnica é corrigir os erros de schema (`base_buoyancy` > 1 e `pushable_by_entity.presets`) e repetir o teste montando explicitamente no barco de 3 lugares para capturar `comando_jogador`/`movimento` desse tipo.
+- Próximo passo recomendado: ajustar JSONs dos dois barcos para eliminar erros de schema, incrementar manifests BP/RP do módulo, fazer deploy/restart e repetir teste com 1, 2 e 3 jogadores no `barco_3_jogadores`.
+
+## 2026-06-16 13:00:39 UTC-3 — Resposta sobre movimentação na água pelo log do dia
+- Pergunta: se, pelo log de hoje, o barco está se movimentando bem na água.
+- Nova leitura via MCP Readonly de `tail -n 2500 /root/MinecraftServer/logging/bedrock.log` focada em entradas de `2026-06-16`.
+- Interpretação:
+  - Para o `minecraftaddon:barco_simples`, sim: quando havia piloto (`Buck9523`) e entrada `W`/`W+A`/`W+D`, o log mostrou movimento consistente na água, com `mov%=100` para comandos de avanço no resumo e distância média por amostra entre ~6.29 e ~7.25 nos comandos principais do trecho mais ativo.
+  - Para o `minecraftaddon:barco_3_jogadores`, não dá para afirmar que ele está se movimentando bem, porque nesta coleta não houve nenhuma linha `comando_jogador` nem `movimento` com `type=minecraftaddon:barco_3_jogadores`; as linhas recentes desse tipo apareceram apenas como entidades vazias (`riders=[vazio]`) e depois como `barco_nao_encontrado`.
+  - A coordenada Y das amostras do `barco_simples` ficou majoritariamente estável perto de `62.57` a `62.61`, sem queda progressiva no trecho pilotado, o que é um bom sinal de flutuação para esse barco específico.
+  - O evento `barco_nao_encontrado` após desconexão/sem scan não deve ser lido sozinho como prova de que o barco afundou durante a pilotagem; ele apareceu também para `minecraft:boat` e outros barcos, indicando ausência no scan do monitor após 60s.
+- Conclusão direta: pelo log de hoje, o movimento **bom** está demonstrado para o `barco_simples`; para o `barco_3_jogadores`, a evidência ainda é insuficiente porque faltam amostras com jogador montado. O próximo teste precisa montar no `barco_3_jogadores` e gerar entradas `comando_jogador`/`movimento` desse tipo para comparação real.
+
+## 2026-06-16 13:17:17 UTC-3 — Decisão de alteração conservadora para o barco de 3 lugares
+- Feedback recebido: a pilotagem do `barco_3_jogadores` está boa e agora é possível usar o barco, o que não acontecia antes; o ponto observado como estranho é o posicionamento.
+- Decisão técnica: **não alterar comportamento, assentos, física, rotação ou posicionamento neste momento sem evidência forte de melhora**, para evitar regressão na pilotagem que acabou de ficar utilizável.
+- Critério para futuras mudanças:
+  1. coletar evidências comparativas antes/depois em `bedrock.log` com `comando_jogador` e `movimento` do `minecraftaddon:barco_3_jogadores`;
+  2. validar em jogo com 1, 2 e 3 jogadores sentados;
+  3. registrar prints/descritivo do posicionamento estranho (posição de piloto/passageiros, proa/popa, câmera ou desalinhamento visual);
+  4. só aplicar ajuste se houver hipótese clara e ganho observável, preferencialmente começando por mudanças pequenas e reversíveis nos assentos/geometry, sem mexer na física que estabilizou a pilotagem.
+- Próximo passo recomendado: manter a versão atual em uso e apenas instrumentar/observar o posicionamento do `barco_3_jogadores`; abrir correção específica quando houver evidência visual/log suficiente.
