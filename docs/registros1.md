@@ -1935,3 +1935,14 @@ Checklist executado no host via MCP readonly/projeto:
   - `ALLOWED_ROOTS` padrão passou a incluir `/root/Uploads`;
   - adicionado mount `${HOST_UPLOADS_DIR:-/root/Uploads}:/root/Uploads:${HOST_UPLOADS_MOUNT_MODE:-ro}`, em modo somente leitura por padrão.
 - Observação operacional: o MCP continua sem ferramenta de escrita de binários; a liberação permite listar/ler/diagnosticar arquivos em `/root/Uploads`, enquanto a substituição do `/root/MinecraftServer/bedrock_server` deve ocorrer por SSH/workflow administrativo apropriado.
+
+## 2026-06-18 22:17:00 UTC-3 — Script seguro para atualização do Bedrock Dedicated Server
+- Solicitação/contexto: após atualizar o MCP, `/root/Uploads` ficou acessível e foram localizados os pacotes `bedrock-server-1.26.20.5.zip` e `bedrock-server-1.26.30.5.zip`.
+- Implementado `tools/update_bedrock_server_binary.sh` para atualizar o Bedrock Dedicated Server a partir de um ZIP oficial com fluxo seguro:
+  - valida arquivo ZIP, diretório do servidor e dependências (`unzip`, `rsync`, `tar`, `systemctl` quando houver restart);
+  - descompacta em staging temporário;
+  - cria backup com manifesto, binário atual, bibliotecas `.so`, configs críticas e, opcionalmente, `worlds/`;
+  - preserva `worlds/`, `logging/`, `server.properties`, `allowlist.json`, `permissions.json` e arquivos locais críticos durante o `rsync`;
+  - reinicia `bedrock.service` e valida versão esperada no `bedrock.log` quando `--expected-version` é informado.
+- Implementado workflow manual `.github/workflows/update-bedrock-server.yml` para publicar o script no VPS e executar a atualização usando, por padrão, `/root/Uploads/bedrock-server-1.26.30.5.zip` e versão esperada `1.26.30`.
+- Observação: atualização do binário do servidor fica separada do workflow normal de publicação de Add-Ons, reduzindo risco de alterar runtime do Bedrock acidentalmente durante deploy de packs.
