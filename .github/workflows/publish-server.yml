@@ -25,6 +25,7 @@ jobs:
       WORLD_DIR: ${{ vars.BEDROCK_WORLD_DIR || '/root/MinecraftServer/worlds/Bedrock level' }}
       WORLD_BP_DIR: ${{ vars.BEDROCK_WORLD_BP_DIR || '/root/MinecraftServer/worlds/Bedrock level/behavior_packs' }}
       WORLD_RP_DIR: ${{ vars.BEDROCK_WORLD_RP_DIR || '/root/MinecraftServer/worlds/Bedrock level/resource_packs' }}
+      BEDROCK_REQUIRED_SERVER_VERSION: ${{ vars.BEDROCK_REQUIRED_SERVER_VERSION || '1.26.30' }}
 
     steps:
       - name: Checkout do repositório
@@ -77,6 +78,29 @@ jobs:
             -e "ssh -i ~/.ssh/id_ed25519 -p $VPS_PORT" \
             tools/ "$VPS_USER@$VPS_HOST:$REMOTE_DIR/tools/"
 
+
+      - name: Validar versão mínima do servidor Bedrock
+        run: |
+          ssh -i ~/.ssh/id_ed25519 -p "$VPS_PORT" "$VPS_USER@$VPS_HOST" \
+            "set -euo pipefail && \
+             LOG_FILE='/root/MinecraftServer/logging/bedrock.log' && \
+             required='$BEDROCK_REQUIRED_SERVER_VERSION' && \
+             if [ ! -f \"\$LOG_FILE\" ]; then \
+               echo '[erro] bedrock.log não encontrado para validar versão do servidor.' >&2; \
+               exit 1; \
+             fi && \
+             server_version=\$(sed -n 's/.*Version: //p' \"\$LOG_FILE\" | tail -n 1 | tr -d '\r') && \
+             if [ -z \"\$server_version\" ]; then \
+               echo '[erro] Não foi possível detectar a versão do Bedrock Dedicated Server no bedrock.log.' >&2; \
+               exit 1; \
+             fi && \
+             echo \"[info] Versão Bedrock Dedicated Server detectada: \$server_version\" && \
+             echo \"[info] Versão mínima requerida para clientes atuais: \$required\" && \
+             python3 -c 'import sys; from itertools import zip_longest; got=sys.argv[1].split(".")[:3]; req=sys.argv[2].split(".")[:3]; parse=lambda xs: tuple(int(x) for x in xs); sys.exit(0 if parse(got) >= parse(req) else 1)' \"\$server_version\" \"\$required\" || { \
+               echo '[erro] Servidor Bedrock abaixo da versão mínima requerida.' >&2; \
+               echo '[erro] Atualize o binário /root/MinecraftServer/bedrock_server antes do deploy para evitar falha de conexão InitialConnection-34 em clientes mais novos.' >&2; \
+               exit 1; \
+             }"
 
       - name: Validar mundo alvo ativo do Bedrock
         run: |

@@ -1,0 +1,66 @@
+name: Atualizar Bedrock Server
+
+on:
+  workflow_dispatch:
+    inputs:
+      archive_path:
+        description: 'Caminho do ZIP no VPS'
+        required: true
+        default: '/root/Uploads/bedrock-server-1.26.30.5.zip'
+      expected_version:
+        description: 'Versão esperada no bedrock.log após atualização'
+        required: true
+        default: '1.26.30'
+      backup_worlds:
+        description: 'Fazer backup compactado de worlds/ antes da atualização'
+        type: boolean
+        required: true
+        default: false
+
+jobs:
+  update-bedrock:
+    runs-on: ubuntu-latest
+    env:
+      VPS_HOST: 186.202.209.206
+      VPS_USER: root
+      VPS_PORT: 22
+      REMOTE_DIR: ${{ vars.VPS_DESTINO || '/root/MinecraftAddOn' }}
+
+    steps:
+      - name: Checkout do repositório
+        uses: actions/checkout@v4
+
+      - name: Configurar chave SSH
+        env:
+          VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+        run: |
+          mkdir -p ~/.ssh
+          printf '%s\n' "$VPS_SSH_KEY" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          ssh-keyscan -p "$VPS_PORT" "$VPS_HOST" >> ~/.ssh/known_hosts
+
+      - name: Publicar script de atualização no VPS
+        run: |
+          ssh -i ~/.ssh/id_ed25519 -p "$VPS_PORT" "$VPS_USER@$VPS_HOST" "mkdir -p '$REMOTE_DIR/tools'"
+          scp -i ~/.ssh/id_ed25519 -P "$VPS_PORT" \
+            tools/update_bedrock_server_binary.sh \
+            "$VPS_USER@$VPS_HOST:$REMOTE_DIR/tools/update_bedrock_server_binary.sh"
+          ssh -i ~/.ssh/id_ed25519 -p "$VPS_PORT" "$VPS_USER@$VPS_HOST" \
+            "chmod +x '$REMOTE_DIR/tools/update_bedrock_server_binary.sh'"
+
+      - name: Executar atualização segura do Bedrock Server
+        env:
+          ARCHIVE_PATH: ${{ inputs.archive_path }}
+          EXPECTED_VERSION: ${{ inputs.expected_version }}
+          BACKUP_WORLDS: ${{ inputs.backup_worlds }}
+        run: |
+          backup_worlds_arg=''
+          if [ "$BACKUP_WORLDS" = 'true' ]; then
+            backup_worlds_arg='--backup-worlds'
+          fi
+
+          ssh -i ~/.ssh/id_ed25519 -p "$VPS_PORT" "$VPS_USER@$VPS_HOST" \
+            "'$REMOTE_DIR/tools/update_bedrock_server_binary.sh' \
+              --archive '$ARCHIVE_PATH' \
+              --expected-version '$EXPECTED_VERSION' \
+              $backup_worlds_arg"

@@ -13,12 +13,12 @@ from pathlib import Path
 from typing import Any
 
 SERVER_NAME = "bedrock-readonly"
-SERVER_VERSION = "0.3.0"
+SERVER_VERSION = "0.3.1"
 PROTOCOL_VERSION = "2024-11-05"
 
 DEFAULT_ALLOWED_ROOTS = (
   "/root/MinecraftServer,/root/MinecraftServer/logging,"
-  "/root/MinecraftServer/logging/bedrock.log,/root/MinecraftAddOn"
+  "/root/MinecraftServer/logging/bedrock.log,/root/MinecraftAddOn,/root/Uploads"
 )
 ALLOWED_ROOTS = [
   Path(part.strip()).resolve()
