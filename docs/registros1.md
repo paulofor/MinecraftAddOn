@@ -1912,3 +1912,37 @@ Checklist executado no host via MCP readonly/projeto:
   3. registrar prints/descritivo do posicionamento estranho (posição de piloto/passageiros, proa/popa, câmera ou desalinhamento visual);
   4. só aplicar ajuste se houver hipótese clara e ganho observável, preferencialmente começando por mudanças pequenas e reversíveis nos assentos/geometry, sem mexer na física que estabilizou a pilotagem.
 - Próximo passo recomendado: manter a versão atual em uso e apenas instrumentar/observar o posicionamento do `barco_3_jogadores`; abrir correção específica quando houver evidência visual/log suficiente.
+
+## 2026-06-18 21:53:44 UTC-3 — Diagnóstico de erro InitialConnection-34 por versão do servidor Bedrock
+- Solicitação: investigar tela de erro do Minecraft Bedrock exibindo `Error Detail InitialConnection-34`, cliente `Win.D.GC-10.0.26200.8655`, versão `1.26.30-Windows GDK Build`, data `2026-06-19T00:51:05Z`, mundo `Nosso Servidor`.
+- MCP Readonly consultado em `http://186.202.209.206/mcp`:
+  - `tools/list` respondeu com sucesso e confirmou as tools `list_directory`, `read_file`, `write_png_base64`, `restart_bedrock` e `run_read_command`.
+  - `run_read_command` com `tail -n 300 /root/MinecraftServer/logging/bedrock.log` retornou logs do servidor.
+- Evidência encontrada no `bedrock.log`: o servidor Bedrock Dedicated Server carregado está em `Version: 1.26.20.5`, enquanto o cliente do print está em `1.26.30`.
+- Causa provável: incompatibilidade de versão entre cliente mais novo e servidor mais antigo; esse cenário é compatível com falha ainda na conexão inicial (`InitialConnection-34`), antes de qualquer interação com Add-Ons.
+- Correção preventiva aplicada no workflow `.github/workflows/publish-server.yml`:
+  - adicionada variável `BEDROCK_REQUIRED_SERVER_VERSION` com padrão `1.26.30`;
+  - adicionada etapa `Validar versão mínima do servidor Bedrock`, que lê a última linha `Version:` do `/root/MinecraftServer/logging/bedrock.log` e falha com mensagem explícita caso o servidor esteja abaixo da versão mínima requerida.
+- Próximo passo operacional no host: atualizar o binário `/root/MinecraftServer/bedrock_server` para uma build compatível com clientes `1.26.30`, reiniciar `bedrock.service` e repetir a conexão.
+
+
+## 2026-06-18 22:07:10 UTC-3 — Liberação de /root/Uploads no MCP Readonly
+- Solicitação: liberar acesso do MCP Server à pasta `/root/Uploads` para permitir inspeção do binário Bedrock enviado ao host.
+- Alteração aplicada em `infra/mcp-bedrock-readonly/server.py`:
+  - `DEFAULT_ALLOWED_ROOTS` passou a incluir `/root/Uploads`;
+  - `SERVER_VERSION` incrementado de `0.3.0` para `0.3.1` por alteração de capacidade do MCP.
+- Alteração aplicada em `docker-compose.mcp-bedrock-readonly.yml`:
+  - `ALLOWED_ROOTS` padrão passou a incluir `/root/Uploads`;
+  - adicionado mount `${HOST_UPLOADS_DIR:-/root/Uploads}:/root/Uploads:${HOST_UPLOADS_MOUNT_MODE:-ro}`, em modo somente leitura por padrão.
+- Observação operacional: o MCP continua sem ferramenta de escrita de binários; a liberação permite listar/ler/diagnosticar arquivos em `/root/Uploads`, enquanto a substituição do `/root/MinecraftServer/bedrock_server` deve ocorrer por SSH/workflow administrativo apropriado.
+
+## 2026-06-18 22:17:00 UTC-3 — Script seguro para atualização do Bedrock Dedicated Server
+- Solicitação/contexto: após atualizar o MCP, `/root/Uploads` ficou acessível e foram localizados os pacotes `bedrock-server-1.26.20.5.zip` e `bedrock-server-1.26.30.5.zip`.
+- Implementado `tools/update_bedrock_server_binary.sh` para atualizar o Bedrock Dedicated Server a partir de um ZIP oficial com fluxo seguro:
+  - valida arquivo ZIP, diretório do servidor e dependências (`unzip`, `rsync`, `tar`, `systemctl` quando houver restart);
+  - descompacta em staging temporário;
+  - cria backup com manifesto, binário atual, bibliotecas `.so`, configs críticas e, opcionalmente, `worlds/`;
+  - preserva `worlds/`, `logging/`, `server.properties`, `allowlist.json`, `permissions.json` e arquivos locais críticos durante o `rsync`;
+  - reinicia `bedrock.service` e valida versão esperada no `bedrock.log` quando `--expected-version` é informado.
+- Implementado workflow manual `.github/workflows/update-bedrock-server.yml` para publicar o script no VPS e executar a atualização usando, por padrão, `/root/Uploads/bedrock-server-1.26.30.5.zip` e versão esperada `1.26.30`.
+- Observação: atualização do binário do servidor fica separada do workflow normal de publicação de Add-Ons, reduzindo risco de alterar runtime do Bedrock acidentalmente durante deploy de packs.
