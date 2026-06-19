@@ -1959,3 +1959,8 @@ Checklist executado no host via MCP readonly/projeto:
   - `packs/BP_Barco3Jogadores/manifest.json`: `0.1.74` -> `0.1.75` em `header.version` e `modules[].version`;
   - `packs/RP_Barco3Jogadores/manifest.json`: `0.1.74` -> `0.1.75` em `header.version` e `modules[].version`.
 - Próximo passo operacional: publicar/deploy dos packs atualizados no mundo ativo e reiniciar o Bedrock para confirmar ausência desses erros no `bedrock.log`.
+
+## 2026-06-18 23:47:00 UTC-3 — Correção de quoting na validação de versão do workflow
+- Problema observado no workflow `publish-server.yml`: a etapa `Validar versão mínima do servidor Bedrock` detectava corretamente `1.26.30.5` e requisito `1.26.30`, mas falhava por `SyntaxError` no Python inline porque `split(".")` chegava ao shell remoto como `split(.)`.
+- Correção aplicada: substituído o `python3 -c` embutido em string SSH por execução remota via heredoc (`bash -s` + `python3 - ... <<'PY'`), evitando perda de aspas no YAML/SSH/shell.
+- A comparação continua usando os três primeiros segmentos da versão, então `1.26.30.5` é considerado compatível com requisito `1.26.30`.

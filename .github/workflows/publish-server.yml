@@ -82,25 +82,45 @@ jobs:
       - name: Validar versão mínima do servidor Bedrock
         run: |
           ssh -i ~/.ssh/id_ed25519 -p "$VPS_PORT" "$VPS_USER@$VPS_HOST" \
-            "set -euo pipefail && \
-             LOG_FILE='/root/MinecraftServer/logging/bedrock.log' && \
-             required='$BEDROCK_REQUIRED_SERVER_VERSION' && \
-             if [ ! -f \"\$LOG_FILE\" ]; then \
-               echo '[erro] bedrock.log não encontrado para validar versão do servidor.' >&2; \
-               exit 1; \
-             fi && \
-             server_version=\$(sed -n 's/.*Version: //p' \"\$LOG_FILE\" | tail -n 1 | tr -d '\r') && \
-             if [ -z \"\$server_version\" ]; then \
-               echo '[erro] Não foi possível detectar a versão do Bedrock Dedicated Server no bedrock.log.' >&2; \
-               exit 1; \
-             fi && \
-             echo \"[info] Versão Bedrock Dedicated Server detectada: \$server_version\" && \
-             echo \"[info] Versão mínima requerida para clientes atuais: \$required\" && \
-             python3 -c 'import sys; from itertools import zip_longest; got=sys.argv[1].split(".")[:3]; req=sys.argv[2].split(".")[:3]; parse=lambda xs: tuple(int(x) for x in xs); sys.exit(0 if parse(got) >= parse(req) else 1)' \"\$server_version\" \"\$required\" || { \
-               echo '[erro] Servidor Bedrock abaixo da versão mínima requerida.' >&2; \
-               echo '[erro] Atualize o binário /root/MinecraftServer/bedrock_server antes do deploy para evitar falha de conexão InitialConnection-34 em clientes mais novos.' >&2; \
-               exit 1; \
-             }"
+            "BEDROCK_REQUIRED_SERVER_VERSION='$BEDROCK_REQUIRED_SERVER_VERSION' bash -s" <<'REMOTE'
+          set -euo pipefail
+
+          LOG_FILE='/root/MinecraftServer/logging/bedrock.log'
+          required="${BEDROCK_REQUIRED_SERVER_VERSION:?}"
+
+          if [ ! -f "$LOG_FILE" ]; then
+            echo '[erro] bedrock.log não encontrado para validar versão do servidor.' >&2
+            exit 1
+          fi
+
+          server_version=$(sed -n 's/.*Version: //p' "$LOG_FILE" | tail -n 1 | tr -d '\r')
+          if [ -z "$server_version" ]; then
+            echo '[erro] Não foi possível detectar a versão do Bedrock Dedicated Server no bedrock.log.' >&2
+            exit 1
+          fi
+
+          echo "[info] Versão Bedrock Dedicated Server detectada: $server_version"
+          echo "[info] Versão mínima requerida para clientes atuais: $required"
+
+          if ! python3 - "$server_version" "$required" <<'PY'
+          import sys
+
+          def parse_version(value: str) -> tuple[int, int, int]:
+              parts = value.split('.')[:3]
+              if len(parts) < 3:
+                  parts.extend(['0'] * (3 - len(parts)))
+              return tuple(int(part) for part in parts)
+
+          got = parse_version(sys.argv[1])
+          required = parse_version(sys.argv[2])
+          sys.exit(0 if got >= required else 1)
+          PY
+          then
+            echo '[erro] Servidor Bedrock abaixo da versão mínima requerida.' >&2
+            echo '[erro] Atualize o binário /root/MinecraftServer/bedrock_server antes do deploy para evitar falha de conexão InitialConnection-34 em clientes mais novos.' >&2
+            exit 1
+          fi
+          REMOTE
 
       - name: Validar mundo alvo ativo do Bedrock
         run: |
