@@ -1946,3 +1946,16 @@ Checklist executado no host via MCP readonly/projeto:
   - reinicia `bedrock.service` e valida versão esperada no `bedrock.log` quando `--expected-version` é informado.
 - Implementado workflow manual `.github/workflows/update-bedrock-server.yml` para publicar o script no VPS e executar a atualização usando, por padrão, `/root/Uploads/bedrock-server-1.26.30.5.zip` e versão esperada `1.26.30`.
 - Observação: atualização do binário do servidor fica separada do workflow normal de publicação de Add-Ons, reduzindo risco de alterar runtime do Bedrock acidentalmente durante deploy de packs.
+
+## 2026-06-18 23:34:00 UTC-3 — Pós-update Bedrock 1.26.30.5 e limpeza de erros de schema do Barco
+- Evidência recebida após execução de `tools/update_bedrock_server_binary.sh`: atualização do Bedrock Dedicated Server concluída com sucesso, com `Version: 1.26.30.5`, `Server started` e validação `[ok] Versão esperada encontrada no log: 1.26.30`.
+- Erros restantes no log são de schema dos Add-Ons, não da atualização do binário:
+  - `minecraft:pushable_by_entity | presets | child 'presets' not valid here` em `minecraftaddon:barco_3_jogadores` e `minecraftaddon:barco_simples`;
+  - `minecraft:buoyant | base_buoyancy | "base_buoyancy" should be between 0 and 1` nas duas entidades.
+- Correção aplicada em `packs/BP_Barco3Jogadores/entities/barco_3_jogadores.json` e `packs/BP_Barco3Jogadores/entities/barco_simples.json`:
+  - removido o subcampo inválido `presets` de `minecraft:pushable_by_entity`, deixando o componente como objeto vazio;
+  - ajustado `minecraft:buoyant.base_buoyancy` para `1.0`, dentro do intervalo aceito pelo servidor.
+- Versionamento pareado atualizado conforme regra do módulo:
+  - `packs/BP_Barco3Jogadores/manifest.json`: `0.1.74` -> `0.1.75` em `header.version` e `modules[].version`;
+  - `packs/RP_Barco3Jogadores/manifest.json`: `0.1.74` -> `0.1.75` em `header.version` e `modules[].version`.
+- Próximo passo operacional: publicar/deploy dos packs atualizados no mundo ativo e reiniciar o Bedrock para confirmar ausência desses erros no `bedrock.log`.
