@@ -1,0 +1,45 @@
+{
+  "format_version": 2,
+  "header": {
+    "name": "BP Misterio Historico",
+    "description": "Behavior Pack minimo do Add-On educativo Misterio Historico: progresso de pistas, diagnostico e conclusao.",
+    "uuid": "1a2294b1-75ba-4e9f-9840-f61b4e7b73bc",
+    "version": [
+      0,
+      1,
+      0
+    ],
+    "min_engine_version": [
+      1,
+      20,
+      0
+    ]
+  },
+  "modules": [
+    {
+      "type": "data",
+      "uuid": "5515de0d-a91d-40fe-8d51-ea632e2959d2",
+      "version": [
+        0,
+        1,
+        0
+      ]
+    }
+  ],
+  "dependencies": [
+    {
+      "uuid": "ee122762-e8b9-4f7e-a2f2-a3be6ec1e5d9",
+      "version": [
+        0,
+        1,
+        0
+      ]
+    }
+  ],
+  "metadata": {
+    "authors": [
+      "MinecraftAddOn"
+    ],
+    "license": "MIT"
+  }
+}

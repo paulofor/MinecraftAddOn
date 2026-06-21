@@ -1964,3 +1964,34 @@ Checklist executado no host via MCP readonly/projeto:
 - Problema observado no workflow `publish-server.yml`: a etapa `Validar versão mínima do servidor Bedrock` detectava corretamente `1.26.30.5` e requisito `1.26.30`, mas falhava por `SyntaxError` no Python inline porque `split(".")` chegava ao shell remoto como `split(.)`.
 - Correção aplicada: substituído o `python3 -c` embutido em string SSH por execução remota via heredoc (`bash -s` + `python3 - ... <<'PY'`), evitando perda de aspas no YAML/SSH/shell.
 - A comparação continua usando os três primeiros segmentos da versão, então `1.26.30.5` é considerado compatível com requisito `1.26.30`.
+
+## 2026-06-21 00:00:00 UTC-3 — Orientação educativa para novo Add-On familiar
+- Solicitação: sugerir ideias de funcionalidades educativas e interessantes para jovens de 16 e 18 anos jogando Minecraft em família.
+- Resposta planejada: atuar como educador experiente, priorizando propostas cooperativas, investigativas e compatíveis com Add-Ons, com destaque para pensamento computacional, ciência, sustentabilidade, economia e narrativa.
+- Observação: não houve alteração de packs, scripts, manifests, definições ou texturas; portanto, não foi necessário versionamento de módulos BP/RP nem publicação via MCP.
+
+## 2026-06-21 00:00:00 UTC-3 — Plano passo a passo para Add-On Mistério Histórico
+- Solicitação: detalhar como implementar e testar passo a passo a ideia de Add-On educativo “Mistério Histórico”.
+- Documento criado: `docs/desenvolvimentos/projetos/plano_misterio_historico.md`, com plano estruturado em sprints, passos de implementação, testes por etapa e registro pós-conclusão obrigatório em cada sprint.
+- Observação: o plano recomenda começar sem texturas customizadas para reduzir risco; caso texturas sejam criadas no futuro, deve ser seguido o fluxo exclusivo via MCP e sem commit de arquivos `.png`.
+
+## 2026-06-21 00:00:00 UTC-3 — Implementação da Sprint 0 do Add-On Mistério Histórico
+- Solicitação: implementar a Sprint 0 do plano “Mistério Histórico” e usar MCP Server caso fosse necessário enviar arquivos PNG.
+- Documento criado: `docs/desenvolvimentos/projetos/misterio_historico_sprint_0.md`, contendo nome provisório, público-alvo, objetivo educativo, tema fictício, pergunta central, hipóteses, pistas, fluxo jogável, critérios de vitória, critérios de avanço e testes manuais.
+- Resultado: Sprint 0 concluída como documentação de pré-produção; não houve criação/alteração de PNG, packs, scripts, manifests ou definições, portanto não foi necessário upload via MCP nem versionamento BP/RP.
+
+## 2026-06-21 00:00:00 UTC-3 — Implementação da Sprint 1 do Add-On Mistério Histórico
+- Solicitação: implementar a Sprint 1 do plano “Mistério Histórico”.
+- Documento criado: `docs/desenvolvimentos/projetos/misterio_historico_sprint_1.md`, contendo protótipo vanilla sem programação obrigatória, mapa mínimo, áreas, distribuição das 9 pistas, textos prontos para placas/livros, comandos simples opcionais, roteiro de teste e critérios de avanço.
+- Resultado: Sprint 1 concluída como especificação operacional para construir e testar o protótipo no mundo; não houve criação/alteração de PNG, packs, scripts, manifests ou definições, portanto não foi necessário upload via MCP nem versionamento BP/RP.
+
+## 2026-06-21 00:00:00 UTC-3 — Esclarecimento sobre ausência de código no Mistério Histórico
+- Solicitação: esclarecer se as sprints já implementadas geraram código executável.
+- Resposta: Sprint 0 e Sprint 1 foram deliberadamente documentais/prototipais, conforme o plano: Sprint 0 define escopo narrativo e Sprint 1 define protótipo vanilla sem programação obrigatória; por isso ainda não foram criados BP/RP, scripts, manifests, funções `.mcfunction` ou texturas.
+- Próximo passo recomendado: iniciar a Sprint 2 para gerar código do Behavior Pack mínimo, com funções de init/reset/diagnóstico/finalização, tags/scoreboard e manifests pareados BP/RP.
+
+## 2026-06-21 00:00:00 UTC-3 — Implementação da Sprint 2 do Add-On Mistério Histórico
+- Solicitação: implementar a Sprint 2 do plano “Mistério Histórico”, gerando código do Add-On.
+- Arquivos criados: `packs/BP_MisterioHistorico/manifest.json`, funções `.mcfunction` de init/reset/diagnóstico/finalização, funções para registrar as 9 pistas, funções para escolher 3 hipóteses, `packs/RP_MisterioHistorico/manifest.json` e `packs/RP_MisterioHistorico/texts/en_US.lang`.
+- Versionamento: BP e RP pareados criados na versão `0.1.0` em `header.version` e `modules[].version`.
+- Validação local: manifests JSON validados com `python3 -m json.tool`; não houve arquivos PNG, logo não foi necessário upload via MCP.

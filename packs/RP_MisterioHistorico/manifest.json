@@ -1,0 +1,35 @@
+{
+  "format_version": 2,
+  "header": {
+    "name": "RP Misterio Historico",
+    "description": "Resource Pack pareado do Add-On educativo Misterio Historico, sem texturas customizadas na Sprint 2.",
+    "uuid": "ee122762-e8b9-4f7e-a2f2-a3be6ec1e5d9",
+    "version": [
+      0,
+      1,
+      0
+    ],
+    "min_engine_version": [
+      1,
+      20,
+      0
+    ]
+  },
+  "modules": [
+    {
+      "type": "resources",
+      "uuid": "f9d3a4c7-a10a-4257-8cf2-0f321af4ee12",
+      "version": [
+        0,
+        1,
+        0
+      ]
+    }
+  ],
+  "metadata": {
+    "authors": [
+      "MinecraftAddOn"
+    ],
+    "license": "MIT"
+  }
+}
