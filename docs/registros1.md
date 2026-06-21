@@ -1995,3 +1995,24 @@ Checklist executado no host via MCP readonly/projeto:
 - Arquivos criados: `packs/BP_MisterioHistorico/manifest.json`, funções `.mcfunction` de init/reset/diagnóstico/finalização, funções para registrar as 9 pistas, funções para escolher 3 hipóteses, `packs/RP_MisterioHistorico/manifest.json` e `packs/RP_MisterioHistorico/texts/en_US.lang`.
 - Versionamento: BP e RP pareados criados na versão `0.1.0` em `header.version` e `modules[].version`.
 - Validação local: manifests JSON validados com `python3 -m json.tool`; não houve arquivos PNG, logo não foi necessário upload via MCP.
+
+## 2026-06-21 00:00:00 UTC-3 — Verificação de PNG no módulo Mistério Histórico
+- Solicitação: confirmar se há arquivos PNG para enviar via MCP após a Sprint 2.
+- Verificação local: executado `find packs/BP_MisterioHistorico packs/RP_MisterioHistorico -type f -name '*.png' -print`, sem retorno de arquivos.
+- Resultado: não há PNG no módulo `MisterioHistorico`; portanto, não há imagem/textura para enviar via MCP neste momento.
+
+## 2026-06-21 13:10:00 UTC-3 — Verificação pós-publicação do Mistério Histórico via MCP
+- Solicitação: após publicação das alterações, usar o MCP Server para verificar se o módulo `MisterioHistorico` ficou ok e orientar teste pelo jogo.
+- MCP tools disponíveis confirmadas via `tools/list`: `list_directory`, `read_file`, `write_png_base64`, `restart_bedrock` e `run_read_command`.
+- Evidência de publicação no mundo ativo: `BP_MisterioHistorico` encontrado em `/root/MinecraftServer/worlds/Bedrock level/behavior_packs` e `RP_MisterioHistorico` encontrado em `/root/MinecraftServer/worlds/Bedrock level/resource_packs`.
+- Manifests remotos lidos com sucesso em `/root/MinecraftServer/worlds/Bedrock level/behavior_packs/BP_MisterioHistorico/manifest.json` e `/root/MinecraftServer/worlds/Bedrock level/resource_packs/RP_MisterioHistorico/manifest.json`, ambos na versão `0.1.0`.
+- Funções remotas confirmadas: diretório `functions/misterio_historico` contém `init.mcfunction`, `reset.mcfunction`, `diagnostico.mcfunction`, `finalizar.mcfunction`, subdiretório `pistas` com 9 funções e subdiretório `conclusoes` com 3 funções.
+- Log remoto `/root/MinecraftServer/logging/bedrock.log`: servidor reiniciado em `2026-06-21 16:04:17 UTC`, versão `1.26.30.5`, mundo `Bedrock level`, pack stack carregou `BP Misterio Historico` versão `0.1.0` em `worlds/Bedrock level/behavior_packs/BP_MisterioHistorico`, e o servidor iniciou sem erro específico do módulo nas linhas consultadas.
+- Observação: o comando `grep` não é permitido pelo MCP readonly atual; a validação de log foi feita por `tail -n 240` e inspeção das linhas retornadas.
+
+## 2026-06-21 13:25:00 UTC-3 — Ajuste do Mistério Histórico para progresso individual por jogador
+- Solicitação: permitir que cada jogador viva a aventura individualmente, mesmo entrando em horários diferentes.
+- Alteração aplicada: funções `.mcfunction` do módulo `BP_MisterioHistorico` passaram a usar `@s` em vez de `@a` para estado, mensagens, pistas, conclusões, diagnóstico, reset e finalização.
+- Orientação operacional: em command blocks do mundo, usar `execute as @p[...] run function misterio_historico/...` para que `@s` represente o jogador interagente; no chat, `/function misterio_historico/...` afeta o próprio executor.
+- Versionamento: `packs/BP_MisterioHistorico/manifest.json` e `packs/RP_MisterioHistorico/manifest.json` atualizados de `0.1.0` para `0.1.1` em `header.version` e `modules[].version`; dependência BP→RP também atualizada para `0.1.1`.
+- Observação: não houve criação/alteração de PNG, portanto não há upload via MCP nesta alteração.

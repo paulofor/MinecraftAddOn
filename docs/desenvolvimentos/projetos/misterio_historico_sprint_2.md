@@ -53,3 +53,30 @@ Transformar o protótipo vanilla da Sprint 1 em um Add-On mínimo capaz de regis
 - O que foi feito: criado BP mínimo, RP pareado, manifests versionados em `0.1.0`, funções de inicialização, reset, diagnóstico, finalização, registro das 9 pistas e seleção de 3 hipóteses.
 - O que ficou faltando: publicar no servidor Bedrock, conectar as funções aos pontos físicos do protótipo e validar o `bedrock.log` após ativação no mundo.
 - Impedimentos/bloqueios: nenhum. Não houve criação ou alteração de arquivos PNG; portanto, não foi necessário upload via MCP.
+
+## Ajuste de autonomia por jogador — versão 0.1.1
+Após a primeira publicação, as funções foram ajustadas para evitar progresso compartilhado quando jogadores entram em horários diferentes.
+
+### Mudança aplicada
+- As funções de estado passaram a operar sobre `@s` em vez de `@a`.
+- Com isso, pistas, conclusões, reset, diagnóstico e finalização afetam somente o jogador executor.
+- Para command blocks no mundo, usar sempre o padrão `execute as @p[...] run function ...`, garantindo que `@s` seja o jogador mais próximo/interagente.
+
+### Exemplo de command block por pista
+```mcfunction
+execute as @p[r=3] run function misterio_historico/pistas/p1_diario_moradora
+```
+
+### Exemplo de command block para diagnóstico
+```mcfunction
+execute as @p[r=3] run function misterio_historico/diagnostico
+```
+
+### Exemplo de uso direto no chat
+Se o jogador executar diretamente no chat, também funciona de forma individual:
+
+```mcfunction
+/function misterio_historico/init
+/function misterio_historico/pistas/p1_diario_moradora
+/function misterio_historico/diagnostico
+```
