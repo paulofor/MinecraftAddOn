@@ -16,6 +16,9 @@ execute as @s[scores={mh_pistas=6..},tag=mh_conclusao_b] run tellraw @s {"rawtex
 execute as @s[scores={mh_pistas=6..},tag=mh_conclusao_c] run title @s title §aInvestigação concluída
 execute as @s[scores={mh_pistas=6..},tag=mh_conclusao_c] run title @s subtitle §fVersão defendida: falha nos canais
 execute as @s[scores={mh_pistas=6..},tag=mh_conclusao_c] run tellraw @s {"rawtext":[{"text":"[MisterioHistorico] Conclusao C registrada. Debate final: quais 3 evidencias sustentam falha tecnica, e quais evidencias mostram participacao de decisoes politicas?"}]}
+execute as @s[scores={mh_pistas=6..},tag=mh_conclusao_a] run function misterio_historico/reflexao_final
 execute as @s[scores={mh_pistas=6..},tag=mh_conclusao_a] run tag @s add mh_finalizado
+execute as @s[scores={mh_pistas=6..},tag=mh_conclusao_b] run function misterio_historico/reflexao_final
 execute as @s[scores={mh_pistas=6..},tag=mh_conclusao_b] run tag @s add mh_finalizado
+execute as @s[scores={mh_pistas=6..},tag=mh_conclusao_c] run function misterio_historico/reflexao_final
 execute as @s[scores={mh_pistas=6..},tag=mh_conclusao_c] run tag @s add mh_finalizado

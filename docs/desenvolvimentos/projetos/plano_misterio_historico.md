@@ -113,9 +113,9 @@ Os jogadores chegam a uma ilha com ruínas de uma antiga comunidade. Há versõe
 4. Confirmar se o final recompensa argumentação, não apenas clique correto.
 
 **Registro pós-conclusão:**
-- O que foi feito:
-- O que ficou faltando:
-- Impedimentos/bloqueios:
+- O que foi feito: criado roteiro de teste com jogadores, métricas obrigatórias, rubrica pedagógica e entrevista pós-teste; adicionada função de reflexão final para exigir defesa com evidências antes da conclusão; finalização passou a chamar a reflexão quando uma hipótese é escolhida.
+- O que ficou faltando: executar uma sessão real com jogadores, preencher tempos/frases observadas e calibrar pistas conforme os dados coletados.
+- Impedimentos/bloqueios: sem sessão síncrona com jogadores disponível no ambiente de desenvolvimento; a Sprint 4 foi preparada e instrumentada, mas a validação humana precisa ocorrer no mundo ativo.
 
 ### Sprint 5 — Publicação, diagnóstico e manutenção
 **Objetivo:** publicar a versão jogável e criar rotina de validação para evitar regressões.
@@ -134,9 +134,9 @@ Os jogadores chegam a uma ilha com ruínas de uma antiga comunidade. Há versõe
 4. Confirmar que resetar a missão permite jogá-la novamente.
 
 **Registro pós-conclusão:**
-- O que foi feito:
-- O que ficou faltando:
-- Impedimentos/bloqueios:
+- O que foi feito: criada checklist de regressão e manutenção da Sprint 5; executadas validações locais dos manifests; MCP readonly remoto validado; manifests remotos do mundo ativo e `bedrock.log` foram consultados para diagnosticar estado de publicação.
+- O que ficou faltando: publicar efetivamente a versão local `0.1.2` no host e reiniciar/revalidar o Bedrock após o deploy oficial; o mundo ativo ainda reporta `BP_MisterioHistorico`/`RP_MisterioHistorico` em `0.1.1`.
+- Impedimentos/bloqueios: o MCP disponível permite diagnóstico e upload de PNG, mas não escrita/sincronização de arquivos texto de packs; este checkout local não possui remote Git/SSH configurado para acionar o fluxo oficial de publicação.
 
 ## Primeira versão recomendada
 Para começar com baixo risco, implemente primeiro uma versão sem texturas customizadas e com poucos elementos:
