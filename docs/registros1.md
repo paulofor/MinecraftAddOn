@@ -2229,3 +2229,10 @@ Checklist executado no host via MCP readonly/projeto:
 - Diagnóstico: o workflow existe, mas a instância remota permanecer em `0.5.0` indica que ele não foi executado com sucesso após a alteração `0.5.1`, ou a alteração ainda não chegou ao branch/ambiente usado pelo workflow.
 - Ajustado `.github/workflows/publish-mcp-server.yml` para validar explicitamente a versão publicada via `http://127.0.0.1:80/health`, comparando o campo `version` retornado com o `SERVER_VERSION` lido de `infra/mcp-bedrock-readonly/server.py`; isso evita deploy verde quando o endpoint remoto continua em versão antiga.
 - Próximo passo operacional: executar manualmente o workflow `Publicar MCP Bedrock no servidor VPS` ou fazer push de alteração em `infra/**`/workflow para disparar o rebuild; após concluir, validar externamente `http://186.202.209.206/health` esperando `0.5.1`.
+
+## 2026-06-22 17:53 UTC-3 — Correção do build MCP: dependência zlib para amulet-leveldb
+- Usuário trouxe log do GitHub Actions mostrando falha no build do `amulet-leveldb==1.0.6`: `/usr/bin/ld: cannot find -lz`, seguida de `ERROR: Failed building wheel for amulet-leveldb` no estágio `wheel-builder`.
+- Diagnóstico: o estágio `wheel-builder` tinha `g++`, mas faltava a biblioteca de desenvolvimento `zlib1g-dev`, necessária para fornecer `libz`/headers durante a linkedição do módulo nativo `_leveldb`.
+- Ajustado `infra/mcp-bedrock-readonly/Dockerfile` para instalar `g++ zlib1g-dev` no estágio `wheel-builder`.
+- Ajustado também o estágio final para instalar explicitamente `zlib1g`, garantindo a biblioteca runtime do wheel instalado.
+- Validação local tentada com `docker build -f infra/mcp-bedrock-readonly/Dockerfile -t mcp-bedrock-readonly:test .`, mas o ambiente local não possui `docker` instalado (`docker: command not found`); a validação efetiva deve ocorrer no GitHub Actions/workflow de publicação.

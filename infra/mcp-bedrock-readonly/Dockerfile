@@ -1,7 +1,7 @@
 FROM python:3.12-slim AS wheel-builder
 
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends g++ && \
+    apt-get install -y --no-install-recommends g++ zlib1g-dev && \
     rm -rf /var/lib/apt/lists/*
 
 RUN pip wheel --no-cache-dir --wheel-dir /wheels amulet-leveldb==1.0.6
@@ -12,6 +12,10 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1
 
 WORKDIR /app
+
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends zlib1g && \
+    rm -rf /var/lib/apt/lists/*
 
 COPY --from=wheel-builder /wheels /wheels
 RUN pip install --no-cache-dir /wheels/*.whl && \
