@@ -2073,3 +2073,10 @@ Checklist executado no host via MCP readonly/projeto:
 - Atualizado `packs/BP_MisterioHistorico/scripts/main.js` para aceitar tanto `minecraft:stonecutter` quanto `minecraft:stonecutter_block` como acionadores da pista P6, preservando compatibilidade com mundos/versões que reportem qualquer um dos identificadores.
 - Incrementadas as versões pareadas dos manifests `packs/BP_MisterioHistorico/manifest.json` e `packs/RP_MisterioHistorico/manifest.json` para `0.1.7`, conforme regra de versionamento BP/RP do módulo.
 - Evidência de origem: log pós-deploy apontou `Function misterio_historico/montar_area_interativa failed to load correctly` e `command failed to parse` na linha do `setblock` da pista P6.
+
+## 2026-06-22 05:55 UTC-3 — Melhoria visual das ruínas do Mistério Histórico
+- Melhorada a função `packs/BP_MisterioHistorico/functions/misterio_historico/montar_area_interativa.mcfunction` para gerar uma área mais narrativa: piso irregular, paredes quebradas, colunas, cisterna parcialmente seca, canal bloqueado, arquivo/templo e sala final em plataforma de pedra.
+- Atualizada a função `packs/BP_MisterioHistorico/functions/misterio_historico/desmontar_area_interativa.mcfunction` para limpar o novo volume aproximado de `19x10x19`.
+- Mantidos apenas blocos vanilla/textuais no Git; não houve criação ou alteração de PNG.
+- Atualizada a documentação `docs/desenvolvimentos/projetos/misterio_historico_interacoes_mundo.md` com a descrição visual das ruínas automáticas e novo volume aproximado de montagem.
+- Incrementadas as versões pareadas dos manifests `packs/BP_MisterioHistorico/manifest.json` e `packs/RP_MisterioHistorico/manifest.json` para `0.1.8`, conforme regra de versionamento BP/RP do módulo.
