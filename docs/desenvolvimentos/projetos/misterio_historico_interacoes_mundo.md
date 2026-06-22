@@ -10,13 +10,44 @@ Em modo operador/criativo, posicione-se no local desejado e execute:
 /function misterio_historico/montar_area_interativa
 ```
 
-Essa função corta/limpa o entorno e cria uma base plana de `smooth_stone` ao redor do jogador, com estações de pista, mesa de diagnóstico, sala das hipóteses e bloco de finalização. A arena fica salva no mundo como qualquer construção normal até alguém quebrar os blocos ou executar `/function misterio_historico/desmontar_area_interativa` no mesmo ponto de referência. Depois, a área pode ser decorada manualmente com ruínas, placas, caminhos e iluminação.
+Essa função corta/limpa o entorno e cria uma pequena área de ruínas ao redor do jogador, com piso irregular, paredes quebradas, colunas, cisternas, canal bloqueado, arquivo/templo, estações de pista, mesa de diagnóstico, sala das hipóteses e bloco de finalização. A arena fica salva no mundo como qualquer construção normal até alguém quebrar os blocos ou executar `/function misterio_historico/desmontar_area_interativa` no mesmo ponto de referência. Depois, a área ainda pode ser complementada manualmente com placas, caminhos, iluminação e decoração adicional.
 
 ## Terraplanagem automática
-- A montagem automática limpa um volume aproximado de `17x10x17` blocos ao redor do jogador.
+- A montagem automática limpa um volume aproximado de `19x10x19` blocos ao redor do jogador.
 - A função corta árvores, morros e blocos soltos nesse volume, abrindo espaço de jogo.
-- A função também aterra uma base de `smooth_stone` de 3 blocos de profundidade, reduzindo buracos e desníveis.
+- A função também aterra uma base de `smooth_stone` de 3 blocos de profundidade e cria caminhos/escombros com `cobblestone` e `gravel`, reduzindo buracos e dando aparência de ruína.
 - Não execute perto de construções que você queira preservar.
+
+
+## Visual das ruínas automáticas
+- **Acampamento inicial:** lectern, lodestone, grindstone, baú e barril em uma entrada iluminada.
+- **Praça antiga:** caminhos cruzados de pedra, paredes quebradas, colunas incompletas e um marco central de pedra.
+- **Cisternas e canal:** reservatório parcialmente seco com pouca água, cascalho e blocos indicando canal obstruído.
+- **Arquivo/templo:** base de pedra com cantos elevados para sugerir uma construção antiga desabada.
+- **Sala final:** plataforma de pedra com blocos coloridos para as três hipóteses e diamond_block de validação.
+
+
+## Local recomendado no mundo atual (MCP readonly)
+Consulta realizada via MCP readonly em 2026-06-22 indicou atividade recente de testes de barco em torno de `x=-529, z=354` e entre `x=0..73, z=354..383`. Para evitar sobrepor essa área, o ponto recomendado para montar a arena do Mistério Histórico é:
+
+```text
+Centro sugerido: x=120, y=64, z=430
+Área afetada aproximada: x=111..129, y=61..70, z=421..439
+```
+
+Motivos da escolha:
+- fica a aproximadamente 90 blocos do agrupamento de barcos mais próximo observado nos logs, reduzindo risco de sobrescrever testes existentes;
+- ainda permanece relativamente perto da zona de atividade do mundo, facilitando deslocamento dos jogadores;
+- o volume automático da arena (`19x10x19`) cabe integralmente nessa faixa se o jogador executar a função no centro sugerido.
+
+Para montar nesse ponto, um operador pode entrar no mundo, ir para o centro sugerido e executar:
+
+```mcfunction
+/tp @s 120 64 430
+/function misterio_historico/montar_area_interativa
+```
+
+Antes de executar, confira visualmente no jogo se não há construção importante nessa área. O MCP readonly permite inferir posições por logs e arquivos, mas não oferece uma leitura visual/bloco-a-bloco confiável do terreno.
 
 ## Como montar a área jogável manualmente
 Coloque os blocos abaixo em locais narrativamente coerentes. O jogador deve clicar/interagir com cada bloco para acionar a função correspondente.
@@ -29,7 +60,7 @@ Coloque os blocos abaixo em locais narrativamente coerentes. O jogador deve clic
 | `bell` | `misterio_historico/pistas/p3_assembleia` | Ponto de assembleia pública |
 | `chiseled_bookshelf` | `misterio_historico/pistas/p4_ata_conselho` | Arquivo com ata incompleta do conselho |
 | `lever` | `misterio_historico/pistas/p5_chave_comporta` | Chave de comporta quebrada |
-| `stonecutter` | `misterio_historico/pistas/p6_canal_bloqueado` | Mecanismo de canal subterrâneo bloqueado |
+| `stonecutter_block` / `stonecutter` | `misterio_historico/pistas/p6_canal_bloqueado` | Mecanismo de canal subterrâneo bloqueado |
 | `composter` | `misterio_historico/pistas/p7_registro_chuva` | Vestígio de chuva/cultivo |
 | `chest` | `misterio_historico/pistas/p8_rotas_migracao` | Baú com mapas de rotas de migração |
 | `bookshelf` | `misterio_historico/pistas/p9_mural_sintese` | Mural/estante de síntese |

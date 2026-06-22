@@ -2067,3 +2067,37 @@ Checklist executado no host via MCP readonly/projeto:
 - Atualizada documentação `docs/desenvolvimentos/projetos/misterio_historico_interacoes_mundo.md` com seção de terraplanagem automática e aviso para não executar perto de construções preservadas.
 - Versionamento pareado atualizado por alteração de módulo: BP e RP `MisterioHistorico` de `0.1.5` para `0.1.6`.
 - Observação: não houve alteração/criação de PNG; nenhuma publicação de textura via MCP foi necessária.
+
+## 2026-06-22 05:30 UTC-3 — Correção de parse da arena Mistério Histórico
+- Corrigida a função `packs/BP_MisterioHistorico/functions/misterio_historico/montar_area_interativa.mcfunction` para usar `minecraft:stonecutter_block` no ponto da pista P6, evitando o erro de parse observado no Bedrock ao carregar `minecraft:stonecutter` em `setblock`.
+- Atualizado `packs/BP_MisterioHistorico/scripts/main.js` para aceitar tanto `minecraft:stonecutter` quanto `minecraft:stonecutter_block` como acionadores da pista P6, preservando compatibilidade com mundos/versões que reportem qualquer um dos identificadores.
+- Incrementadas as versões pareadas dos manifests `packs/BP_MisterioHistorico/manifest.json` e `packs/RP_MisterioHistorico/manifest.json` para `0.1.7`, conforme regra de versionamento BP/RP do módulo.
+- Evidência de origem: log pós-deploy apontou `Function misterio_historico/montar_area_interativa failed to load correctly` e `command failed to parse` na linha do `setblock` da pista P6.
+
+## 2026-06-22 05:55 UTC-3 — Melhoria visual das ruínas do Mistério Histórico
+- Melhorada a função `packs/BP_MisterioHistorico/functions/misterio_historico/montar_area_interativa.mcfunction` para gerar uma área mais narrativa: piso irregular, paredes quebradas, colunas, cisterna parcialmente seca, canal bloqueado, arquivo/templo e sala final em plataforma de pedra.
+- Atualizada a função `packs/BP_MisterioHistorico/functions/misterio_historico/desmontar_area_interativa.mcfunction` para limpar o novo volume aproximado de `19x10x19`.
+- Mantidos apenas blocos vanilla/textuais no Git; não houve criação ou alteração de PNG.
+- Atualizada a documentação `docs/desenvolvimentos/projetos/misterio_historico_interacoes_mundo.md` com a descrição visual das ruínas automáticas e novo volume aproximado de montagem.
+- Incrementadas as versões pareadas dos manifests `packs/BP_MisterioHistorico/manifest.json` e `packs/RP_MisterioHistorico/manifest.json` para `0.1.8`, conforme regra de versionamento BP/RP do módulo.
+
+## 2026-06-22 06:15 UTC-3 — Escolha de local sugerido para arena Mistério Histórico
+- Consultado o MCP readonly do servidor Bedrock (`tools/list`, `list_directory`, `read_file` e `run_read_command tail`) para avaliar o mundo ativo `Bedrock level` e os logs recentes.
+- Evidência observada: testes/entidades de barco aparecem nos logs em torno de `x=-529, z=354` e no agrupamento `x=0..73, z=354..383`; por isso, a arena não deve ser montada nessa faixa.
+- Local sugerido para montagem manual por operador: centro `x=120, y=64, z=430`, afetando aproximadamente `x=111..129`, `y=61..70`, `z=421..439` com o volume `19x10x19` da função atual.
+- Atualizada a documentação `docs/desenvolvimentos/projetos/misterio_historico_interacoes_mundo.md` com o local recomendado, justificativa e comando de teleporte/função.
+- Observação: o MCP disponível é readonly para leitura de mundo/logs; a recomendação foi inferida por logs e deve ser confirmada visualmente no jogo antes de executar a montagem.
+
+## 2026-06-22 06:35 UTC-3 — Tool MCP para sugerir local de arena
+- Atualizado `infra/mcp-bedrock-readonly/server.py` para versão `0.4.0`, adicionando a tool `suggest_arena_location`.
+- A nova tool recebe caminho do mundo, caminho do log, tamanho da arena, `preferred_y`, margem e limites de leitura; ela lê coordenadas recentes no `bedrock.log`, calcula uma área recente observada e retorna `recommended_center`, `affected_area`, confiança, justificativas, alertas e comandos de operador.
+- A implementação permanece readonly: não altera o mundo e não executa comandos dentro do Bedrock; a recomendação deve ser confirmada visualmente em jogo.
+- Atualizada a documentação `docs/desenvolvimentos/projetos/mcp_servidor_bedrock_readonly.md` com a nova ferramenta, parâmetros, resposta e limitações.
+- Validação local executada com log temporário sintético e import direto do servidor MCP para confirmar retorno estruturado da sugestão.
+
+## 2026-06-22 06:55 UTC-3 — Acesso MCP bloco-a-bloco ao mundo Bedrock
+- Atualizado `infra/mcp-bedrock-readonly/server.py` para versão `0.5.0`, adicionando as tools `get_block` e `get_block_region` para leitura readonly de blocos por coordenadas absolutas no LevelDB do mundo.
+- Implementado parser inicial de subchunks Bedrock com `plyvel`, chaves de subchunk, paleta NBT little-endian, índices por coordenada local, snapshot temporário opcional (`use_snapshot=true` por padrão) e limite `MAX_BLOCK_REGION_VOLUME` para evitar respostas grandes.
+- Atualizado `infra/mcp-bedrock-readonly/Dockerfile` para instalar `libleveldb1d` e `plyvel==1.5.1`, dependência necessária para abrir LevelDB em modo readonly.
+- Atualizada a documentação `docs/desenvolvimentos/projetos/mcp_servidor_bedrock_readonly.md` com exemplos de `get_block`, `get_block_region`, paginação por região e limitações conhecidas.
+- Observação: a leitura é readonly e não substitui confirmação visual em casos de consistência forte; recomenda-se usar snapshot/cópia ou servidor parado para inspeções críticas.
