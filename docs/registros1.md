@@ -2132,3 +2132,107 @@ Checklist executado no host via MCP readonly/projeto:
 - O estágio final permanece baseado em `python:3.12-slim` e instala apenas o wheel gerado, evitando depender do compilador em runtime.
 - A falha tratada foi `error: command 'g++' failed: No such file or directory` durante `pip install`/build wheel do `amulet-leveldb`.
 - Observação: não houve alteração/criação de PNG; nenhuma publicação de textura via MCP foi necessária.
+
+## 2026-06-22 16:57 UTC-3 — Orientação para recuperação/diagnóstico do LevelDB Bedrock
+- Registrada orientação operacional solicitada sobre como tratar falhas de leitura LevelDB do mundo Bedrock via MCP, incluindo distinção entre corrupção real do banco e incompatibilidade da biblioteca leitora.
+- Recomendação principal: antes de qualquer reparo destrutivo, parar o servidor Bedrock, fazer backup integral de `/root/MinecraftServer/worlds/Bedrock level`, verificar integridade do host/disco e testar leitura em cópia/snapshot do mundo.
+- Para o erro já observado anteriormente (`Corruption: bad block type`), a causa provável registrada é incompatibilidade do leitor LevelDB genérico com o formato Bedrock; a correção preferencial é usar o MCP atualizado com `amulet-leveldb` e parser de subchunks corrigido, não apagar arquivos `.ldb`.
+- Para erro de arquivos `.ldb` ausentes, a recomendação registrada é restaurar o diretório `db/` inteiro a partir de backup consistente do mundo; copiar arquivos isolados ou remover MANIFEST/LOG sem backup pode agravar perda de chunks.
+- Próximo passo sugerido: validar no host se o MCP readonly em produção já está rodando a imagem corrigida e, se necessário, redeployar antes de tentar nova inspeção bloco-a-bloco.
+
+## 2026-06-22 17:00 UTC-3 — Verificação do erro atual do LevelDB via MCP
+- Consultado o MCP readonly remoto em `http://186.202.209.206/mcp` com `tools/list`, confirmando que o endpoint está acessível e que as tools de leitura continuam disponíveis.
+- Executado `get_block` no mundo `/root/MinecraftServer/worlds/Bedrock level`, coordenada `x=0, y=64, z=0`, dimensão `0`, com `use_snapshot=true`; o erro atual retornado foi `Corruption: 31 missing files; e.g.: /tmp/bedrock-leveldb-snapshot-po_vdg53/db/064603.ldb`.
+- Repetido `get_block` com `use_snapshot=false`; o erro atual retornado foi `Corruption: 31 missing files; e.g.: /root/MinecraftServer/worlds/Bedrock level/db/064603.ldb`.
+- Consultado o diretório `/root/MinecraftServer/worlds/Bedrock level/db`; o arquivo `064603.ldb` citado no erro não aparece na listagem retornada, enquanto há arquivos próximos como `064602.ldb` e `064609.ldb`.
+- Consultado `CURRENT`, que aponta para `MANIFEST-065595`; a falha atual indica referência a arquivos LevelDB ausentes, não o erro anterior `Corruption: bad block type`.
+- Conclusão operacional: neste momento o bloqueio da leitura bloco-a-bloco parece ser consistência/cópia/manifesto do LevelDB com arquivos ausentes, possivelmente agravado por leitura com servidor ativo e AutoCompaction em execução; próximo passo seguro é validar com o Bedrock parado ou restaurar backup consistente do mundo antes de qualquer tentativa de reparo.
+
+## 2026-06-22 17:04 UTC-3 — Plano de ação para usuário recuperar leitura LevelDB
+- Registrada resposta operacional ao usuário sobre o que precisa ser feito após a verificação do erro atual `Corruption: 31 missing files` no LevelDB do mundo Bedrock.
+- Ação 1 recomendada: parar o servidor Bedrock antes de nova leitura/reparo para evitar AutoCompaction e alterações concorrentes no diretório `db/`.
+- Ação 2 recomendada: fazer backup integral do mundo `/root/MinecraftServer/worlds/Bedrock level` antes de qualquer intervenção.
+- Ação 3 recomendada: com o servidor parado, executar novamente `get_block` via MCP para distinguir inconsistência causada por leitura concorrente de corrupção real persistente.
+- Ação 4 recomendada: se o erro persistir com o servidor parado, restaurar o mundo/pasta `db/` a partir de backup consistente; não apagar nem recriar manualmente arquivos `.ldb`, `CURRENT`, `MANIFEST` ou `LOG`.
+- Ação 5 recomendada: depois de restaurar/validar o mundo, subir o servidor e repetir a inspeção bloco-a-bloco via MCP.
+
+## 2026-06-22 17:05 UTC-3 — Correção operacional: Bedrock não roda em container
+- Corrigida a orientação anterior do plano de ação LevelDB: o servidor Bedrock do host não deve ser tratado como container para parada/início do serviço.
+- A ação correta é parar/iniciar o processo ou serviço Bedrock diretamente no host em `/root/MinecraftServer`, usando o mecanismo real disponível no servidor (por exemplo serviço systemd, script operacional do host ou encerramento controlado do processo), e não comandos `docker stop`/`docker start` para o Bedrock.
+- Mantém-se a recomendação central: parar o Bedrock antes de testar/reparar o LevelDB, fazer backup integral do mundo, retestar `get_block` com o servidor parado e restaurar backup consistente se o erro `Corruption: 31 missing files` persistir.
+
+## 2026-06-22 17:09 UTC-3 — Verificação MCP readonly após correção de orientação
+- Atendida solicitação para verificar o estado atual via MCP Server e executar o que fosse possível sem ação destrutiva.
+- `tools/list` confirmou disponibilidade de `list_directory`, `read_file`, `run_read_command`, `get_block`, `get_block_region`, `suggest_arena_location` e `restart_bedrock`.
+- `bedrock.log` confirma que o Bedrock roda como `bedrock.service` no host, com mensagens `Stopping bedrock.service`, `Stopped bedrock.service` e `Started bedrock.service`; portanto, a orientação correta é processo/serviço do host, não container Bedrock.
+- O log também confirma servidor ativo em `Version: 1.26.30.5`, mundo `Bedrock level`, abertura de `worlds/Bedrock level/db`, AutoCompaction recorrente e conexão/desconexão recente do jogador `Buck9523` às 17:04 UTC.
+- Nova tentativa de `get_block` em `x=0, y=64, z=0`, dimensão `0`, retornou `Corruption: 43 missing files; e.g.: /root/MinecraftServer/worlds/Bedrock level/db/064602.ldb` com `use_snapshot=false`.
+- A mesma tentativa com `use_snapshot=true` retornou `Corruption: 43 missing files; e.g.: /tmp/bedrock-leveldb-snapshot-llnc8ky3/db/064602.ldb`.
+- `list_directory` em `/root/MinecraftServer/worlds` mostrou apenas o mundo `Bedrock level`; não foi encontrado outro mundo/backup nesse diretório para restauração imediata via MCP readonly.
+- `systemctl status bedrock.service` via `run_read_command` não pôde ser executado porque `systemctl` não está na allowlist readonly do MCP.
+- `list_directory` em `/root/MinecraftServer/worlds/Bedrock level/db` mostrou `CURRENT`, `MANIFEST-065595`, `065693.log`, arquivos `.ldb` novos como `065695.ldb`..`065699.ldb`, e diretório `lost`; o arquivo `064602.ldb` citado no erro não aparece na amostra filtrada atual.
+- `read_file` em `CURRENT` confirmou `MANIFEST-065595`; `list_directory` em `db/lost` mostrou `030561.log` e `MANIFEST-025936`.
+- `suggest_arena_location` continua funcionando porque usa logs/heurística e recomendou novamente centro `x=-574, y=64, z=428`, mas alertou que não faz varredura visual/bloco-a-bloco do terreno.
+- Conclusão: pelo MCP readonly atual foi possível diagnosticar, mas não reparar. O erro piorou de `31 missing files` para `43 missing files`, indicando banco/manifesto inconsistente enquanto o serviço segue ativo; a correção segura exige parada controlada do `bedrock.service` no host e restauração/validação de backup consistente fora das permissões readonly atuais do MCP.
+
+## 2026-06-22 17:16 UTC-3 — Reteste MCP com Bedrock parado e backup criado
+- Após o usuário informar que executou os comandos de parada do serviço e backup, foi reconsultado o `bedrock.log` via MCP readonly.
+- O log confirmou parada controlada do `bedrock.service` após `Running AutoCompaction` às 17:10:40 UTC, com mensagens `Stopping bedrock.service`, `Deactivated successfully` e `Stopped bedrock.service`.
+- Retestado `get_block` no mundo ativo `/root/MinecraftServer/worlds/Bedrock level`, coordenada `x=0, y=64, z=0`, dimensão `0`; mesmo com o serviço parado, o erro persistiu como `Corruption: 43 missing files; e.g.: /root/MinecraftServer/worlds/Bedrock level/db/064602.ldb`.
+- Retestado `get_block` com `use_snapshot=true`; o erro persistiu também no snapshot temporário como `Corruption: 43 missing files; e.g.: /tmp/bedrock-leveldb-snapshot-i8rmnz0a/db/064602.ldb`.
+- `list_directory` em `/root/MinecraftServer/worlds` confirmou a criação do backup `Bedrock level.backup-20260622-171518` ao lado do mundo ativo.
+- Testado `get_block` diretamente no backup recém-criado; o backup também retornou `Corruption: 43 missing files; e.g.: /root/MinecraftServer/worlds/Bedrock level.backup-20260622-171518/db/064602.ldb`, indicando que ele preservou o estado inconsistente atual e não é um backup limpo para restauração.
+- `list_directory` nos diretórios `db` do mundo ativo e do backup mostrou `CURRENT`, `MANIFEST-065595`, `lost` e arquivos `.ldb` recentes, mas não encontrou `064602.ldb`/`064603.ldb` na amostra filtrada.
+- Conclusão: com o Bedrock parado, a hipótese de simples concorrência/AutoCompaction foi descartada; o LevelDB atual está inconsistente. Pelo MCP readonly não há reparo seguro disponível; o próximo passo é restaurar um backup anterior e consistente do mundo/pasta `db/` ou recuperar uma cópia completa que contenha os `.ldb` referenciados pelo `MANIFEST-065595`.
+
+## 2026-06-22 17:22 UTC-3 — Validação do backup exibido em captura de tela
+- Após o usuário enviar captura mostrando o diretório `Bedrock level.backup-20260622-171518`, o backup foi verificado via MCP readonly.
+- `list_directory` em `/root/MinecraftServer/worlds` confirmou apenas dois mundos/diretórios: `Bedrock level` e `Bedrock level.backup-20260622-171518`.
+- `list_directory` no backup confirmou estrutura de mundo válida em nível de arquivos (`behavior_packs`, `db`, `resource_packs`, `level.dat`, `level.dat_old`, `levelname.txt`, `README.txt`, `world_behavior_packs.json`, `world_resource_packs.json` e `goo_doo.png`).
+- Apesar da estrutura existir, `get_block` no backup retornou `Corruption: 43 missing files; e.g.: /root/MinecraftServer/worlds/Bedrock level.backup-20260622-171518/db/064602.ldb`, confirmando que esse backup foi feito depois da inconsistência e não é uma cópia limpa para leitura LevelDB.
+- `list_directory` em `/root` foi bloqueado pelo escopo do MCP (`Caminho fora do escopo permitido: /root`).
+- `find /root/MinecraftServer -maxdepth 4 -type d -iname *backup*` encontrou somente `/root/MinecraftServer/worlds/Bedrock level.backup-20260622-171518`.
+- `find /root/MinecraftServer -name 064602.ldb -o -name 064603.ldb` não encontrou os arquivos `.ldb` citados nas falhas dentro do escopo permitido.
+- Conclusão: a pasta exibida na captura é o backup recém-criado e válido como preservação do estado atual, mas não resolve a corrupção; é necessário localizar backup anterior fora do escopo atual do MCP ou recuperar uma cópia completa do `db` que contenha os arquivos ausentes.
+
+## 2026-06-22 17:26 UTC-3 — Decisão operacional sem backup anterior disponível
+- Usuário informou que não há outro backup anterior disponível para restauração do mundo Bedrock.
+- Com base nos testes anteriores, o backup `Bedrock level.backup-20260622-171518` deve ser mantido apenas como preservação do estado atual, pois contém a mesma falha `Corruption: 43 missing files`.
+- Recomendação segura: não executar reparos destrutivos no `db` atual e não apagar arquivos `CURRENT`, `MANIFEST`, `LOG` ou `.ldb`; sem backup limpo, qualquer reparo de LevelDB pode descartar chunks e causar perda permanente.
+- Caminho operacional recomendado: se o Bedrock ainda abre o mundo, religar o `bedrock.service` para preservar jogabilidade e gerar novo backup consistente por ferramenta/fluxo confiável assim que possível; manter a leitura bloco-a-bloco por MCP indisponível até haver cópia LevelDB consistente.
+- Alternativa controlada para tentativa futura: criar uma cópia de laboratório do mundo atual e testar ferramenta de reparo LevelDB apenas nessa cópia, aceitando perda de chunks e validando em jogo antes de substituir qualquer mundo ativo.
+
+## 2026-06-22 17:31 UTC-3 — Decisão final: mundo abre normalmente, sem alteração no LevelDB
+- Usuário confirmou que o mundo Bedrock abre normalmente em jogo e decidiu não alterar nada no LevelDB atual.
+- Decisão operacional aceita: preservar o mundo como está, sem tentativa de reparo, sem exclusão de arquivos `.ldb`/`MANIFEST`/`CURRENT`/`LOG` e sem restauração do backup recém-criado.
+- Consequência conhecida: a jogabilidade permanece priorizada, mas a leitura bloco-a-bloco via MCP readonly continua indisponível enquanto o LevelDB apresentar `Corruption: 43 missing files` para leitores externos.
+- Recomendação de acompanhamento: manter o backup `Bedrock level.backup-20260622-171518` como preservação do estado atual e implementar futuramente uma rotina de backup consistente com `bedrock.service` parado, para permitir validação/recuperação segura caso o mundo deixe de abrir.
+
+## 2026-06-22 17:35 UTC-3 — Hipótese de versão desatualizada do leitor LevelDB/MCP
+- Usuário levantou a hipótese de o problema estar relacionado a versão desatualizada do LevelDB/leitor após atualização recente do servidor Bedrock.
+- Verificação via JSON-RPC `initialize` no MCP remoto retornou `serverInfo.version: 0.5.0`, enquanto a correção registrada no repositório para priorizar `amulet-leveldb` e ajustar subchunk v9 está em `infra/mcp-bedrock-readonly/server.py` versão `0.5.1`.
+- Verificação HTTP em `http://186.202.209.206/health` também retornou `version: 0.5.0`, confirmando que o MCP remoto ainda não está executando a versão corrigida do repositório.
+- Consulta externa indicou que `amulet-leveldb` é wrapper para o LevelDB customizado da Mojang; PyPI aponta `1.0.6` como release estável mais recente publicada em 2026-04-09, enquanto o GitHub também lista releases alfa mais novas da série `3.x`.
+- Conclusão revisada: sim, é plausível haver componente desatualizado no caminho de leitura, mas a evidência mais forte agora é que o MCP remoto está em `0.5.0` e precisa ser redeployado para `0.5.1` antes de concluir que o LevelDB do mundo está irrecuperável para leitura externa.
+- Próximo passo seguro: manter o mundo intacto, não reparar `db`, e atualizar/recriar apenas o serviço MCP readonly para a imagem/código mais recente; depois repetir `initialize`, `/health` e `get_block`.
+
+## 2026-06-22 17:42 UTC-3 — Esclarecimento: MCP no repositório vs MCP em execução no host
+- Usuário questionou se o MCP está dentro do repositório. Esclarecimento registrado: o código-fonte do MCP readonly fica no repositório em `infra/mcp-bedrock-readonly/server.py`, mas o endpoint remoto `http://186.202.209.206/mcp` é uma instância/serviço já construído e em execução no host.
+- No repositório atual, `infra/mcp-bedrock-readonly/server.py` declara `SERVER_VERSION = "0.5.1"` e contém a lógica para priorizar `import leveldb` (`amulet-leveldb`) antes do fallback `plyvel`.
+- O `infra/mcp-bedrock-readonly/Dockerfile` constrói o wheel `amulet-leveldb==1.0.6` em estágio `wheel-builder` e copia `infra/mcp-bedrock-readonly/server.py` para `/app/server.py` na imagem.
+- O `docker-compose.mcp-bedrock-readonly.yml` define o serviço `bedrock-mcp-readonly`, buildando a imagem a partir desse Dockerfile e publicando o MCP HTTP na porta configurada.
+- Portanto, alterar o repositório não atualiza automaticamente o MCP remoto; é necessário redeploy/rebuild do serviço MCP para que o endpoint remoto deixe de responder `0.5.0` e passe a responder `0.5.1`.
+
+## 2026-06-22 17:48 UTC-3 — Workflow dedicado de atualização do MCP readonly
+- Verificado que já existe workflow dedicado `.github/workflows/publish-mcp-server.yml` para publicar/recriar o MCP readonly no host, acionado por `workflow_dispatch` e por `push` em `work`/`main` quando há alteração em `infra/**`, `docker-compose.mcp-bedrock-readonly.yml` ou no próprio workflow.
+- O workflow sincroniza `infra/mcp-bedrock-readonly/` e `docker-compose.mcp-bedrock-readonly.yml` para `/root/MinecraftAddOn` no VPS e executa `docker compose -f docker-compose.mcp-bedrock-readonly.yml up -d --build`.
+- Diagnóstico: o workflow existe, mas a instância remota permanecer em `0.5.0` indica que ele não foi executado com sucesso após a alteração `0.5.1`, ou a alteração ainda não chegou ao branch/ambiente usado pelo workflow.
+- Ajustado `.github/workflows/publish-mcp-server.yml` para validar explicitamente a versão publicada via `http://127.0.0.1:80/health`, comparando o campo `version` retornado com o `SERVER_VERSION` lido de `infra/mcp-bedrock-readonly/server.py`; isso evita deploy verde quando o endpoint remoto continua em versão antiga.
+- Próximo passo operacional: executar manualmente o workflow `Publicar MCP Bedrock no servidor VPS` ou fazer push de alteração em `infra/**`/workflow para disparar o rebuild; após concluir, validar externamente `http://186.202.209.206/health` esperando `0.5.1`.
+
+## 2026-06-22 17:53 UTC-3 — Correção do build MCP: dependência zlib para amulet-leveldb
+- Usuário trouxe log do GitHub Actions mostrando falha no build do `amulet-leveldb==1.0.6`: `/usr/bin/ld: cannot find -lz`, seguida de `ERROR: Failed building wheel for amulet-leveldb` no estágio `wheel-builder`.
+- Diagnóstico: o estágio `wheel-builder` tinha `g++`, mas faltava a biblioteca de desenvolvimento `zlib1g-dev`, necessária para fornecer `libz`/headers durante a linkedição do módulo nativo `_leveldb`.
+- Ajustado `infra/mcp-bedrock-readonly/Dockerfile` para instalar `g++ zlib1g-dev` no estágio `wheel-builder`.
+- Ajustado também o estágio final para instalar explicitamente `zlib1g`, garantindo a biblioteca runtime do wheel instalado.
+- Validação local tentada com `docker build -f infra/mcp-bedrock-readonly/Dockerfile -t mcp-bedrock-readonly:test .`, mas o ambiente local não possui `docker` instalado (`docker: command not found`); a validação efetiva deve ocorrer no GitHub Actions/workflow de publicação.
