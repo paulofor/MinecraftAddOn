@@ -72,3 +72,33 @@ jobs:
         run: |
           ssh -i ~/.ssh/id_ed25519 -p "$VPS_PORT" "$VPS_USER@$VPS_HOST" \
             "docker ps --filter name=bedrock-mcp-readonly --format 'table {{.Names}}\t{{.Image}}\t{{.Status}}'"
+
+      - name: Validar versão HTTP do MCP publicado
+        run: |
+          EXPECTED_MCP_VERSION="$(python3 <<'PY'
+          import re
+          from pathlib import Path
+          text = Path('infra/mcp-bedrock-readonly/server.py').read_text()
+          match = re.search(r'^SERVER_VERSION\s*=\s*"([^"]+)"', text, re.M)
+          if not match:
+              raise SystemExit('SERVER_VERSION não encontrado')
+          print(match.group(1))
+          PY
+          )"
+          ssh -i ~/.ssh/id_ed25519 -p "$VPS_PORT" "$VPS_USER@$VPS_HOST" \
+            "EXPECTED_MCP_VERSION='$EXPECTED_MCP_VERSION' bash -s" <<'REMOTE'
+          set -euo pipefail
+          command -v curl >/dev/null 2>&1 || (apt-get update && apt-get install -y curl)
+          curl -fsS 'http://127.0.0.1:80/health' | tee /tmp/mcp_health.json
+          python3 <<'PY'
+          import json
+          import os
+          from pathlib import Path
+          expected = os.environ['EXPECTED_MCP_VERSION']
+          payload = json.loads(Path('/tmp/mcp_health.json').read_text())
+          actual = payload.get('version')
+          if actual != expected:
+              raise SystemExit(f'MCP version mismatch: expected {expected}, got {actual}')
+          print(f'[ok] MCP version {actual}')
+          PY
+          REMOTE
