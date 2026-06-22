@@ -2101,3 +2101,28 @@ Checklist executado no host via MCP readonly/projeto:
 - Atualizado `infra/mcp-bedrock-readonly/Dockerfile` para instalar `libleveldb1d` e `plyvel==1.5.1`, dependência necessária para abrir LevelDB em modo readonly.
 - Atualizada a documentação `docs/desenvolvimentos/projetos/mcp_servidor_bedrock_readonly.md` com exemplos de `get_block`, `get_block_region`, paginação por região e limitações conhecidas.
 - Observação: a leitura é readonly e não substitui confirmação visual em casos de consistência forte; recomenda-se usar snapshot/cópia ou servidor parado para inspeções críticas.
+
+## 2026-06-22 09:20 UTC-3 — Atualização do local da arena de ruína via MCP
+- Consultado o MCP readonly remoto em `http://186.202.209.206/mcp` com `tools/list`, confirmando disponibilidade das tools `suggest_arena_location`, `get_block` e `get_block_region`.
+- Executada a tool `suggest_arena_location` no mundo ativo `/root/MinecraftServer/worlds/Bedrock level`, usando o log `/root/MinecraftServer/logging/bedrock.log`, área de segurança `41x16x41`, `preferred_y=64`, margem `24`, `max_log_bytes=200000` e `max_points=20`.
+- Resultado recomendado para a arena de ruína/Mistério Histórico: centro `x=-574, y=64, z=428`; área de segurança avaliada `x=-594..-554`, `y=59..74`, `z=408..448`.
+- Justificativa MCP: foram encontradas 20 coordenadas recentes; a área recente observada ficou em `x=-530.3..72.7`, `z=353.0..383.6`; o centro recomendado fica a aproximadamente 86 blocos da coordenada recente mais próxima, mantendo afastamento das construções/testes sem ficar longe demais.
+- Tentativas de validação bloco-a-bloco com `get_block`/`get_block_region` retornaram `Corruption: bad block type`; por isso, ficou registrada a necessidade de confirmação visual em jogo antes de executar `/function misterio_historico/montar_area_interativa`.
+- Atualizada a documentação `docs/desenvolvimentos/projetos/misterio_historico_interacoes_mundo.md` com o novo ponto recomendado e comandos de operador.
+- Observação: não houve alteração/criação de PNG; nenhuma publicação de textura via MCP foi necessária.
+
+## 2026-06-22 10:55 UTC-3 — Verificação remota após criação da arena de ruína
+- Atendida solicitação para verificar via MCP readonly se a arena de ruína criada no mundo ativo já aparece remotamente.
+- MCP `tools/list` respondeu com as tools esperadas, incluindo `get_block`, `get_block_region`, `run_read_command` e `suggest_arena_location`.
+- Consultado `/root/MinecraftServer/logging/bedrock.log` via `run_read_command tail -n 300`; o log confirma servidor ativo, carregamento do mundo `Bedrock level`, pack `BP Misterio Historico` versão `0.1.8`, script `[MisterioHistorico] Interações de mundo carregadas` e conexão/desconexão do jogador `Buck9523` entre `13:49:16` e `13:51:18` UTC.
+- Não foi encontrada evidência textual no trecho de log consultado confirmando a execução de `/function misterio_historico/montar_area_interativa`; o Bedrock não registra automaticamente cada comando/fill/setblock no `bedrock.log` neste cenário.
+- A validação bloco-a-bloco direta continuou bloqueada pela falha já observada nas tools `get_block`/`get_block_region` (`Corruption: bad block type`), então não foi possível confirmar remotamente os blocos da arena por LevelDB nesta rodada.
+- Conclusão operacional: consigo ver que o servidor, o mundo e o pack estão carregados e que houve acesso do jogador, mas ainda não consigo confirmar a arena visualmente/bloco-a-bloco pelo MCP atual; a confirmação final precisa ser feita em jogo ou após correção do parser LevelDB das tools de bloco.
+
+## 2026-06-22 11:20 UTC-3 — Correção MCP para `Corruption: bad block type`
+- Ajustado o MCP readonly em `infra/mcp-bedrock-readonly/server.py` para versão `0.5.1`.
+- A abertura do LevelDB passou a priorizar `amulet-leveldb` (`import leveldb`), biblioteca compatível com o LevelDB/zlib usado por mundos Bedrock, mantendo `plyvel` apenas como fallback.
+- Atualizado `infra/mcp-bedrock-readonly/Dockerfile` para instalar `amulet-leveldb==1.0.6` em vez de `plyvel==1.5.1`/`libleveldb1d`, evitando a falha típica `Corruption: bad block type` do LevelDB vanilla ao ler mundos Bedrock.
+- Ajustado o parser de subchunks para tratar a versão 9, pulando o byte extra de índice Y antes dos storages paletizados.
+- Atualizada a documentação `docs/desenvolvimentos/projetos/mcp_servidor_bedrock_readonly.md` com a dependência correta e a limitação do fallback `plyvel`.
+- Observação: não houve alteração/criação de PNG; nenhuma publicação de textura via MCP foi necessária.

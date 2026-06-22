@@ -18,7 +18,7 @@ from pathlib import Path
 from typing import Any
 
 SERVER_NAME = "bedrock-readonly"
-SERVER_VERSION = "0.5.0"
+SERVER_VERSION = "0.5.1"
 PROTOCOL_VERSION = "2024-11-05"
 
 DEFAULT_ALLOWED_ROOTS = (
@@ -272,11 +272,20 @@ class _LittleEndianNbtReader:
 
 def _open_leveldb(world_path: str, use_snapshot: bool = True):
   try:
-    import plyvel  # type: ignore[import-not-found]
-  except Exception as exc:  # noqa: BLE001
-    raise RuntimeError(
-      "Leitura bloco-a-bloco requer o pacote Python 'plyvel'. Recrie a imagem do MCP para instalar a dependência."
-    ) from exc
+    import leveldb  # type: ignore[import-not-found]
+  except Exception:  # noqa: BLE001
+    try:
+      import plyvel  # type: ignore[import-not-found]
+    except Exception as plyvel_exc:  # noqa: BLE001
+      raise RuntimeError(
+        "Leitura bloco-a-bloco requer 'amulet-leveldb' (preferencial, compatível com LevelDB zlib do Bedrock) "
+        "ou 'plyvel' como fallback. Recrie a imagem do MCP para instalar a dependência."
+      ) from plyvel_exc
+    leveldb_module = None
+    plyvel_module = plyvel
+  else:
+    leveldb_module = leveldb
+    plyvel_module = None
 
   ok, resolved_world = _is_path_allowed(world_path)
   if not ok:
@@ -293,7 +302,17 @@ def _open_leveldb(world_path: str, use_snapshot: bool = True):
     shutil.copytree(db_path, snapshot_db_path)
     open_path = snapshot_db_path
 
-  return plyvel.DB(str(open_path), create_if_missing=False), resolved_world, cleanup_path
+  try:
+    if leveldb_module is not None:
+      return leveldb_module.LevelDB(str(open_path), create_if_missing=False), resolved_world, cleanup_path
+    return plyvel_module.DB(str(open_path), create_if_missing=False), resolved_world, cleanup_path
+  except Exception as exc:  # noqa: BLE001
+    if cleanup_path is not None:
+      shutil.rmtree(cleanup_path, ignore_errors=True)
+    raise RuntimeError(
+      "Falha ao abrir LevelDB do Bedrock. Garanta que a imagem use amulet-leveldb/leveldb-mcpe, "
+      "pois o LevelDB vanilla/plyvel pode falhar com 'Corruption: bad block type' em mundos Bedrock."
+    ) from exc
 
 
 def _dimension_prefix(chunk_x: int, chunk_z: int, dimension: int) -> bytes:
@@ -328,6 +347,11 @@ def _decode_subchunk_palette(value: bytes) -> list[str]:
       raise ValueError("Subchunk sem contador de storages")
     storage_count = value[offset]
     offset += 1
+    # Subchunk v9 (1.17.30+) adiciona um byte com o índice Y do subchunk antes dos storages.
+    if version == 9:
+      if offset >= len(value):
+        raise ValueError("Subchunk v9 sem índice Y")
+      offset += 1
   else:
     storage_count = 1
 
@@ -390,7 +414,10 @@ def _get_block_from_db(db: Any, x: int, y: int, z: int, dimension: int) -> dict[
   local_z = z & 15
   subchunk_y = y >> 4
   key = _subchunk_key(chunk_x, chunk_z, subchunk_y, dimension)
-  value = db.get(key)
+  try:
+    value = db.get(key)
+  except KeyError:
+    value = None
   if value is None:
     return {
       "x": x,

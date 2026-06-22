@@ -74,9 +74,9 @@ Para proteger o MCP contra respostas enormes, `get_block_region` respeita `MAX_B
 
 Limitações conhecidas:
 
-- a leitura depende de `plyvel` na imagem do MCP;
+- a leitura depende de `amulet-leveldb` na imagem do MCP, pois mundos Bedrock usam LevelDB com compressão zlib; `plyvel` fica apenas como fallback e pode falhar com `Corruption: bad block type` em bases Bedrock;
 - por padrão, `use_snapshot=true` copia temporariamente o diretório `db` antes de abrir o LevelDB, evitando conflito de lock com o Bedrock em execução, mas isso tem custo de I/O;
-- o formato de subchunks do Bedrock pode variar por versão, então a ferramenta retorna erro se encontrar um formato não suportado;
+- o parser contempla subchunks paletizados v8/v9 e ignora o byte extra de índice Y da v9; outros formatos ainda podem exigir evolução futura;
 - a ferramenta prioriza leitura do layer principal do subchunk; água/fluido ou layers adicionais podem exigir evolução futura;
 - recomenda-se usar com o servidor parado ou com cópia/snapshot do mundo quando a consulta exigir consistência forte.
 
