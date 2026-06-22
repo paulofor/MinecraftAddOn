@@ -15,7 +15,7 @@ execute at @s run setblock ~-4 ~ ~-2 minecraft:cauldron
 execute at @s run setblock ~-2 ~ ~-2 minecraft:bell
 execute at @s run setblock ~ ~ ~-2 minecraft:chiseled_bookshelf
 execute at @s run setblock ~2 ~ ~-2 minecraft:lever
-execute at @s run setblock ~4 ~ ~-2 minecraft:stonecutter
+execute at @s run setblock ~4 ~ ~-2 minecraft:stonecutter_block
 execute at @s run setblock ~6 ~ ~-2 minecraft:composter
 execute at @s run setblock ~-2 ~ ~1 minecraft:chest
 execute at @s run setblock ~2 ~ ~1 minecraft:bookshelf

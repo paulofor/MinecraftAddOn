@@ -32,6 +32,10 @@ const INTERACTIONS = new Map([
     functionName: "misterio_historico/pistas/p6_canal_bloqueado",
     message: "§e[Pista] O mecanismo revela um canal interrompido.",
   }],
+  ["minecraft:stonecutter_block", {
+    functionName: "misterio_historico/pistas/p6_canal_bloqueado",
+    message: "§e[Pista] O mecanismo revela um canal interrompido.",
+  }],
   ["minecraft:composter", {
     functionName: "misterio_historico/pistas/p7_registro_chuva",
     message: "§e[Pista] Você encontrou marcas de chuva e cultivo.",

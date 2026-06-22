@@ -2067,3 +2067,9 @@ Checklist executado no host via MCP readonly/projeto:
 - Atualizada documentação `docs/desenvolvimentos/projetos/misterio_historico_interacoes_mundo.md` com seção de terraplanagem automática e aviso para não executar perto de construções preservadas.
 - Versionamento pareado atualizado por alteração de módulo: BP e RP `MisterioHistorico` de `0.1.5` para `0.1.6`.
 - Observação: não houve alteração/criação de PNG; nenhuma publicação de textura via MCP foi necessária.
+
+## 2026-06-22 05:30 UTC-3 — Correção de parse da arena Mistério Histórico
+- Corrigida a função `packs/BP_MisterioHistorico/functions/misterio_historico/montar_area_interativa.mcfunction` para usar `minecraft:stonecutter_block` no ponto da pista P6, evitando o erro de parse observado no Bedrock ao carregar `minecraft:stonecutter` em `setblock`.
+- Atualizado `packs/BP_MisterioHistorico/scripts/main.js` para aceitar tanto `minecraft:stonecutter` quanto `minecraft:stonecutter_block` como acionadores da pista P6, preservando compatibilidade com mundos/versões que reportem qualquer um dos identificadores.
+- Incrementadas as versões pareadas dos manifests `packs/BP_MisterioHistorico/manifest.json` e `packs/RP_MisterioHistorico/manifest.json` para `0.1.7`, conforme regra de versionamento BP/RP do módulo.
+- Evidência de origem: log pós-deploy apontou `Function misterio_historico/montar_area_interativa failed to load correctly` e `command failed to parse` na linha do `setblock` da pista P6.
