@@ -26,6 +26,29 @@ Essa função corta/limpa o entorno e cria uma pequena área de ruínas ao redor
 - **Arquivo/templo:** base de pedra com cantos elevados para sugerir uma construção antiga desabada.
 - **Sala final:** plataforma de pedra com blocos coloridos para as três hipóteses e diamond_block de validação.
 
+
+## Local recomendado no mundo atual (MCP readonly)
+Consulta realizada via MCP readonly em 2026-06-22 indicou atividade recente de testes de barco em torno de `x=-529, z=354` e entre `x=0..73, z=354..383`. Para evitar sobrepor essa área, o ponto recomendado para montar a arena do Mistério Histórico é:
+
+```text
+Centro sugerido: x=120, y=64, z=430
+Área afetada aproximada: x=111..129, y=61..70, z=421..439
+```
+
+Motivos da escolha:
+- fica a aproximadamente 90 blocos do agrupamento de barcos mais próximo observado nos logs, reduzindo risco de sobrescrever testes existentes;
+- ainda permanece relativamente perto da zona de atividade do mundo, facilitando deslocamento dos jogadores;
+- o volume automático da arena (`19x10x19`) cabe integralmente nessa faixa se o jogador executar a função no centro sugerido.
+
+Para montar nesse ponto, um operador pode entrar no mundo, ir para o centro sugerido e executar:
+
+```mcfunction
+/tp @s 120 64 430
+/function misterio_historico/montar_area_interativa
+```
+
+Antes de executar, confira visualmente no jogo se não há construção importante nessa área. O MCP readonly permite inferir posições por logs e arquivos, mas não oferece uma leitura visual/bloco-a-bloco confiável do terreno.
+
 ## Como montar a área jogável manualmente
 Coloque os blocos abaixo em locais narrativamente coerentes. O jogador deve clicar/interagir com cada bloco para acionar a função correspondente.
 
