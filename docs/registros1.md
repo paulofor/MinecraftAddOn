@@ -2126,3 +2126,9 @@ Checklist executado no host via MCP readonly/projeto:
 - Ajustado o parser de subchunks para tratar a versão 9, pulando o byte extra de índice Y antes dos storages paletizados.
 - Atualizada a documentação `docs/desenvolvimentos/projetos/mcp_servidor_bedrock_readonly.md` com a dependência correta e a limitação do fallback `plyvel`.
 - Observação: não houve alteração/criação de PNG; nenhuma publicação de textura via MCP foi necessária.
+
+## 2026-06-22 14:10 UTC-3 — Correção do build do MCP com amulet-leveldb
+- Corrigido `infra/mcp-bedrock-readonly/Dockerfile` para compilar `amulet-leveldb==1.0.6` em um estágio `wheel-builder` com `g++` instalado.
+- O estágio final permanece baseado em `python:3.12-slim` e instala apenas o wheel gerado, evitando depender do compilador em runtime.
+- A falha tratada foi `error: command 'g++' failed: No such file or directory` durante `pip install`/build wheel do `amulet-leveldb`.
+- Observação: não houve alteração/criação de PNG; nenhuma publicação de textura via MCP foi necessária.
