@@ -2034,3 +2034,36 @@ Checklist executado no host via MCP readonly/projeto:
 - Evidência de `bedrock.log` via MCP: servidor carregou `BP Misterio Historico` versão `0.1.1`; não foi confirmada carga da versão `0.1.2` no mundo ativo.
 - Publicação efetiva e restart pós-publicação ficaram pendentes porque o MCP disponível não oferece escrita/sincronização de arquivos texto de packs e este checkout local não possui remote Git/SSH configurado para acionar o fluxo oficial de deploy.
 - Observação: não houve alteração/criação de PNG; nenhuma publicação de textura via MCP foi necessária.
+
+## 2026-06-21 19:13:12 UTC-3
+- Ajuste de jogabilidade do Add-On Mistério Histórico após feedback de que a experiência estava dependente demais de comandos no chat.
+- Adicionado script `packs/BP_MisterioHistorico/scripts/main.js` com interações por blocos vanilla no mundo: `lectern` inicia, blocos-pista registram evidências, `lodestone` diagnostica, blocos da sala final escolhem hipóteses e `diamond_block` finaliza/reflete.
+- Criada documentação `docs/desenvolvimentos/projetos/misterio_historico_interacoes_mundo.md` mapeando cada elemento do mundo para sua função e explicando como montar a área jogável.
+- Versionamento pareado atualizado por alteração de módulo: BP e RP `MisterioHistorico` de `0.1.2` para `0.1.3`; BP passou a incluir módulo script e dependência `@minecraft/server`.
+- Observação: não houve alteração/criação de PNG; nenhuma publicação de textura via MCP foi necessária.
+- Atualizado `docs/desenvolvimentos/projetos/misterio_historico_teste_jogadores.md` com checklist adicional para observar se os jogadores compreendem as interações do cenário na versão `0.1.3`.
+
+## 2026-06-22 07:59:16 UTC-3
+- Ajuste complementar do Mistério Histórico para responder como as interações aparecem no mundo.
+- Adicionada função `packs/BP_MisterioHistorico/functions/misterio_historico/montar_area_interativa.mcfunction`, que monta uma arena simples ao redor do jogador com blocos vanilla interativos: início, pistas, diagnóstico, hipóteses, finalização e reset.
+- Ajustado o script `packs/BP_MisterioHistorico/scripts/main.js` para usar blocos mais seguros/fáceis de posicionar na arena: `stonecutter` para o canal bloqueado e `grindstone` para reset, evitando dependência de `stone_button`/`respawn_anchor`.
+- Atualizada documentação `docs/desenvolvimentos/projetos/misterio_historico_interacoes_mundo.md` com o comando `/function misterio_historico/montar_area_interativa` e instruções de montagem/decoração da área.
+- Versionamento pareado atualizado por alteração de módulo: BP e RP `MisterioHistorico` de `0.1.3` para `0.1.4`.
+- Observação: não houve alteração/criação de PNG; nenhuma publicação de textura via MCP foi necessária.
+
+## 2026-06-22 08:04:03 UTC-3
+- Ajuste do Mistério Histórico para esclarecer e suportar persistência/rejogabilidade da arena interativa.
+- Adicionada função `packs/BP_MisterioHistorico/functions/misterio_historico/nova_sessao.mcfunction`, acionada pelo `lectern`, para iniciar uma sessão individual zerando apenas o progresso do jogador que interagiu.
+- Adicionada função `packs/BP_MisterioHistorico/functions/misterio_historico/desmontar_area_interativa.mcfunction` para remover a arena gerada automaticamente quando for necessário mover/limpar o espaço.
+- Atualizado `packs/BP_MisterioHistorico/scripts/main.js` para o `lectern` chamar `misterio_historico/nova_sessao` em vez de apenas `init`.
+- Atualizada documentação `docs/desenvolvimentos/projetos/misterio_historico_interacoes_mundo.md` explicando que a arena fica no mundo, pode ser reutilizada por vários jogadores e registra progresso individual por jogador.
+- Versionamento pareado atualizado por alteração de módulo: BP e RP `MisterioHistorico` de `0.1.4` para `0.1.5`.
+- Observação: não houve alteração/criação de PNG; nenhuma publicação de textura via MCP foi necessária.
+
+## 2026-06-22 08:12:41 UTC-3
+- Ajuste do Mistério Histórico para facilitar criação da arena em locais sem planície natural.
+- Atualizada `packs/BP_MisterioHistorico/functions/misterio_historico/montar_area_interativa.mcfunction` para terraplanar automaticamente uma área maior ao redor do jogador: base de `smooth_stone` de `~-8 ~-3 ~-8` a `~8 ~-1 ~8` e limpeza de `~-8 ~ ~-8` a `~8 ~6 ~8`.
+- Atualizada `packs/BP_MisterioHistorico/functions/misterio_historico/desmontar_area_interativa.mcfunction` para remover o novo volume aproximado de `17x10x17` quando necessário.
+- Atualizada documentação `docs/desenvolvimentos/projetos/misterio_historico_interacoes_mundo.md` com seção de terraplanagem automática e aviso para não executar perto de construções preservadas.
+- Versionamento pareado atualizado por alteração de módulo: BP e RP `MisterioHistorico` de `0.1.5` para `0.1.6`.
+- Observação: não houve alteração/criação de PNG; nenhuma publicação de textura via MCP foi necessária.

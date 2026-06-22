@@ -37,3 +37,15 @@ Validar se a missão gera investigação colaborativa, comparação de fontes e 
 - Se o grupo passar de 40 minutos, reduzir texto, melhorar sinalização ou diminuir o número mínimo de pistas.
 - Se todos escolherem a mesma hipótese cedo demais, reforçar pistas que sustentam hipóteses concorrentes.
 - Se a defesa final não citar evidências, usar a função `/function misterio_historico/reflexao_final` antes da finalização.
+
+## Atualização — teste com interações no mundo
+Na versão `0.1.4`, o teste com jogadores deve priorizar cliques/interações nos blocos do cenário, não comandos digitados no chat. A área de teste pode ser criada com `/function misterio_historico/montar_area_interativa`.
+
+Checklist adicional de observação:
+1. Confirmar se os jogadores entendem que o `lectern` inicia a investigação.
+2. Confirmar se os blocos-pista parecem parte da narrativa, e não apenas botões escondidos.
+3. Observar se os jogadores descobrem naturalmente o `lodestone` como mesa de diagnóstico.
+4. Verificar se a sala final com `emerald_block`, `lapis_block`, `redstone_block` e `diamond_block` comunica bem escolha de hipótese e validação final.
+5. Anotar quais elementos do mundo geraram mais curiosidade, conversa ou confusão.
+
+6. Confirmar que um segundo jogador consegue iniciar sessão própria clicando no `lectern`, sem herdar pistas/conclusões do primeiro jogador.
