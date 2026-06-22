@@ -28,26 +28,29 @@ Essa função corta/limpa o entorno e cria uma pequena área de ruínas ao redor
 
 
 ## Local recomendado no mundo atual (MCP readonly)
-Consulta realizada via MCP readonly em 2026-06-22 indicou atividade recente de testes de barco em torno de `x=-529, z=354` e entre `x=0..73, z=354..383`. Para evitar sobrepor essa área, o ponto recomendado para montar a arena do Mistério Histórico é:
+Consulta atualizada via MCP readonly em 2026-06-22 usando a tool `suggest_arena_location` para a arena do Mistério Histórico. A leitura considerou o mundo ativo `Bedrock level`, o log `/root/MinecraftServer/logging/bedrock.log`, uma área de segurança de `41x16x41` e margem de 24 blocos. O ponto recomendado para montar a arena de ruína é:
 
 ```text
-Centro sugerido: x=120, y=64, z=430
-Área afetada aproximada: x=111..129, y=61..70, z=421..439
+Centro sugerido: x=-574, y=64, z=428
+Área de segurança avaliada: x=-594..-554, y=59..74, z=408..448
+Área afetada pela função atual: aproximadamente x=-583..-565, y=59..68, z=419..437
 ```
 
 Motivos da escolha:
-- fica a aproximadamente 90 blocos do agrupamento de barcos mais próximo observado nos logs, reduzindo risco de sobrescrever testes existentes;
-- ainda permanece relativamente perto da zona de atividade do mundo, facilitando deslocamento dos jogadores;
-- o volume automático da arena (`19x10x19`) cabe integralmente nessa faixa se o jogador executar a função no centro sugerido.
+- foram encontradas 20 coordenadas recentes no log do servidor;
+- a área recente observada ficou em `x=-530.3..72.7` e `z=353.0..383.6`, indicando que há construções/testes recentes nessa faixa;
+- o centro sugerido fica a aproximadamente 86 blocos da coordenada recente mais próxima, evitando ficar em cima do que já foi construído;
+- ainda permanece próximo o suficiente da zona ativa para acesso dos jogadores, sem ficar perdido ou distante demais;
+- o volume automático da arena (`19x10x19`) cabe dentro da área de segurança avaliada se o operador executar a função no centro sugerido.
 
 Para montar nesse ponto, um operador pode entrar no mundo, ir para o centro sugerido e executar:
 
 ```mcfunction
-/tp @s 120 64 430
+/tp @s -574 64 428
 /function misterio_historico/montar_area_interativa
 ```
 
-Antes de executar, confira visualmente no jogo se não há construção importante nessa área. O MCP readonly permite inferir posições por logs e arquivos, mas não oferece uma leitura visual/bloco-a-bloco confiável do terreno.
+Observação de validação: a tentativa de leitura direta bloco-a-bloco com `get_block`/`get_block_region` no mesmo mundo retornou `Corruption: bad block type`, então a recomendação final foi baseada na heurística MCP de logs recentes e afastamento. Antes de executar, confira visualmente no jogo se não há construção importante nessa área.
 
 ## Como montar a área jogável manualmente
 Coloque os blocos abaixo em locais narrativamente coerentes. O jogador deve clicar/interagir com cada bloco para acionar a função correspondente.

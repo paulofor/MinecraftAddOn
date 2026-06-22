@@ -5,10 +5,7 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 
 WORKDIR /app
 
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends libleveldb1d && \
-    pip install --no-cache-dir plyvel==1.5.1 && \
-    rm -rf /var/lib/apt/lists/*
+RUN pip install --no-cache-dir amulet-leveldb==1.0.6
 
 COPY infra/mcp-bedrock-readonly/server.py /app/server.py
 
