@@ -2280,3 +2280,10 @@ Checklist executado no host via MCP readonly/projeto:
 - Atualizado o registro pós-conclusão da Sprint 3 em `docs/torre_invertida_abissal_plano.md`.
 - Não foram criadas, alteradas nem commitadas texturas PNG; a entrega usa apenas arquivos texto e blocos vanilla.
 - Pendência operacional: executar as funções em mundo Bedrock de teste e ajustar altura dos acessos, legibilidade dos checkpoints, segurança das quedas e clareza das rotas alternativas após validação em jogo.
+
+## 2026-06-23 00:37 UTC-3 — Correção de parse em placas da Torre Invertida Abissal
+- Erro recebido: o deploy apontou falha de carregamento das funções `torre_invertida_abissal/superficie_sprint2` e `torre_invertida_abissal/eixo_aneis_sprint3` por `Syntax error: Unexpected "oak_sign"` nas linhas com `setblock ... oak_sign ["facing_direction"=...]`.
+- Corrigidas as funções `packs/BP_TorreInvertidaAbissal/functions/torre_invertida_abissal/superficie_sprint2.mcfunction` e `packs/BP_TorreInvertidaAbissal/functions/torre_invertida_abissal/eixo_aneis_sprint3.mcfunction`, substituindo as placas `oak_sign` com block state por `standing_sign` sem estado explícito, padrão já usado no projeto e compatível com o parser Bedrock observado.
+- Atualizados os manifests pareados `BP_TorreInvertidaAbissal` e `RP_TorreInvertidaAbissal` para `0.3.1`, conforme regra fixa de versionamento BP/RP do módulo.
+- Não foram criadas, alteradas nem commitadas texturas PNG; a correção envolve somente arquivos texto.
+- Validações locais realizadas: busca por `oak_sign` remanescente em `packs/BP_TorreInvertidaAbissal`, parsing JSON dos manifests e verificação de status Git.

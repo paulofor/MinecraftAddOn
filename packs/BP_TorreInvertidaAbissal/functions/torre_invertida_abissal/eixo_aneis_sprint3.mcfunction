@@ -123,9 +123,9 @@ setblock ~0 ~-80 ~20 sea_lantern
 setblock ~0 ~-52 ~-20 sea_lantern
 
 # Checkpoints visuais por cor e sinalizacao curta para orientacao do jogador.
-setblock ~3 ~-14 ~-34 oak_sign ["facing_direction"=2]
-setblock ~3 ~-50 ~-50 oak_sign ["facing_direction"=2]
-setblock ~3 ~-78 ~-58 oak_sign ["facing_direction"=2]
+setblock ~3 ~-14 ~-34 standing_sign
+setblock ~3 ~-50 ~-50 standing_sign
+setblock ~3 ~-78 ~-58 standing_sign
 fill ~-4 ~-13 ~-36 ~4 ~-13 ~-36 blue_wool
 fill ~-4 ~-49 ~-52 ~4 ~-49 ~-52 orange_wool
 fill ~-4 ~-77 ~-60 ~4 ~-77 ~-60 green_wool
