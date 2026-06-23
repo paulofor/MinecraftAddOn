@@ -83,9 +83,9 @@ A construção deve parecer uma torre antiga que foi puxada para baixo por uma f
 - Quedas acidentais têm mitigação por água, plataformas intermediárias ou barreiras naturais.
 
 **Registro pós-conclusão:**
-- O que foi feito:
-- O que ficou faltando:
-- Impedimentos/bloqueios:
+- O que foi feito: criada a função `/function torre_invertida_abissal/eixo_aneis_sprint3` para abrir o eixo central vertical, reforçar a leitura de profundidade, criar três anéis exploráveis com checkpoints por cor, salas laterais, passarelas, escadas, scaffolding, água de segurança e plataformas intermediárias; documentada a execução em `docs/torre_invertida_abissal/sprint3_eixo_aneis.md`; atualizados os manifests pareados BP/RP para `0.3.0`.
+- O que ficou faltando: executar a função em mundo Bedrock de teste após as Sprints 1 e 2, validar profundidade real, circulação entre anéis, legibilidade dos checkpoints e eficácia da mitigação de quedas.
+- Impedimentos/bloqueios: a validação bloco-a-bloco no mundo ativo não foi usada devido às limitações já registradas do MCP remoto/LevelDB; por segurança, a Sprint 3 foi entregue como artefato versionado para execução manual em área livre.
 
 ### Sprint 4 — Laboratórios, puzzles e conteúdo educativo
 **Objetivo:** inserir desafios que combinem exploração com aprendizado.
