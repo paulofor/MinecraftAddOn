@@ -2247,3 +2247,14 @@ Checklist executado no host via MCP readonly/projeto:
 - Criado o documento `docs/torre_invertida_abissal_plano.md` com visão geral, objetivos, escala sugerida, conceito visual, zonas principais, riscos, próximo passo e plano estruturado em 6 sprints.
 - Cada sprint inclui entregas, critérios de aceite e espaço obrigatório de registro pós-conclusão com: o que foi feito, o que ficou faltando e impedimentos/bloqueios.
 - Não houve alteração de packs, scripts, manifests, definições, texturas PNG ou deploy no servidor.
+
+## 2026-06-22 23:41 UTC-3 — Execução da Sprint 1: Torre Invertida Abissal
+- Pedido recebido: executar a Sprint 1 do plano `docs/torre_invertida_abissal_plano.md`.
+- Criados os packs pareados `packs/BP_TorreInvertidaAbissal` e `packs/RP_TorreInvertidaAbissal`, ambos na versão `0.1.0`, para manter rastreabilidade de módulo BP/RP desde a blocagem inicial.
+- Criada a função `torre_invertida_abissal/init` para orientar o operador antes da geração em mundo de teste.
+- Criada a função `torre_invertida_abissal/blocagem_sprint1` com blocagem temporária de cratera, silhueta de torre, eixo luminoso, ponte de acesso, primeiro anel subterrâneo e marcadores de zonas futuras.
+- Criado o documento `docs/torre_invertida_abissal/sprint1_blocagem.md` com mapa conceitual em vista superior, corte vertical, limites de largura/altura/profundidade, caminho crítico, materiais base por zona e passos de execução.
+- Atualizado o registro pós-conclusão da Sprint 1 em `docs/torre_invertida_abissal_plano.md`.
+- Não foram criadas, alteradas nem commitadas texturas PNG; o RP contém apenas manifest e texto de localização.
+- Validação local realizada com parsing JSON dos manifests e verificação de ausência de PNG novo no módulo.
+- Pendência operacional: executar a função em um mundo de teste Bedrock, longe do spawn e de estruturas existentes, para validar a leitura visual e ajustar escala após feedback.
