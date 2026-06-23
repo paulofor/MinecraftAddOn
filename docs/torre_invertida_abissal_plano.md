@@ -45,9 +45,9 @@ A construção deve parecer uma torre antiga que foi puxada para baixo por uma f
 - A construção não bloqueia spawn, caminhos importantes ou estruturas já existentes.
 
 **Registro pós-conclusão:**
-- O que foi feito:
-- O que ficou faltando:
-- Impedimentos/bloqueios:
+- O que foi feito: criados os packs pareados `BP_TorreInvertidaAbissal` e `RP_TorreInvertidaAbissal`, com função de inicialização e função de blocagem para mundo de teste; documentados mapa conceitual em vista superior/corte vertical, limites de escala, caminho crítico e materiais base em `docs/torre_invertida_abissal/sprint1_blocagem.md`.
+- O que ficou faltando: executar a função em um mundo de teste no Bedrock, observar a escala real em jogo e ajustar medidas/materiais temporários conforme feedback.
+- Impedimentos/bloqueios: o MCP remoto disponível é readonly e o histórico recente indica limitação de leitura bloco-a-bloco do mundo ativo; por segurança, a Sprint 1 foi entregue como artefato versionado para execução manual em área livre, sem alterar o mundo ativo.
 
 ### Sprint 2 — Construção da superfície e entrada monumental
 **Objetivo:** criar impacto inicial e preparar a narrativa de entrada.

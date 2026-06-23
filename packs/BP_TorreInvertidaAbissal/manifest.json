@@ -1,0 +1,27 @@
+{
+  "format_version": 2,
+  "header": {
+    "name": "BP Torre Invertida Abissal",
+    "description": "Behavior Pack educativo para blocagem e validacao de escala da Torre Invertida Abissal.",
+    "uuid": "8d50a6f6-ff66-4a6b-910b-c7486bcbae7e",
+    "version": [0, 1, 0],
+    "min_engine_version": [1, 20, 0]
+  },
+  "modules": [
+    {
+      "type": "data",
+      "uuid": "64991ba6-01d8-45c9-b97a-046f24b0f932",
+      "version": [0, 1, 0]
+    }
+  ],
+  "dependencies": [
+    {
+      "uuid": "660e4f7a-cc2a-48ae-a6e1-d86a70c8f419",
+      "version": [0, 1, 0]
+    }
+  ],
+  "metadata": {
+    "authors": ["MinecraftAddOn"],
+    "license": "MIT"
+  }
+}
