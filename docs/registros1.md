@@ -2299,3 +2299,14 @@ Checklist executado no host via MCP readonly/projeto:
 - Atualizado o registro pós-conclusão da Sprint 4 em `docs/torre_invertida_abissal_plano.md`.
 - Não foram criadas, alteradas nem commitadas texturas PNG; a entrega usa apenas arquivos texto e blocos vanilla.
 - Pendência operacional: executar as funções em mundo Bedrock de teste e validar colisões, leitura dos puzzles, visibilidade dos feedbacks e recompensas após playtest.
+
+## 2026-06-23 01:18 UTC-3 — Execução da Sprint 5: Torre Invertida Abissal
+- Pedido recebido: executar a Sprint 5 do plano `docs/torre_invertida_abissal_plano.md`.
+- Criada a função `packs/BP_TorreInvertidaAbissal/functions/torre_invertida_abissal/bioma_arquivo_nucleo_sprint5.mcfunction` para construir o clímax final em mundo de teste, usando a mesma origem relativa das Sprints 1 a 4.
+- A função adiciona Jardim Bioluminescente com caverna profunda, água, cristais, vegetação vanilla e iluminação dramática; Arquivo Abissal com salas de lore, mapas simbólicos e pistas; Núcleo da Gravidade com artefato central, desafio final observacional, recompensa simbólica e elevador de água protegido de retorno à superfície.
+- Atualizada a função `torre_invertida_abissal/init` para orientar a sequência Sprint 1 → Sprint 2 → Sprint 3 → Sprint 4 → Sprint 5.
+- Atualizados os manifests pareados `BP_TorreInvertidaAbissal` e `RP_TorreInvertidaAbissal` para `0.5.0`, conforme regra de versionamento BP/RP do módulo.
+- Criado o documento `docs/torre_invertida_abissal/sprint5_bioma_arquivo_nucleo.md` com elementos implementados, rota esperada, critérios de aceite e checklist de validação.
+- Atualizado o registro pós-conclusão da Sprint 5 em `docs/torre_invertida_abissal_plano.md`.
+- Não foram criadas, alteradas nem commitadas texturas PNG; a entrega usa apenas arquivos texto e blocos vanilla.
+- Pendência operacional: executar as funções em mundo Bedrock de teste e validar contraste visual, colisões, leitura das pistas, desafio final, recompensa e elevador de retorno após playtest.
