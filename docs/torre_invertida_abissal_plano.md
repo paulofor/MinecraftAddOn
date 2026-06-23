@@ -102,9 +102,9 @@ A construção deve parecer uma torre antiga que foi puxada para baixo por uma f
 - O conteúdo respeita o foco educativo para jovens de 16 a 20 anos.
 
 **Registro pós-conclusão:**
-- O que foi feito:
-- O que ficou faltando:
-- Impedimentos/bloqueios:
+- O que foi feito: criada a função `/function torre_invertida_abissal/laboratorios_sprint4` com hub de laboratórios e quatro salas educativas — sequência, lógica booleana simples, padrão visual e causa/consequência — incluindo feedback por luzes/blocos indicadores, lecterns/placas curtas e recompensas simbólicas em baús; documentada a execução em `docs/torre_invertida_abissal/sprint4_laboratorios_puzzles.md`; atualizados os manifests pareados BP/RP para `0.4.0`.
+- O que ficou faltando: executar a função em mundo Bedrock de teste após as Sprints 1-3, validar colisões com a geometria real, preencher conteúdo rico de lecterns/baús se houver fluxo controlado para NBT/loot e ajustar ritmo dos desafios após playtest.
+- Impedimentos/bloqueios: a validação no mundo ativo não foi usada devido às limitações já registradas do MCP remoto/LevelDB; por segurança, a Sprint 4 foi entregue como artefato versionado para execução manual em área livre.
 
 ### Sprint 5 — Bioma abissal, arquivo e núcleo final
 **Objetivo:** construir o clímax visual e narrativo da torre.
