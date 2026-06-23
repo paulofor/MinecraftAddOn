@@ -140,9 +140,9 @@ A construção deve parecer uma torre antiga que foi puxada para baixo por uma f
 - A estrutura fica pronta para receber scripts, NPCs, entidades ou novas salas em PRs futuros.
 
 **Registro pós-conclusão:**
-- O que foi feito:
-- O que ficou faltando:
-- Impedimentos/bloqueios:
+- O que foi feito: criada a função `/function torre_invertida_abissal/polimento_sprint6` para reforçar iluminação, orientação por trilhas e placas, guard rails nos anéis, mitigação de quedas, retorno sem comandos, sinalização dos laboratórios, rota final e quatro pontos de expansão futura; documentada a execução em `docs/torre_invertida_abissal/sprint6_polimento_validacao.md`; atualizados os manifests pareados BP/RP para `0.6.0`.
+- O que ficou faltando: executar o percurso completo em mundo Bedrock de teste após as Sprints 1-5, medir tempo real de exploração, validar se os muros não prejudicam a estética aberta e ajustar placas/iluminação conforme playtest com jogadores.
+- Impedimentos/bloqueios: a validação in-game completa não foi realizada neste ambiente; por segurança, a Sprint 6 foi entregue como artefato versionado para execução manual em área livre, sem criar ou commitar texturas PNG.
 
 ## Riscos e cuidados
 - Evitar espaços grandes vazios demais; cada camada precisa ter pontos de interesse.
