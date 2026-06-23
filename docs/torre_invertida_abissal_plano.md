@@ -121,9 +121,9 @@ A construção deve parecer uma torre antiga que foi puxada para baixo por uma f
 - Existe retorno seguro ao exterior após completar o núcleo.
 
 **Registro pós-conclusão:**
-- O que foi feito:
-- O que ficou faltando:
-- Impedimentos/bloqueios:
+- O que foi feito: criada a função `/function torre_invertida_abissal/bioma_arquivo_nucleo_sprint5` com Jardim Bioluminescente, Arquivo Abissal, galeria de pistas, Núcleo da Gravidade, desafio final observacional, recompensa simbólica e elevador de água protegido para retorno à superfície; documentada a execução em `docs/torre_invertida_abissal/sprint5_bioma_arquivo_nucleo.md`; atualizados os manifests pareados BP/RP para `0.5.0`.
+- O que ficou faltando: executar a função em mundo Bedrock de teste após as Sprints 1-4, validar colisões com laboratórios profundos, preencher conteúdo rico de lecterns/baús se houver fluxo controlado para NBT/loot e ajustar iluminação/ritmo do clímax após playtest.
+- Impedimentos/bloqueios: a validação no mundo ativo não foi usada devido às limitações já registradas do MCP remoto/LevelDB; por segurança, a Sprint 5 foi entregue como artefato versionado para execução manual em área livre, sem criar ou commitar texturas PNG.
 
 ### Sprint 6 — Polimento, validação e preparação para expansão
 **Objetivo:** revisar jogabilidade, performance, orientação e documentação.
