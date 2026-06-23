@@ -2310,3 +2310,10 @@ Checklist executado no host via MCP readonly/projeto:
 - Atualizado o registro pós-conclusão da Sprint 5 em `docs/torre_invertida_abissal_plano.md`.
 - Não foram criadas, alteradas nem commitadas texturas PNG; a entrega usa apenas arquivos texto e blocos vanilla.
 - Pendência operacional: executar as funções em mundo Bedrock de teste e validar contraste visual, colisões, leitura das pistas, desafio final, recompensa e elevador de retorno após playtest.
+
+## 2026-06-22 22:33 UTC-3 — Correção de parse no Arquivo Abissal da Torre Invertida Abissal
+- Erro recebido: o deploy pós-restart apontou falha de carregamento da função `torre_invertida_abissal/bioma_arquivo_nucleo_sprint5` nas linhas 61 a 64 por `Syntax error: Unexpected "bookshelves"`.
+- Corrigida a função `packs/BP_TorreInvertidaAbissal/functions/torre_invertida_abissal/bioma_arquivo_nucleo_sprint5.mcfunction`, substituindo o identificador inválido `bookshelves` pelo bloco vanilla singular `bookshelf` nas prateleiras do Arquivo Abissal.
+- Atualizados os manifests pareados `BP_TorreInvertidaAbissal` e `RP_TorreInvertidaAbissal` para `0.5.1`, conforme regra fixa de versionamento BP/RP do módulo.
+- Não foram criadas, alteradas nem commitadas texturas PNG; a correção envolve somente arquivos texto.
+- Validações locais realizadas: busca por `bookshelves` remanescente no módulo Torre Invertida Abissal, parsing JSON dos manifests e inspeção do diff Git.
