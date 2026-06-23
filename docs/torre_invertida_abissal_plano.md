@@ -64,9 +64,9 @@ A construção deve parecer uma torre antiga que foi puxada para baixo por uma f
 - O jogador consegue sair da estrutura sem depender de comandos.
 
 **Registro pós-conclusão:**
-- O que foi feito:
-- O que ficou faltando:
-- Impedimentos/bloqueios:
+- O que foi feito: criada a função `/function torre_invertida_abissal/superficie_sprint2` para detalhar a superfície, com cratera externa, bordas reforçadas, ponte principal iluminada, portal arquitetônico, pátio seguro, mirante oeste, acampamento leste, arco rachado sul, torres laterais, correntes, sinalização e pontos de retorno; documentada a execução em `docs/torre_invertida_abissal/sprint2_superficie_entrada.md`; atualizados os manifests pareados BP/RP para `0.2.0`.
+- O que ficou faltando: executar a função em mundo Bedrock de teste após a Sprint 1, validar escala real, legibilidade das placas, largura da ponte e segurança das rotas de retorno.
+- Impedimentos/bloqueios: a validação bloco-a-bloco no mundo ativo não foi usada devido às limitações já registradas do MCP remoto/LevelDB; por segurança, a Sprint 2 foi entregue como artefato versionado para execução manual em área livre.
 
 ### Sprint 3 — Eixo vertical e anéis de exploração
 **Objetivo:** transformar a torre em uma experiência vertical memorável.

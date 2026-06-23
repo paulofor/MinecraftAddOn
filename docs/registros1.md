@@ -2258,3 +2258,14 @@ Checklist executado no host via MCP readonly/projeto:
 - Não foram criadas, alteradas nem commitadas texturas PNG; o RP contém apenas manifest e texto de localização.
 - Validação local realizada com parsing JSON dos manifests e verificação de ausência de PNG novo no módulo.
 - Pendência operacional: executar a função em um mundo de teste Bedrock, longe do spawn e de estruturas existentes, para validar a leitura visual e ajustar escala após feedback.
+
+## 2026-06-23 00:12 UTC-3 — Execução da Sprint 2: Torre Invertida Abissal
+- Pedido recebido: executar a Sprint 2 do plano `docs/torre_invertida_abissal_plano.md`.
+- Criada a função `packs/BP_TorreInvertidaAbissal/functions/torre_invertida_abissal/superficie_sprint2.mcfunction` para construir a superfície e entrada monumental em mundo de teste, usando a mesma origem relativa da Sprint 1.
+- A função adiciona cratera externa com bordas reforçadas, ponte principal norte, portal arquitetônico, pátio seguro, mirante oeste, acampamento leste, arco rachado sul, torres laterais, correntes, sinalização e rotas de retorno por ponte, escadas, plataformas e água.
+- Atualizada a função `torre_invertida_abissal/init` para orientar a sequência Sprint 1 → Sprint 2.
+- Atualizados os manifests pareados `BP_TorreInvertidaAbissal` e `RP_TorreInvertidaAbissal` para `0.2.0`, conforme regra de versionamento BP/RP do módulo.
+- Criado o documento `docs/torre_invertida_abissal/sprint2_superficie_entrada.md` com elementos construídos, rota esperada, critérios de aceite e passos de validação.
+- Atualizado o registro pós-conclusão da Sprint 2 em `docs/torre_invertida_abissal_plano.md`.
+- Não foram criadas, alteradas nem commitadas texturas PNG; a entrega usa apenas arquivos texto e blocos vanilla.
+- Pendência operacional: executar as funções em mundo Bedrock de teste e ajustar a escala visual, a legibilidade da sinalização e a segurança real das quedas após validação em jogo.
