@@ -2328,3 +2328,23 @@ Checklist executado no host via MCP readonly/projeto:
 - Atualizado o registro pós-conclusão da Sprint 6 em `docs/torre_invertida_abissal_plano.md`.
 - Não foram criadas, alteradas nem commitadas texturas PNG; a entrega usa apenas arquivos texto e blocos vanilla.
 - Pendência operacional: executar o percurso completo em mundo Bedrock de teste e ajustar estética, segurança, orientação e ritmo conforme playtest.
+
+## 2026-06-23 10:35 UTC-3 — Consulta MCP para localização da Torre Invertida Abissal
+- Pedido recebido: acessar o mundo pelo MCP Server e sugerir uma localização para criar a Torre Invertida Abissal agora no mundo ativo.
+- MCP consultado em `http://186.202.209.206/mcp` com `tools/list`; ferramentas disponíveis confirmadas, incluindo `list_directory`, `read_file`, `get_block`, `get_block_region` e `suggest_arena_location`.
+- Mundo ativo confirmado em `/root/MinecraftServer/worlds/Bedrock level`; também existe backup `/root/MinecraftServer/worlds/Bedrock level.backup-20260622-171518`.
+- `world_behavior_packs.json` e `world_resource_packs.json` do mundo ativo foram lidos via MCP; o módulo `BP_TorreInvertidaAbissal`/`RP_TorreInvertidaAbissal` versão `0.6.0` está vinculado no mundo pelos UUIDs dos manifests locais.
+- Ferramenta `suggest_arena_location` executada para uma área de 64x96x64, Y preferido 80, margem 48, usando `/root/MinecraftServer/logging/bedrock.log` como evidência de atividade recente.
+- Local recomendado pelo MCP: centro `x=-373, y=80, z=368`; volume afetado estimado `x=-405..-341`, `y=48..143`, `z=336..400`; confiança `medium`.
+- Evidência do MCP: 20 coordenadas recentes encontradas no log; área recente observada `x=-530.3..72.7`, `z=353.0..383.6`; o centro sugerido fica a aproximadamente 157.1 blocos da coordenada recente mais próxima.
+- Recomendação operacional: teletransportar para `/tp @s -373 80 368`, confirmar visualmente que não há construção importante, e executar as funções da torre em sequência: `/function torre_invertida_abissal/init`, `/function torre_invertida_abissal/blocagem_sprint1`, `/function torre_invertida_abissal/superficie_sprint2`, `/function torre_invertida_abissal/eixo_aneis_sprint3`, `/function torre_invertida_abissal/laboratorios_sprint4`, `/function torre_invertida_abissal/bioma_arquivo_nucleo_sprint5`, `/function torre_invertida_abissal/polimento_sprint6`.
+- Observação: a ferramenta usa logs e heurística, não inspeção visual completa do terreno; validar in-game antes de montar definitivamente.
+
+## 2026-06-23 10:39 UTC-3 — Função única para montar a Torre Invertida Abissal
+- Dúvida recebida: se é possível colocar vários `/function` de uma vez no chat do Minecraft.
+- Resposta operacional consolidada: no chat, o operador deve executar um comando por envio; para rodar vários passos de uma vez, o fluxo correto é criar uma função agregadora `.mcfunction` que chama as demais funções em sequência.
+- Criada a função `packs/BP_TorreInvertidaAbissal/functions/torre_invertida_abissal/montar_completa.mcfunction`, que executa `init`, `blocagem_sprint1`, `superficie_sprint2`, `eixo_aneis_sprint3`, `laboratorios_sprint4`, `bioma_arquivo_nucleo_sprint5` e `polimento_sprint6` em ordem, relativa à posição do executor.
+- Atualizada a mensagem de `torre_invertida_abissal/init` para orientar o uso de `/function torre_invertida_abissal/montar_completa` quando a intenção for criar tudo de uma vez, mantendo também a sequência por etapas como alternativa.
+- Atualizados os manifests pareados `BP_TorreInvertidaAbissal` e `RP_TorreInvertidaAbissal` para `0.6.1`, conforme regra fixa de versionamento BP/RP do módulo.
+- Não foram criadas, alteradas nem commitadas texturas PNG; a alteração envolve somente arquivos texto.
+- Recomendação in-game: ir ao centro sugerido pelo MCP com `/tp @s -373 80 368`, validar visualmente que a área está livre e executar somente `/function torre_invertida_abissal/montar_completa`.
