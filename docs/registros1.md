@@ -2269,3 +2269,14 @@ Checklist executado no host via MCP readonly/projeto:
 - Atualizado o registro pós-conclusão da Sprint 2 em `docs/torre_invertida_abissal_plano.md`.
 - Não foram criadas, alteradas nem commitadas texturas PNG; a entrega usa apenas arquivos texto e blocos vanilla.
 - Pendência operacional: executar as funções em mundo Bedrock de teste e ajustar a escala visual, a legibilidade da sinalização e a segurança real das quedas após validação em jogo.
+
+## 2026-06-23 00:39 UTC-3 — Execução da Sprint 3: Torre Invertida Abissal
+- Pedido recebido: executar a Sprint 3 do plano `docs/torre_invertida_abissal_plano.md`.
+- Criada a função `packs/BP_TorreInvertidaAbissal/functions/torre_invertida_abissal/eixo_aneis_sprint3.mcfunction` para construir eixo vertical e anéis exploráveis em mundo de teste, usando a mesma origem relativa das Sprints 1 e 2.
+- A função adiciona poço central aberto, coluna de água, molduras de deepslate, plataformas intermediárias, piscinas de mitigação de queda, três anéis por cor, salas laterais, passarelas, escadas, scaffolding e checkpoints visuais.
+- Atualizada a função `torre_invertida_abissal/init` para orientar a sequência Sprint 1 → Sprint 2 → Sprint 3.
+- Atualizados os manifests pareados `BP_TorreInvertidaAbissal` e `RP_TorreInvertidaAbissal` para `0.3.0`, conforme regra de versionamento BP/RP do módulo.
+- Criado o documento `docs/torre_invertida_abissal/sprint3_eixo_aneis.md` com elementos construídos, rota esperada, critérios de aceite e passos de validação.
+- Atualizado o registro pós-conclusão da Sprint 3 em `docs/torre_invertida_abissal_plano.md`.
+- Não foram criadas, alteradas nem commitadas texturas PNG; a entrega usa apenas arquivos texto e blocos vanilla.
+- Pendência operacional: executar as funções em mundo Bedrock de teste e ajustar altura dos acessos, legibilidade dos checkpoints, segurança das quedas e clareza das rotas alternativas após validação em jogo.
