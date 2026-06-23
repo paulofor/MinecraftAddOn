@@ -58,10 +58,10 @@ fill ~-94 ~-108 ~-34 ~-66 ~-99 ~34 deepslate_bricks hollow
 fill ~-90 ~-107 ~-30 ~-70 ~-100 ~30 air
 fill ~-66 ~-106 ~-5 ~-54 ~-100 ~5 air
 fill ~-90 ~-99 ~-30 ~-70 ~-99 ~30 polished_deepslate
-fill ~-88 ~-98 ~-28 ~-72 ~-98 ~-24 bookshelves
-fill ~-88 ~-98 ~24 ~-72 ~-98 ~28 bookshelves
-fill ~-90 ~-98 ~-20 ~-90 ~-98 ~20 bookshelves
-fill ~-70 ~-98 ~-20 ~-70 ~-98 ~20 bookshelves
+fill ~-88 ~-98 ~-28 ~-72 ~-98 ~-24 bookshelf
+fill ~-88 ~-98 ~24 ~-72 ~-98 ~28 bookshelf
+fill ~-90 ~-98 ~-20 ~-90 ~-98 ~20 bookshelf
+fill ~-70 ~-98 ~-20 ~-70 ~-98 ~20 bookshelf
 setblock ~-80 ~-98 ~0 lectern
 setblock ~-80 ~-97 ~-8 sea_lantern
 setblock ~-80 ~-97 ~8 sea_lantern
