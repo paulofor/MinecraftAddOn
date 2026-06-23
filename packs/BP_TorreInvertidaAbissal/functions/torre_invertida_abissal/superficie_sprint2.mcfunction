@@ -68,7 +68,7 @@ fill ~18 ~2 ~-84 ~18 ~2 ~-70 stone_brick_wall
 setblock ~0 ~2 ~-77 campfire
 setblock ~-6 ~2 ~-77 barrel
 setblock ~6 ~2 ~-77 barrel
-setblock ~0 ~2 ~-71 oak_sign ["facing_direction"=2]
+setblock ~0 ~2 ~-71 standing_sign
 setblock ~-16 ~2 ~-77 sea_lantern
 setblock ~16 ~2 ~-77 sea_lantern
 
@@ -79,13 +79,13 @@ fill ~-58 ~2 ~-12 ~-58 ~3 ~12 stone_brick_wall
 fill ~-72 ~2 ~-12 ~-58 ~2 ~-12 stone_brick_wall
 fill ~-72 ~2 ~12 ~-58 ~2 ~12 stone_brick_wall
 setblock ~-65 ~2 ~0 lectern
-setblock ~-65 ~2 ~-10 oak_sign ["facing_direction"=2]
+setblock ~-65 ~2 ~-10 standing_sign
 
 fill ~58 ~1 ~-12 ~72 ~1 ~12 oak_planks
 setblock ~65 ~2 ~0 campfire
 setblock ~61 ~2 ~-5 chest
 setblock ~69 ~2 ~5 crafting_table
-setblock ~65 ~2 ~-10 oak_sign ["facing_direction"=2]
+setblock ~65 ~2 ~-10 standing_sign
 fill ~58 ~2 ~-12 ~72 ~2 ~-12 oak_fence
 fill ~58 ~2 ~12 ~72 ~2 ~12 oak_fence
 
@@ -95,7 +95,7 @@ fill ~10 ~2 ~62 ~14 ~12 ~66 cracked_stone_bricks
 fill ~-14 ~12 ~62 ~14 ~15 ~66 mossy_stone_bricks
 fill ~-7 ~2 ~64 ~7 ~10 ~64 air
 setblock ~0 ~3 ~61 glowstone
-setblock ~0 ~2 ~70 oak_sign ["facing_direction"=3]
+setblock ~0 ~2 ~70 standing_sign
 
 # Torres laterais e arcos gigantes para escala.
 fill ~-42 ~1 ~-62 ~-34 ~24 ~-54 weathered_copper hollow
@@ -119,8 +119,8 @@ fill ~47 ~2 ~-34 ~49 ~8 ~-32 ladder
 fill ~-4 ~-16 ~-21 ~4 ~0 ~-17 water
 fill ~-14 ~1 ~-18 ~-10 ~1 ~-14 stone_bricks
 fill ~10 ~1 ~-18 ~14 ~1 ~-14 stone_bricks
-setblock ~-12 ~2 ~-16 oak_sign ["facing_direction"=2]
-setblock ~12 ~2 ~-16 oak_sign ["facing_direction"=2]
+setblock ~-12 ~2 ~-16 standing_sign
+setblock ~12 ~2 ~-16 standing_sign
 
 # Marcadores luminosos de orientacao para nao depender de comandos.
 setblock ~0 ~2 ~-64 beacon
