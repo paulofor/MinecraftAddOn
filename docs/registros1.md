@@ -2287,3 +2287,15 @@ Checklist executado no host via MCP readonly/projeto:
 - Atualizados os manifests pareados `BP_TorreInvertidaAbissal` e `RP_TorreInvertidaAbissal` para `0.3.1`, conforme regra fixa de versionamento BP/RP do módulo.
 - Não foram criadas, alteradas nem commitadas texturas PNG; a correção envolve somente arquivos texto.
 - Validações locais realizadas: busca por `oak_sign` remanescente em `packs/BP_TorreInvertidaAbissal`, parsing JSON dos manifests e verificação de status Git.
+
+
+## 2026-06-23 00:55 UTC-3 — Execução da Sprint 4: Torre Invertida Abissal
+- Pedido recebido: executar a Sprint 4 do plano `docs/torre_invertida_abissal_plano.md`.
+- Criada a função `packs/BP_TorreInvertidaAbissal/functions/torre_invertida_abissal/laboratorios_sprint4.mcfunction` para construir hub de laboratórios e quatro salas educativas em mundo de teste, usando a mesma origem relativa das Sprints 1 a 3.
+- A função adiciona desafios de sequência, lógica booleana simples, padrão visual e causa/consequência, com feedback visual por luzes/blocos, lecterns/placas curtas, baús de recompensa simbólica, atalhos e retorno ao eixo.
+- Atualizada a função `torre_invertida_abissal/init` para orientar a sequência Sprint 1 → Sprint 2 → Sprint 3 → Sprint 4.
+- Atualizados os manifests pareados `BP_TorreInvertidaAbissal` e `RP_TorreInvertidaAbissal` para `0.4.0`, conforme regra de versionamento BP/RP do módulo.
+- Criado o documento `docs/torre_invertida_abissal/sprint4_laboratorios_puzzles.md` com salas implementadas, conteúdo educativo, critérios de aceite e checklist de validação.
+- Atualizado o registro pós-conclusão da Sprint 4 em `docs/torre_invertida_abissal_plano.md`.
+- Não foram criadas, alteradas nem commitadas texturas PNG; a entrega usa apenas arquivos texto e blocos vanilla.
+- Pendência operacional: executar as funções em mundo Bedrock de teste e validar colisões, leitura dos puzzles, visibilidade dos feedbacks e recompensas após playtest.
