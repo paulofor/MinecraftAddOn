@@ -2317,3 +2317,14 @@ Checklist executado no host via MCP readonly/projeto:
 - Atualizados os manifests pareados `BP_TorreInvertidaAbissal` e `RP_TorreInvertidaAbissal` para `0.5.1`, conforme regra fixa de versionamento BP/RP do módulo.
 - Não foram criadas, alteradas nem commitadas texturas PNG; a correção envolve somente arquivos texto.
 - Validações locais realizadas: busca por `bookshelves` remanescente no módulo Torre Invertida Abissal, parsing JSON dos manifests e inspeção do diff Git.
+
+## 2026-06-23 08:45 UTC-3 — Execução da Sprint 6: Torre Invertida Abissal
+- Pedido recebido: executar a Sprint 6 do plano `docs/torre_invertida_abissal_plano.md`.
+- Criada a função `packs/BP_TorreInvertidaAbissal/functions/torre_invertida_abissal/polimento_sprint6.mcfunction` para polimento, validação e preparação para expansão em mundo de teste, usando a mesma origem relativa das Sprints 1 a 5.
+- A função reforça trilhas de orientação, iluminação anti-spawn, guard rails nos anéis, mitigação de quedas, retorno vertical, sinalização dos laboratórios, rota final Jardim → Arquivo → Núcleo → elevador e quatro pontos de expansão futura com marcadores/lecterns.
+- Atualizada a função `torre_invertida_abissal/init` para orientar a sequência Sprint 1 → Sprint 2 → Sprint 3 → Sprint 4 → Sprint 5 → Sprint 6.
+- Atualizados os manifests pareados `BP_TorreInvertidaAbissal` e `RP_TorreInvertidaAbissal` para `0.6.0`, conforme regra de versionamento BP/RP do módulo.
+- Criado o documento `docs/torre_invertida_abissal/sprint6_polimento_validacao.md` com itens polidos, coordenadas relativas de expansão e checklist de validação in-game.
+- Atualizado o registro pós-conclusão da Sprint 6 em `docs/torre_invertida_abissal_plano.md`.
+- Não foram criadas, alteradas nem commitadas texturas PNG; a entrega usa apenas arquivos texto e blocos vanilla.
+- Pendência operacional: executar o percurso completo em mundo Bedrock de teste e ajustar estética, segurança, orientação e ritmo conforme playtest.

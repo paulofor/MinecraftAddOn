@@ -2,12 +2,12 @@
   "format_version": 2,
   "header": {
     "name": "RP Torre Invertida Abissal",
-    "description": "Resource Pack pareado da Torre Invertida Abissal; Sprints 1-5 sem texturas PNG customizadas.",
+    "description": "Resource Pack pareado da Torre Invertida Abissal; Sprints 1-6 sem texturas PNG customizadas.",
     "uuid": "660e4f7a-cc2a-48ae-a6e1-d86a70c8f419",
     "version": [
       0,
-      5,
-      1
+      6,
+      0
     ],
     "min_engine_version": [
       1,
@@ -21,8 +21,8 @@
       "uuid": "adc3ac5d-a4b4-4397-9515-3299fde9d047",
       "version": [
         0,
-        5,
-        1
+        6,
+        0
       ]
     }
   ],
