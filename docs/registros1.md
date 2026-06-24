@@ -2454,3 +2454,12 @@ Checklist executado no host via MCP readonly/projeto:
 - Documentação: criado `docs/academia_arcana_monumental/sprint7_polimento_validacao.md` e atualizado o registro pós-conclusão da Sprint 7 no plano mestre.
 - Validação local: validação JSON dos manifests, inspeção de referências `.mcfunction`, verificação de ausência de PNG em mudanças e `git diff --check`.
 - Pendências: validar visualmente dentro do Minecraft, testar o fluxo completo do jogador e ajustar iluminação/rotas conforme feedback real.
+
+## 2026-06-24 18:05:00 UTC-3 — Verificação de implementação da Academia Arcana Monumental
+- Pedido recebido: verificar se o plano `docs/academia_arcana_monumental_plano.md` foi completamente implementado e, em caso positivo, indicar um bom ponto e comandos para criar a academia pelo jogo.
+- Resultado da verificação local: as Sprints 1 a 7 possuem funções `.mcfunction` correspondentes no módulo `packs/BP_AcademiaArcanaMonumental/functions/academia_arcana_monumental/`, a função `montar_completa.mcfunction` encadeia todas as sprints e os manifests pareados BP/RP estão versionados em `0.1.9`.
+- Escopo considerado completo no repositório: implementação por funções versionadas, documentação de sprint, registro pós-conclusão no plano mestre e ausência de PNG customizado no módulo.
+- Limite da verificação: ainda consta pendência de validação visual/playtest dentro do Minecraft em mundo Bedrock ativo; portanto a conclusão é “implementado no repositório e pronto para teste em jogo”, não “playtest final aprovado”.
+- Ponto recomendado para criação em mundo de teste: teleportar o jogador para uma área livre e distante de construções, por exemplo `1000 80 1000`, usando esse ponto como centro do Pátio das Casas Arcanas.
+- Comandos sugeridos no jogo: `/tp @s 1000 80 1000`, `/gamemode creative @s`, `/function academia_arcana_monumental/init`, `/function academia_arcana_monumental/montar_completa` e, após terminar a montagem/inspeção, `/gamemode survival @s` para sair do modo criativo.
+- Validações executadas: conferência de referências internas de funções sem alvo ausente e validação JSON dos manifests BP/RP.
