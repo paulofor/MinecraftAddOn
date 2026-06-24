@@ -2422,3 +2422,9 @@ Checklist executado no host via MCP readonly/projeto:
 - O plano define o uso de Custom Dimension API, Script API `@minecraft/server`, eventos de interação com bloco e `TeleportOptions.dimension`, além de fallback seguro para arena isolada no Overworld caso Beta APIs/dimensões customizadas não estejam disponíveis no servidor.
 - Mantida a conclusão técnica: a quarta dimensão espacial será simulada pedagogicamente em um ambiente 3D, não implementada como quarta coordenada real do motor Bedrock.
 - Nenhum arquivo PNG foi criado, alterado ou commitado; a entrega é documental e prepara a implementação futura com BP/RP pareados.
+## 2026-06-24 16:58:59 UTC-3 — Correção de ids vanilla na Sprint 4 da Academia Arcana
+- Trabalho realizado: corrigidos IDs de blocos vanilla incompatíveis com o parser de funções Bedrock em `torres_educativas_sprint4.mcfunction` após erro de deploy pós-restart.
+- Ajustes aplicados: `oak_door` -> `wooden_door`, `note_block` -> `noteblock`, `magma_block` -> `magma`, `terracotta` -> `hardened_clay`.
+- Versionamento: incrementados os manifests pareados `BP_AcademiaArcanaMonumental` e `RP_AcademiaArcanaMonumental` de `0.1.5` para `0.1.6`.
+- Evidência: validação local por busca confirmou ausência dos IDs problemáticos no arquivo da função.
+- Pendências: executar deploy e confirmar no `bedrock.log` remoto que a função `academia_arcana_monumental/torres_educativas_sprint4` carrega sem warnings de parser.
