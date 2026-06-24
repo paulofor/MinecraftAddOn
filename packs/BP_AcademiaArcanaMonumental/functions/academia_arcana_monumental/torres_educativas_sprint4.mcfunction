@@ -15,7 +15,7 @@ fill ~-98 ~1 ~-46 ~-74 ~4 ~-40 lapis_block
 fill ~-91 ~2 ~-46 ~-81 ~5 ~-46 air
 setblock ~-86 ~5 ~-46 sea_lantern
 setblock ~-86 ~2 ~-43 lectern
-setblock ~-86 ~2 ~-50 oak_door
+setblock ~-86 ~2 ~-50 wooden_door
 fill ~-95 ~2 ~-70 ~-77 ~2 ~-64 white_concrete
 setblock ~-93 ~3 ~-67 blue_glazed_terracotta
 setblock ~-89 ~3 ~-67 blue_glazed_terracotta
@@ -71,10 +71,10 @@ setblock ~84 ~13 ~-58 redstone_lamp
 setblock ~88 ~13 ~-62 sea_lantern
 setblock ~92 ~13 ~-60 lectern
 fill ~78 ~26 ~-70 ~94 ~26 ~-54 yellow_concrete
-setblock ~80 ~27 ~-68 note_block
-setblock ~84 ~27 ~-68 note_block
-setblock ~88 ~27 ~-68 note_block
-setblock ~92 ~27 ~-68 note_block
+setblock ~80 ~27 ~-68 noteblock
+setblock ~84 ~27 ~-68 noteblock
+setblock ~88 ~27 ~-68 noteblock
+setblock ~92 ~27 ~-68 noteblock
 setblock ~80 ~27 ~-64 redstone_lamp
 setblock ~84 ~27 ~-64 redstone_lamp
 setblock ~88 ~27 ~-64 redstone_lamp
@@ -95,10 +95,10 @@ setblock ~-86 ~5 ~46 sea_lantern
 setblock ~-86 ~2 ~43 lectern
 fill ~-95 ~2 ~54 ~-77 ~2 ~70 prismarine
 fill ~-94 ~3 ~55 ~-90 ~3 ~59 water
-fill ~-82 ~3 ~55 ~-78 ~3 ~59 magma_block
+fill ~-82 ~3 ~55 ~-78 ~3 ~59 magma
 setblock ~-86 ~3 ~62 lectern
 setblock ~-86 ~4 ~66 sea_lantern
-fill ~-95 ~12 ~54 ~-77 ~12 ~70 terracotta
+fill ~-95 ~12 ~54 ~-77 ~12 ~70 hardened_clay
 setblock ~-93 ~13 ~56 redstone_block
 setblock ~-89 ~13 ~56 redstone_lamp
 setblock ~-85 ~13 ~56 redstone_lamp
@@ -121,12 +121,12 @@ fill ~-42 ~1 ~10 ~-38 ~1 ~42 green_carpet
 setblock ~-8 ~2 ~-40 redstone_lamp
 setblock ~0 ~2 ~-40 sea_lantern
 setblock ~8 ~2 ~-40 redstone_lamp
-setblock ~40 ~2 ~-8 note_block
+setblock ~40 ~2 ~-8 noteblock
 setblock ~40 ~2 ~0 sea_lantern
-setblock ~40 ~2 ~8 note_block
+setblock ~40 ~2 ~8 noteblock
 setblock ~-40 ~2 ~14 water
 setblock ~-40 ~2 ~26 sea_lantern
-setblock ~-40 ~2 ~38 magma_block
+setblock ~-40 ~2 ~38 magma
 setblock ~-12 ~1 ~-36 lectern
 setblock ~36 ~1 ~-12 lectern
 setblock ~-36 ~1 ~12 lectern
