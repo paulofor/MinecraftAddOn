@@ -131,9 +131,9 @@ A academia deve parecer uma instituição antiga que cresceu por séculos, com e
 - O anfiteatro pode receber eventos futuros sem grande reconstrução.
 
 **Registro pós-conclusão:**
-- O que foi feito:
-- O que ficou faltando:
-- Impedimentos/bloqueios:
+- O que foi feito: criada função de construção da Sprint 5 com Observatório Celeste, cúpula, telescópios simbólicos, mapas estelares, desafio de alinhamento, Jardins de Runas com trilhas, fontes, labirintos leves, bancos e puzzles ambientais, Anfiteatro dos Duelos Didáticos preparado para eventos futuros e rotas panorâmicas por pontes suspensas/varandas. A montagem completa foi atualizada para executar Sprints 1, 2, 3, 4 e 5 em sequência. Detalhes em `docs/academia_arcana_monumental/sprint5_observatorio_jardins_anfiteatro.md`.
+- O que ficou faltando: validação visual dentro do jogo, ajuste fino da escala das pontes e arquibancadas após playtest, e textos finais de lecterns em etapa futura.
+- Impedimentos/bloqueios: não houve uso de PNG por regra do projeto; a entrega usa apenas blocos vanilla e funções versionadas para execução em mundo de teste.
 
 ### Sprint 6 — Arquivo Proibido Subterrâneo e desafio final
 **Objetivo:** adicionar profundidade, mistério e uma conclusão para a primeira versão da academia.
