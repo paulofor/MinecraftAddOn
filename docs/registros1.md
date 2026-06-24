@@ -2236,3 +2236,26 @@ Checklist executado no host via MCP readonly/projeto:
 - Ajustado `infra/mcp-bedrock-readonly/Dockerfile` para instalar `g++ zlib1g-dev` no estágio `wheel-builder`.
 - Ajustado também o estágio final para instalar explicitamente `zlib1g`, garantindo a biblioteca runtime do wheel instalado.
 - Validação local tentada com `docker build -f infra/mcp-bedrock-readonly/Dockerfile -t mcp-bedrock-readonly:test .`, mas o ambiente local não possui `docker` instalado (`docker: command not found`); a validação efetiva deve ocorrer no GitHub Actions/workflow de publicação.
+
+## 2026-06-22 20:49 UTC-3 — Sugestões de macroconstrução grandiosa pós-arena em ruína
+- Pedido recebido: propor 10 ideias de construção grandiosa para o jogador entrar, explorar e encontrar áreas novas e diferentes, ocupando grande largura, altura e profundidade.
+- Direção criativa adotada: estruturas monumentais exploráveis, com forte leitura visual à distância, camadas verticais/subterrâneas e potencial educativo/aventura para jovens de 16 a 20 anos.
+- Resultado: sugestões apresentadas em formato conceitual, ainda sem alteração de packs, scripts, manifests, texturas ou deploy no servidor.
+
+## 2026-06-22 22:42 UTC-3 — Plano de Add-On: Torre Invertida Abissal
+- Pedido recebido: criar um plano para a construção grandiosa "Torre Invertida Abissal".
+- Criado o documento `docs/torre_invertida_abissal_plano.md` com visão geral, objetivos, escala sugerida, conceito visual, zonas principais, riscos, próximo passo e plano estruturado em 6 sprints.
+- Cada sprint inclui entregas, critérios de aceite e espaço obrigatório de registro pós-conclusão com: o que foi feito, o que ficou faltando e impedimentos/bloqueios.
+- Não houve alteração de packs, scripts, manifests, definições, texturas PNG ou deploy no servidor.
+
+## 2026-06-24 15:14 UTC-3 — Plano de Add-On: Academia Arcana Monumental
+- Pedido recebido: criar um plano para a construção grandiosa "Academia Arcana Monumental".
+- Criado o documento `docs/academia_arcana_monumental_plano.md` com visão geral, objetivos de experiência, escala sugerida, conceito visual, zonas principais, diretrizes educativas, riscos, próximo passo e plano estruturado em 7 sprints.
+- Cada sprint inclui objetivo, entregas, critérios de aceite e espaço obrigatório de registro pós-conclusão com: o que foi feito, o que ficou faltando e impedimentos/bloqueios.
+- Não houve alteração de packs, scripts, manifests, definições, texturas PNG ou deploy no servidor.
+
+## 2026-06-24 15:23 UTC-3 — Plano de Add-On: Observatório das Estrelas Quebradas
+- Pedido recebido: criar também um plano para a construção grandiosa "O Observatório das Estrelas Quebradas".
+- Criado o documento `docs/observatorio_estrelas_quebradas_plano.md` com visão geral, objetivos de experiência, escala sugerida, conceito visual, zonas principais, diretrizes educativas, riscos, próximo passo e plano estruturado em 8 sprints.
+- Cada sprint inclui objetivo, entregas, critérios de aceite e espaço obrigatório de registro pós-conclusão com: o que foi feito, o que ficou faltando e impedimentos/bloqueios.
+- Não houve alteração de packs, scripts, manifests, definições, texturas PNG ou deploy no servidor.
