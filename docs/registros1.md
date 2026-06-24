@@ -2382,3 +2382,9 @@ Checklist executado no host via MCP readonly/projeto:
 - Incrementadas as versões dos manifests pareados `packs/BP_AcademiaArcanaMonumental/manifest.json` e `packs/RP_AcademiaArcanaMonumental/manifest.json` para `0.1.2`.
 - Criada documentação detalhada em `docs/academia_arcana_monumental/sprint2_portao_patio_identidade.md`.
 - Não foram criados nem alterados arquivos PNG; a identidade visual usa apenas blocos vanilla.
+
+## 2026-06-24 16:13:23 UTC-3 — Correção de parse da Sprint 2 da Academia Arcana Monumental
+- Corrigido erro de runtime/deploy na função `packs/BP_AcademiaArcanaMonumental/functions/academia_arcana_monumental/detalhamento_sprint2.mcfunction`: os blocos `blue_banner`, `green_banner`, `orange_banner` e `red_banner` não eram aceitos pelo parser de comandos Bedrock nesse contexto.
+- Substituídos os brasões do portão por blocos vanilla estáveis (`blue_wool`, `green_wool`, `orange_wool`, `red_wool`), mantendo a identidade visual por cor sem depender de sintaxe específica de banners.
+- Atualizadas as versões pareadas dos manifests `BP_AcademiaArcanaMonumental` e `RP_AcademiaArcanaMonumental` de `0.1.2` para `0.1.3`, incluindo módulo e dependência BP→RP, para rastreabilidade do deploy.
+- Validação local prevista: checagem textual para garantir ausência dos identificadores inválidos de banner na função corrigida.

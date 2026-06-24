@@ -30,10 +30,10 @@ fill ~18 ~33 ~-88 ~18 ~38 ~-84 quartz_block
 setblock ~-18 ~39 ~-86 sea_lantern
 setblock ~18 ~39 ~-86 sea_lantern
 setblock ~0 ~30 ~-84 beacon
-setblock ~-10 ~13 ~-82 blue_banner
-setblock ~-4 ~13 ~-82 green_banner
-setblock ~4 ~13 ~-82 orange_banner
-setblock ~10 ~13 ~-82 red_banner
+setblock ~-10 ~13 ~-82 blue_wool
+setblock ~-4 ~13 ~-82 green_wool
+setblock ~4 ~13 ~-82 orange_wool
+setblock ~10 ~13 ~-82 red_wool
 fill ~-34 ~1 ~-92 ~-30 ~9 ~-88 stone_bricks
 fill ~30 ~1 ~-92 ~34 ~9 ~-88 stone_bricks
 setblock ~-32 ~10 ~-90 carved_pumpkin
