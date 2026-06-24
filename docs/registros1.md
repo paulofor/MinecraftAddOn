@@ -2445,3 +2445,12 @@ Checklist executado no host via MCP readonly/projeto:
 - PNG/texturas: nenhum arquivo `.png` foi criado, alterado ou commitado; a entrega usa somente arquivos texto e blocos vanilla.
 - Validação local: validação JSON dos manifests, inspeção de referências `.mcfunction`, verificação de ausência de PNG em mudanças e `git diff --check`.
 - Pendências: playtest em mundo Bedrock para validar entrada subterrânea, leitura do desafio final, iluminação do subsolo e retorno seguro ao campus.
+
+## 2026-06-24 00:00 UTC-3 — Academia Arcana Monumental — Sprint 7
+- Trabalho realizado: executada a Sprint 7 do plano `docs/academia_arcana_monumental_plano.md`, com criação da função `polimento_sprint7.mcfunction` para polimento, validação jogável e preparação técnica.
+- Entregas: revisão de rotas, sinalização, iluminação, pontos de risco, marcadores de fluxo completo, pontos de retomada e coordenadas importantes para futuras automações, NPCs, triggers e interações.
+- Montagem: `montar_completa.mcfunction` atualizada para executar Sprints 1, 2, 3, 4, 5, 6 e 7 em sequência; `init.mcfunction` atualizado com orientação da Sprint 7.
+- Versionamento: manifests pareados `BP_AcademiaArcanaMonumental` e `RP_AcademiaArcanaMonumental` incrementados para `0.1.9`, incluindo dependência BP→RP.
+- Documentação: criado `docs/academia_arcana_monumental/sprint7_polimento_validacao.md` e atualizado o registro pós-conclusão da Sprint 7 no plano mestre.
+- Validação local: validação JSON dos manifests, inspeção de referências `.mcfunction`, verificação de ausência de PNG em mudanças e `git diff --check`.
+- Pendências: validar visualmente dentro do Minecraft, testar o fluxo completo do jogador e ajustar iluminação/rotas conforme feedback real.

@@ -169,9 +169,9 @@ A academia deve parecer uma instituição antiga que cresceu por séculos, com e
 - O documento fornece base suficiente para transformar a construção em módulo jogável no futuro.
 
 **Registro pós-conclusão:**
-- O que foi feito:
-- O que ficou faltando:
-- Impedimentos/bloqueios:
+- O que foi feito: criada função de polimento da Sprint 7 com revisão de rotas, sinalização, iluminação, pontos de risco, marcadores técnicos para futuras automações/NPCs/triggers e checklist in-game. A montagem completa foi atualizada para executar Sprints 1 a 7 em sequência. Detalhes em `docs/academia_arcana_monumental/sprint7_polimento_validacao.md`.
+- O que ficou faltando: validação visual dentro do Minecraft por playtest humano, medições reais de performance em servidor ativo e ajustes finos de navegação após feedback.
+- Impedimentos/bloqueios: não houve uso de PNG por regra do projeto; a validação desta rodada foi local/estática, sem reprodução visual no cliente Minecraft.
 
 ## Riscos e cuidados
 - Evitar escala grande sem conteúdo; cada ala deve ter função, rota ou descoberta.
