@@ -93,9 +93,9 @@ A academia deve parecer uma instituição antiga que cresceu por séculos, com e
 - Existem segredos opcionais que recompensam exploração cuidadosa.
 
 **Registro pós-conclusão:**
-- O que foi feito:
-- O que ficou faltando:
-- Impedimentos/bloqueios:
+- O que foi feito: criada função de construção da Biblioteca Infinita com fachada vertical, cúpula, átrio interno, múltiplos andares, passarelas, varandas, nichos de lore por disciplina, lecterns, iluminação orientadora, sala secreta por observação, sequência ambiental colorida e conexão subterrânea inicialmente bloqueada para o Arquivo Proibido. A montagem completa foi atualizada para executar Sprints 1, 2 e 3 em sequência. Detalhes em `docs/academia_arcana_monumental/sprint3_biblioteca_arquivo.md`.
+- O que ficou faltando: validação visual dentro do jogo, textos finais para lecterns, ajuste fino das pistas secretas após playtest e abertura funcional do Arquivo Proibido em sprint futura.
+- Impedimentos/bloqueios: não houve uso de PNG por regra do projeto; a entrega usa apenas blocos vanilla e funções versionadas para execução em mundo de teste.
 
 ### Sprint 4 — Torres educativas: Lógica, Algoritmos e Elementos
 **Objetivo:** inserir a primeira leva de desafios educativos jogáveis.

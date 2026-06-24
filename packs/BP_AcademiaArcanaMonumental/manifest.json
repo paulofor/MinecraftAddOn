@@ -2,12 +2,12 @@
   "format_version": 2,
   "header": {
     "name": "BP Academia Arcana Monumental",
-    "description": "Behavior Pack educativo para blocagem, identidade visual, portao, muralhas e patio orientado da Academia Arcana Monumental.",
+    "description": "Behavior Pack educativo para blocagem, identidade visual e Biblioteca Infinita da Academia Arcana Monumental.",
     "uuid": "f8c7ffba-a3d9-4a69-9752-8b9cedf16c77",
     "version": [
       0,
       1,
-      3
+      4
     ],
     "min_engine_version": [
       1,
@@ -22,7 +22,7 @@
       "version": [
         0,
         1,
-        3
+        4
       ]
     }
   ],
@@ -32,7 +32,7 @@
       "version": [
         0,
         1,
-        3
+        4
       ]
     }
   ],
