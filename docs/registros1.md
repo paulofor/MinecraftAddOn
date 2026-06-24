@@ -2428,3 +2428,11 @@ Checklist executado no host via MCP readonly/projeto:
 - Versionamento: incrementados os manifests pareados `BP_AcademiaArcanaMonumental` e `RP_AcademiaArcanaMonumental` de `0.1.5` para `0.1.6`.
 - Evidência: validação local por busca confirmou ausência dos IDs problemáticos no arquivo da função.
 - Pendências: executar deploy e confirmar no `bedrock.log` remoto que a função `academia_arcana_monumental/torres_educativas_sprint4` carrega sem warnings de parser.
+
+## 2026-06-24 17:25:04 UTC-3 — Academia Arcana Monumental — Sprint 5
+- Trabalho realizado: executada a Sprint 5 do plano `docs/academia_arcana_monumental_plano.md`, com criação da função `observatorio_jardins_anfiteatro_sprint5.mcfunction` para Observatório Celeste, Jardins de Runas, Anfiteatro dos Duelos Didáticos e rotas panorâmicas.
+- Entregas: Observatório Celeste com cúpula, telescópios simbólicos, mapa estelar e desafio de alinhamento; Jardins de Runas com trilhas, fonte, bancos, labirintos leves e puzzles ambientais; Anfiteatro preparado para eventos futuros; pontes suspensas e varandas ligando torres/áreas externas.
+- Versionamento: manifests pareados `BP_AcademiaArcanaMonumental` e `RP_AcademiaArcanaMonumental` incrementados para `0.1.7`, incluindo dependência BP→RP.
+- PNG/texturas: nenhum arquivo `.png` foi criado, alterado ou commitado; a entrega usa somente arquivos texto e blocos vanilla.
+- Validação local: validação JSON dos manifests, inspeção de referências `.mcfunction`, verificação de ausência de PNG em mudanças e `git diff --check`.
+- Pendências: playtest em mundo Bedrock para validar escala externa, leitura visual do observatório, navegação nos jardins, segurança das pontes e capacidade do anfiteatro.
