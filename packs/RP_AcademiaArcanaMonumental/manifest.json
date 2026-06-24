@@ -4,18 +4,32 @@
     "name": "RP Academia Arcana Monumental",
     "description": "Resource Pack pareado da Academia Arcana Monumental; Sprint 1 sem texturas PNG customizadas.",
     "uuid": "0afcebae-6935-4424-9fe5-62b4d6b61a42",
-    "version": [0, 1, 0],
-    "min_engine_version": [1, 20, 0]
+    "version": [
+      0,
+      1,
+      1
+    ],
+    "min_engine_version": [
+      1,
+      20,
+      0
+    ]
   },
   "modules": [
     {
       "type": "resources",
       "uuid": "ff18c973-8252-442c-9a2c-fb76e4e20e48",
-      "version": [0, 1, 0]
+      "version": [
+        0,
+        1,
+        1
+      ]
     }
   ],
   "metadata": {
-    "authors": ["MinecraftAddOn"],
+    "authors": [
+      "MinecraftAddOn"
+    ],
     "license": "MIT"
   }
 }

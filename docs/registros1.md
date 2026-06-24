@@ -2366,3 +2366,10 @@ Checklist executado no host via MCP readonly/projeto:
 - Implementadas funções `/function academia_arcana_monumental/init`, `/function academia_arcana_monumental/blocagem_sprint1` e `/function academia_arcana_monumental/montar_completa` para gerar a blocagem em mundo de teste.
 - Documentada a entrega em `docs/academia_arcana_monumental/sprint1_blocagem.md`, incluindo planta superior, corte vertical, paleta de blocos, critérios de aceite e registro pós-conclusão.
 - Atualizado o registro pós-conclusão da Sprint 1 no plano mestre da Academia Arcana Monumental.
+
+## 2026-06-24 15:41:22 UTC-3 — Correção de parse no deploy da Academia Arcana Monumental
+- Falha recebida do workflow/deploy: a função `academia_arcana_monumental/blocagem_sprint1` não carregou por erro de parse na linha 25, com `Unexpected "stonecutter"` em `setblock ~-24 ~1 ~0 stonecutter`.
+- Corrigida a função `packs/BP_AcademiaArcanaMonumental/functions/academia_arcana_monumental/blocagem_sprint1.mcfunction` para usar `stonecutter_block`, identificador aceito pelo Bedrock em comandos `setblock` nesse ambiente.
+- Atualizados os manifests pareados `BP_AcademiaArcanaMonumental` e `RP_AcademiaArcanaMonumental` para `0.1.1`, incluindo `header.version`, `modules[].version` e dependência BP → RP.
+- Não foram criadas, alteradas nem commitadas texturas PNG; a correção envolve somente arquivos texto.
+- Validações locais realizadas: busca por `stonecutter` remanescente na função, parsing JSON dos manifests e inspeção do diff Git.

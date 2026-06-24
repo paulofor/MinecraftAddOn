@@ -22,7 +22,7 @@ fill ~-5 ~1 ~-5 ~5 ~1 ~5 sea_lantern hollow
 setblock ~0 ~2 ~0 beacon
 setblock ~0 ~1 ~-24 lectern
 setblock ~0 ~1 ~24 cartography_table
-setblock ~-24 ~1 ~0 stonecutter
+setblock ~-24 ~1 ~0 stonecutter_block
 setblock ~24 ~1 ~0 smithing_table
 
 # Quatro rotas cardeais largas para leitura de navegacao.
