@@ -2388,3 +2388,15 @@ Checklist executado no host via MCP readonly/projeto:
 - Substituídos os brasões do portão por blocos vanilla estáveis (`blue_wool`, `green_wool`, `orange_wool`, `red_wool`), mantendo a identidade visual por cor sem depender de sintaxe específica de banners.
 - Atualizadas as versões pareadas dos manifests `BP_AcademiaArcanaMonumental` e `RP_AcademiaArcanaMonumental` de `0.1.2` para `0.1.3`, incluindo módulo e dependência BP→RP, para rastreabilidade do deploy.
 - Validação local prevista: checagem textual para garantir ausência dos identificadores inválidos de banner na função corrigida.
+
+## 2026-06-24 00:00 UTC-3 — Academia Arcana Monumental Sprint 3
+- Executada a Sprint 3 do plano `docs/academia_arcana_monumental_plano.md`.
+- Criada a função `packs/BP_AcademiaArcanaMonumental/functions/academia_arcana_monumental/biblioteca_sprint3.mcfunction` para construir a Biblioteca Infinita e o Arquivo de Conhecimento em mundo de teste, usando a mesma origem relativa das Sprints 1 e 2.
+- A função adiciona fachada vertical, cúpula, átrio interno, múltiplos andares, passarelas, varandas, nichos de lore por disciplina, lecterns, iluminação orientadora, sala secreta por observação, sequência ambiental colorida e conexão subterrânea fechada para o Arquivo Proibido.
+- Atualizada `packs/BP_AcademiaArcanaMonumental/functions/academia_arcana_monumental/montar_completa.mcfunction` para executar Sprints 1, 2 e 3 em sequência.
+- Atualizada `packs/BP_AcademiaArcanaMonumental/functions/academia_arcana_monumental/init.mcfunction` com instruções da Sprint 3.
+- Incrementadas as versões dos manifests pareados `packs/BP_AcademiaArcanaMonumental/manifest.json` e `packs/RP_AcademiaArcanaMonumental/manifest.json` para `0.1.4`, incluindo dependência BP→RP.
+- Criada documentação detalhada em `docs/academia_arcana_monumental/sprint3_biblioteca_arquivo.md`.
+- Atualizado o registro pós-conclusão da Sprint 3 em `docs/academia_arcana_monumental_plano.md`.
+- Não foram criados nem alterados arquivos PNG; a biblioteca usa apenas blocos vanilla e arquivos texto versionáveis.
+- Pendência operacional: executar em mundo Bedrock de teste e validar escala interna/externa, leitura dos lecterns, passarelas, segredos opcionais, acesso fechado ao Arquivo Proibido e performance local após playtest.
