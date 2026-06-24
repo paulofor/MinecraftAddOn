@@ -45,9 +45,9 @@ A construção deve parecer uma torre antiga que foi puxada para baixo por uma f
 - A construção não bloqueia spawn, caminhos importantes ou estruturas já existentes.
 
 **Registro pós-conclusão:**
-- O que foi feito:
-- O que ficou faltando:
-- Impedimentos/bloqueios:
+- O que foi feito: criados os packs pareados `BP_TorreInvertidaAbissal` e `RP_TorreInvertidaAbissal`, com função de inicialização e função de blocagem para mundo de teste; documentados mapa conceitual em vista superior/corte vertical, limites de escala, caminho crítico e materiais base em `docs/torre_invertida_abissal/sprint1_blocagem.md`.
+- O que ficou faltando: executar a função em um mundo de teste no Bedrock, observar a escala real em jogo e ajustar medidas/materiais temporários conforme feedback.
+- Impedimentos/bloqueios: o MCP remoto disponível é readonly e o histórico recente indica limitação de leitura bloco-a-bloco do mundo ativo; por segurança, a Sprint 1 foi entregue como artefato versionado para execução manual em área livre, sem alterar o mundo ativo.
 
 ### Sprint 2 — Construção da superfície e entrada monumental
 **Objetivo:** criar impacto inicial e preparar a narrativa de entrada.
@@ -64,9 +64,9 @@ A construção deve parecer uma torre antiga que foi puxada para baixo por uma f
 - O jogador consegue sair da estrutura sem depender de comandos.
 
 **Registro pós-conclusão:**
-- O que foi feito:
-- O que ficou faltando:
-- Impedimentos/bloqueios:
+- O que foi feito: criada a função `/function torre_invertida_abissal/superficie_sprint2` para detalhar a superfície, com cratera externa, bordas reforçadas, ponte principal iluminada, portal arquitetônico, pátio seguro, mirante oeste, acampamento leste, arco rachado sul, torres laterais, correntes, sinalização e pontos de retorno; documentada a execução em `docs/torre_invertida_abissal/sprint2_superficie_entrada.md`; atualizados os manifests pareados BP/RP para `0.2.0`.
+- O que ficou faltando: executar a função em mundo Bedrock de teste após a Sprint 1, validar escala real, legibilidade das placas, largura da ponte e segurança das rotas de retorno.
+- Impedimentos/bloqueios: a validação bloco-a-bloco no mundo ativo não foi usada devido às limitações já registradas do MCP remoto/LevelDB; por segurança, a Sprint 2 foi entregue como artefato versionado para execução manual em área livre.
 
 ### Sprint 3 — Eixo vertical e anéis de exploração
 **Objetivo:** transformar a torre em uma experiência vertical memorável.
@@ -83,9 +83,9 @@ A construção deve parecer uma torre antiga que foi puxada para baixo por uma f
 - Quedas acidentais têm mitigação por água, plataformas intermediárias ou barreiras naturais.
 
 **Registro pós-conclusão:**
-- O que foi feito:
-- O que ficou faltando:
-- Impedimentos/bloqueios:
+- O que foi feito: criada a função `/function torre_invertida_abissal/eixo_aneis_sprint3` para abrir o eixo central vertical, reforçar a leitura de profundidade, criar três anéis exploráveis com checkpoints por cor, salas laterais, passarelas, escadas, scaffolding, água de segurança e plataformas intermediárias; documentada a execução em `docs/torre_invertida_abissal/sprint3_eixo_aneis.md`; atualizados os manifests pareados BP/RP para `0.3.0`.
+- O que ficou faltando: executar a função em mundo Bedrock de teste após as Sprints 1 e 2, validar profundidade real, circulação entre anéis, legibilidade dos checkpoints e eficácia da mitigação de quedas.
+- Impedimentos/bloqueios: a validação bloco-a-bloco no mundo ativo não foi usada devido às limitações já registradas do MCP remoto/LevelDB; por segurança, a Sprint 3 foi entregue como artefato versionado para execução manual em área livre.
 
 ### Sprint 4 — Laboratórios, puzzles e conteúdo educativo
 **Objetivo:** inserir desafios que combinem exploração com aprendizado.
@@ -102,9 +102,9 @@ A construção deve parecer uma torre antiga que foi puxada para baixo por uma f
 - O conteúdo respeita o foco educativo para jovens de 16 a 20 anos.
 
 **Registro pós-conclusão:**
-- O que foi feito:
-- O que ficou faltando:
-- Impedimentos/bloqueios:
+- O que foi feito: criada a função `/function torre_invertida_abissal/laboratorios_sprint4` com hub de laboratórios e quatro salas educativas — sequência, lógica booleana simples, padrão visual e causa/consequência — incluindo feedback por luzes/blocos indicadores, lecterns/placas curtas e recompensas simbólicas em baús; documentada a execução em `docs/torre_invertida_abissal/sprint4_laboratorios_puzzles.md`; atualizados os manifests pareados BP/RP para `0.4.0`.
+- O que ficou faltando: executar a função em mundo Bedrock de teste após as Sprints 1-3, validar colisões com a geometria real, preencher conteúdo rico de lecterns/baús se houver fluxo controlado para NBT/loot e ajustar ritmo dos desafios após playtest.
+- Impedimentos/bloqueios: a validação no mundo ativo não foi usada devido às limitações já registradas do MCP remoto/LevelDB; por segurança, a Sprint 4 foi entregue como artefato versionado para execução manual em área livre.
 
 ### Sprint 5 — Bioma abissal, arquivo e núcleo final
 **Objetivo:** construir o clímax visual e narrativo da torre.
@@ -121,9 +121,9 @@ A construção deve parecer uma torre antiga que foi puxada para baixo por uma f
 - Existe retorno seguro ao exterior após completar o núcleo.
 
 **Registro pós-conclusão:**
-- O que foi feito:
-- O que ficou faltando:
-- Impedimentos/bloqueios:
+- O que foi feito: criada a função `/function torre_invertida_abissal/bioma_arquivo_nucleo_sprint5` com Jardim Bioluminescente, Arquivo Abissal, galeria de pistas, Núcleo da Gravidade, desafio final observacional, recompensa simbólica e elevador de água protegido para retorno à superfície; documentada a execução em `docs/torre_invertida_abissal/sprint5_bioma_arquivo_nucleo.md`; atualizados os manifests pareados BP/RP para `0.5.0`.
+- O que ficou faltando: executar a função em mundo Bedrock de teste após as Sprints 1-4, validar colisões com laboratórios profundos, preencher conteúdo rico de lecterns/baús se houver fluxo controlado para NBT/loot e ajustar iluminação/ritmo do clímax após playtest.
+- Impedimentos/bloqueios: a validação no mundo ativo não foi usada devido às limitações já registradas do MCP remoto/LevelDB; por segurança, a Sprint 5 foi entregue como artefato versionado para execução manual em área livre, sem criar ou commitar texturas PNG.
 
 ### Sprint 6 — Polimento, validação e preparação para expansão
 **Objetivo:** revisar jogabilidade, performance, orientação e documentação.
@@ -140,9 +140,9 @@ A construção deve parecer uma torre antiga que foi puxada para baixo por uma f
 - A estrutura fica pronta para receber scripts, NPCs, entidades ou novas salas em PRs futuros.
 
 **Registro pós-conclusão:**
-- O que foi feito:
-- O que ficou faltando:
-- Impedimentos/bloqueios:
+- O que foi feito: criada a função `/function torre_invertida_abissal/polimento_sprint6` para reforçar iluminação, orientação por trilhas e placas, guard rails nos anéis, mitigação de quedas, retorno sem comandos, sinalização dos laboratórios, rota final e quatro pontos de expansão futura; documentada a execução em `docs/torre_invertida_abissal/sprint6_polimento_validacao.md`; atualizados os manifests pareados BP/RP para `0.6.0`.
+- O que ficou faltando: executar o percurso completo em mundo Bedrock de teste após as Sprints 1-5, medir tempo real de exploração, validar se os muros não prejudicam a estética aberta e ajustar placas/iluminação conforme playtest com jogadores.
+- Impedimentos/bloqueios: a validação in-game completa não foi realizada neste ambiente; por segurança, a Sprint 6 foi entregue como artefato versionado para execução manual em área livre, sem criar ou commitar texturas PNG.
 
 ## Riscos e cuidados
 - Evitar espaços grandes vazios demais; cada camada precisa ter pontos de interesse.

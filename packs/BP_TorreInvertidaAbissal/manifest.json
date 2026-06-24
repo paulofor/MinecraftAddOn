@@ -1,0 +1,45 @@
+{
+  "format_version": 2,
+  "header": {
+    "name": "BP Torre Invertida Abissal",
+    "description": "Behavior Pack educativo para blocagem, entrada monumental, eixo vertical, aneis exploraveis e laboratorios educativos, bioma abissal, arquivo e nucleo final, polimento e expansao da Torre Invertida Abissal.",
+    "uuid": "8d50a6f6-ff66-4a6b-910b-c7486bcbae7e",
+    "version": [
+      0,
+      6,
+      1
+    ],
+    "min_engine_version": [
+      1,
+      20,
+      0
+    ]
+  },
+  "modules": [
+    {
+      "type": "data",
+      "uuid": "64991ba6-01d8-45c9-b97a-046f24b0f932",
+      "version": [
+        0,
+        6,
+        1
+      ]
+    }
+  ],
+  "dependencies": [
+    {
+      "uuid": "660e4f7a-cc2a-48ae-a6e1-d86a70c8f419",
+      "version": [
+        0,
+        6,
+        1
+      ]
+    }
+  ],
+  "metadata": {
+    "authors": [
+      "MinecraftAddOn"
+    ],
+    "license": "MIT"
+  }
+}
