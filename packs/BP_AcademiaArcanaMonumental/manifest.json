@@ -2,12 +2,12 @@
   "format_version": 2,
   "header": {
     "name": "BP Academia Arcana Monumental",
-    "description": "Behavior Pack educativo para a Academia Arcana Monumental com Arquivo Proibido Subterraneo e desafio final.",
+    "description": "Behavior Pack educativo para a Academia Arcana Monumental com polimento, validacao e marcadores tecnicos.",
     "uuid": "f8c7ffba-a3d9-4a69-9752-8b9cedf16c77",
     "version": [
       0,
       1,
-      8
+      9
     ],
     "min_engine_version": [
       1,
@@ -22,7 +22,7 @@
       "version": [
         0,
         1,
-        8
+        9
       ]
     }
   ],
@@ -32,7 +32,7 @@
       "version": [
         0,
         1,
-        8
+        9
       ]
     }
   ],
