@@ -2253,3 +2253,103 @@ Checklist executado no host via MCP readonly/projeto:
 - Criado o documento `docs/academia_arcana_monumental_plano.md` com visão geral, objetivos de experiência, escala sugerida, conceito visual, zonas principais, diretrizes educativas, riscos, próximo passo e plano estruturado em 7 sprints.
 - Cada sprint inclui objetivo, entregas, critérios de aceite e espaço obrigatório de registro pós-conclusão com: o que foi feito, o que ficou faltando e impedimentos/bloqueios.
 - Não houve alteração de packs, scripts, manifests, definições, texturas PNG ou deploy no servidor.
+## 2026-06-22 23:41 UTC-3 — Execução da Sprint 1: Torre Invertida Abissal
+- Pedido recebido: executar a Sprint 1 do plano `docs/torre_invertida_abissal_plano.md`.
+- Criados os packs pareados `packs/BP_TorreInvertidaAbissal` e `packs/RP_TorreInvertidaAbissal`, ambos na versão `0.1.0`, para manter rastreabilidade de módulo BP/RP desde a blocagem inicial.
+- Criada a função `torre_invertida_abissal/init` para orientar o operador antes da geração em mundo de teste.
+- Criada a função `torre_invertida_abissal/blocagem_sprint1` com blocagem temporária de cratera, silhueta de torre, eixo luminoso, ponte de acesso, primeiro anel subterrâneo e marcadores de zonas futuras.
+- Criado o documento `docs/torre_invertida_abissal/sprint1_blocagem.md` com mapa conceitual em vista superior, corte vertical, limites de largura/altura/profundidade, caminho crítico, materiais base por zona e passos de execução.
+- Atualizado o registro pós-conclusão da Sprint 1 em `docs/torre_invertida_abissal_plano.md`.
+- Não foram criadas, alteradas nem commitadas texturas PNG; o RP contém apenas manifest e texto de localização.
+- Validação local realizada com parsing JSON dos manifests e verificação de ausência de PNG novo no módulo.
+- Pendência operacional: executar a função em um mundo de teste Bedrock, longe do spawn e de estruturas existentes, para validar a leitura visual e ajustar escala após feedback.
+
+## 2026-06-23 00:12 UTC-3 — Execução da Sprint 2: Torre Invertida Abissal
+- Pedido recebido: executar a Sprint 2 do plano `docs/torre_invertida_abissal_plano.md`.
+- Criada a função `packs/BP_TorreInvertidaAbissal/functions/torre_invertida_abissal/superficie_sprint2.mcfunction` para construir a superfície e entrada monumental em mundo de teste, usando a mesma origem relativa da Sprint 1.
+- A função adiciona cratera externa com bordas reforçadas, ponte principal norte, portal arquitetônico, pátio seguro, mirante oeste, acampamento leste, arco rachado sul, torres laterais, correntes, sinalização e rotas de retorno por ponte, escadas, plataformas e água.
+- Atualizada a função `torre_invertida_abissal/init` para orientar a sequência Sprint 1 → Sprint 2.
+- Atualizados os manifests pareados `BP_TorreInvertidaAbissal` e `RP_TorreInvertidaAbissal` para `0.2.0`, conforme regra de versionamento BP/RP do módulo.
+- Criado o documento `docs/torre_invertida_abissal/sprint2_superficie_entrada.md` com elementos construídos, rota esperada, critérios de aceite e passos de validação.
+- Atualizado o registro pós-conclusão da Sprint 2 em `docs/torre_invertida_abissal_plano.md`.
+- Não foram criadas, alteradas nem commitadas texturas PNG; a entrega usa apenas arquivos texto e blocos vanilla.
+- Pendência operacional: executar as funções em mundo Bedrock de teste e ajustar a escala visual, a legibilidade da sinalização e a segurança real das quedas após validação em jogo.
+
+## 2026-06-23 00:39 UTC-3 — Execução da Sprint 3: Torre Invertida Abissal
+- Pedido recebido: executar a Sprint 3 do plano `docs/torre_invertida_abissal_plano.md`.
+- Criada a função `packs/BP_TorreInvertidaAbissal/functions/torre_invertida_abissal/eixo_aneis_sprint3.mcfunction` para construir eixo vertical e anéis exploráveis em mundo de teste, usando a mesma origem relativa das Sprints 1 e 2.
+- A função adiciona poço central aberto, coluna de água, molduras de deepslate, plataformas intermediárias, piscinas de mitigação de queda, três anéis por cor, salas laterais, passarelas, escadas, scaffolding e checkpoints visuais.
+- Atualizada a função `torre_invertida_abissal/init` para orientar a sequência Sprint 1 → Sprint 2 → Sprint 3.
+- Atualizados os manifests pareados `BP_TorreInvertidaAbissal` e `RP_TorreInvertidaAbissal` para `0.3.0`, conforme regra de versionamento BP/RP do módulo.
+- Criado o documento `docs/torre_invertida_abissal/sprint3_eixo_aneis.md` com elementos construídos, rota esperada, critérios de aceite e passos de validação.
+- Atualizado o registro pós-conclusão da Sprint 3 em `docs/torre_invertida_abissal_plano.md`.
+- Não foram criadas, alteradas nem commitadas texturas PNG; a entrega usa apenas arquivos texto e blocos vanilla.
+- Pendência operacional: executar as funções em mundo Bedrock de teste e ajustar altura dos acessos, legibilidade dos checkpoints, segurança das quedas e clareza das rotas alternativas após validação em jogo.
+
+## 2026-06-23 00:37 UTC-3 — Correção de parse em placas da Torre Invertida Abissal
+- Erro recebido: o deploy apontou falha de carregamento das funções `torre_invertida_abissal/superficie_sprint2` e `torre_invertida_abissal/eixo_aneis_sprint3` por `Syntax error: Unexpected "oak_sign"` nas linhas com `setblock ... oak_sign ["facing_direction"=...]`.
+- Corrigidas as funções `packs/BP_TorreInvertidaAbissal/functions/torre_invertida_abissal/superficie_sprint2.mcfunction` e `packs/BP_TorreInvertidaAbissal/functions/torre_invertida_abissal/eixo_aneis_sprint3.mcfunction`, substituindo as placas `oak_sign` com block state por `standing_sign` sem estado explícito, padrão já usado no projeto e compatível com o parser Bedrock observado.
+- Atualizados os manifests pareados `BP_TorreInvertidaAbissal` e `RP_TorreInvertidaAbissal` para `0.3.1`, conforme regra fixa de versionamento BP/RP do módulo.
+- Não foram criadas, alteradas nem commitadas texturas PNG; a correção envolve somente arquivos texto.
+- Validações locais realizadas: busca por `oak_sign` remanescente em `packs/BP_TorreInvertidaAbissal`, parsing JSON dos manifests e verificação de status Git.
+
+
+## 2026-06-23 00:55 UTC-3 — Execução da Sprint 4: Torre Invertida Abissal
+- Pedido recebido: executar a Sprint 4 do plano `docs/torre_invertida_abissal_plano.md`.
+- Criada a função `packs/BP_TorreInvertidaAbissal/functions/torre_invertida_abissal/laboratorios_sprint4.mcfunction` para construir hub de laboratórios e quatro salas educativas em mundo de teste, usando a mesma origem relativa das Sprints 1 a 3.
+- A função adiciona desafios de sequência, lógica booleana simples, padrão visual e causa/consequência, com feedback visual por luzes/blocos, lecterns/placas curtas, baús de recompensa simbólica, atalhos e retorno ao eixo.
+- Atualizada a função `torre_invertida_abissal/init` para orientar a sequência Sprint 1 → Sprint 2 → Sprint 3 → Sprint 4.
+- Atualizados os manifests pareados `BP_TorreInvertidaAbissal` e `RP_TorreInvertidaAbissal` para `0.4.0`, conforme regra de versionamento BP/RP do módulo.
+- Criado o documento `docs/torre_invertida_abissal/sprint4_laboratorios_puzzles.md` com salas implementadas, conteúdo educativo, critérios de aceite e checklist de validação.
+- Atualizado o registro pós-conclusão da Sprint 4 em `docs/torre_invertida_abissal_plano.md`.
+- Não foram criadas, alteradas nem commitadas texturas PNG; a entrega usa apenas arquivos texto e blocos vanilla.
+- Pendência operacional: executar as funções em mundo Bedrock de teste e validar colisões, leitura dos puzzles, visibilidade dos feedbacks e recompensas após playtest.
+
+## 2026-06-23 01:18 UTC-3 — Execução da Sprint 5: Torre Invertida Abissal
+- Pedido recebido: executar a Sprint 5 do plano `docs/torre_invertida_abissal_plano.md`.
+- Criada a função `packs/BP_TorreInvertidaAbissal/functions/torre_invertida_abissal/bioma_arquivo_nucleo_sprint5.mcfunction` para construir o clímax final em mundo de teste, usando a mesma origem relativa das Sprints 1 a 4.
+- A função adiciona Jardim Bioluminescente com caverna profunda, água, cristais, vegetação vanilla e iluminação dramática; Arquivo Abissal com salas de lore, mapas simbólicos e pistas; Núcleo da Gravidade com artefato central, desafio final observacional, recompensa simbólica e elevador de água protegido de retorno à superfície.
+- Atualizada a função `torre_invertida_abissal/init` para orientar a sequência Sprint 1 → Sprint 2 → Sprint 3 → Sprint 4 → Sprint 5.
+- Atualizados os manifests pareados `BP_TorreInvertidaAbissal` e `RP_TorreInvertidaAbissal` para `0.5.0`, conforme regra de versionamento BP/RP do módulo.
+- Criado o documento `docs/torre_invertida_abissal/sprint5_bioma_arquivo_nucleo.md` com elementos implementados, rota esperada, critérios de aceite e checklist de validação.
+- Atualizado o registro pós-conclusão da Sprint 5 em `docs/torre_invertida_abissal_plano.md`.
+- Não foram criadas, alteradas nem commitadas texturas PNG; a entrega usa apenas arquivos texto e blocos vanilla.
+- Pendência operacional: executar as funções em mundo Bedrock de teste e validar contraste visual, colisões, leitura das pistas, desafio final, recompensa e elevador de retorno após playtest.
+
+## 2026-06-22 22:33 UTC-3 — Correção de parse no Arquivo Abissal da Torre Invertida Abissal
+- Erro recebido: o deploy pós-restart apontou falha de carregamento da função `torre_invertida_abissal/bioma_arquivo_nucleo_sprint5` nas linhas 61 a 64 por `Syntax error: Unexpected "bookshelves"`.
+- Corrigida a função `packs/BP_TorreInvertidaAbissal/functions/torre_invertida_abissal/bioma_arquivo_nucleo_sprint5.mcfunction`, substituindo o identificador inválido `bookshelves` pelo bloco vanilla singular `bookshelf` nas prateleiras do Arquivo Abissal.
+- Atualizados os manifests pareados `BP_TorreInvertidaAbissal` e `RP_TorreInvertidaAbissal` para `0.5.1`, conforme regra fixa de versionamento BP/RP do módulo.
+- Não foram criadas, alteradas nem commitadas texturas PNG; a correção envolve somente arquivos texto.
+- Validações locais realizadas: busca por `bookshelves` remanescente no módulo Torre Invertida Abissal, parsing JSON dos manifests e inspeção do diff Git.
+
+## 2026-06-23 08:45 UTC-3 — Execução da Sprint 6: Torre Invertida Abissal
+- Pedido recebido: executar a Sprint 6 do plano `docs/torre_invertida_abissal_plano.md`.
+- Criada a função `packs/BP_TorreInvertidaAbissal/functions/torre_invertida_abissal/polimento_sprint6.mcfunction` para polimento, validação e preparação para expansão em mundo de teste, usando a mesma origem relativa das Sprints 1 a 5.
+- A função reforça trilhas de orientação, iluminação anti-spawn, guard rails nos anéis, mitigação de quedas, retorno vertical, sinalização dos laboratórios, rota final Jardim → Arquivo → Núcleo → elevador e quatro pontos de expansão futura com marcadores/lecterns.
+- Atualizada a função `torre_invertida_abissal/init` para orientar a sequência Sprint 1 → Sprint 2 → Sprint 3 → Sprint 4 → Sprint 5 → Sprint 6.
+- Atualizados os manifests pareados `BP_TorreInvertidaAbissal` e `RP_TorreInvertidaAbissal` para `0.6.0`, conforme regra de versionamento BP/RP do módulo.
+- Criado o documento `docs/torre_invertida_abissal/sprint6_polimento_validacao.md` com itens polidos, coordenadas relativas de expansão e checklist de validação in-game.
+- Atualizado o registro pós-conclusão da Sprint 6 em `docs/torre_invertida_abissal_plano.md`.
+- Não foram criadas, alteradas nem commitadas texturas PNG; a entrega usa apenas arquivos texto e blocos vanilla.
+- Pendência operacional: executar o percurso completo em mundo Bedrock de teste e ajustar estética, segurança, orientação e ritmo conforme playtest.
+
+## 2026-06-23 10:35 UTC-3 — Consulta MCP para localização da Torre Invertida Abissal
+- Pedido recebido: acessar o mundo pelo MCP Server e sugerir uma localização para criar a Torre Invertida Abissal agora no mundo ativo.
+- MCP consultado em `http://186.202.209.206/mcp` com `tools/list`; ferramentas disponíveis confirmadas, incluindo `list_directory`, `read_file`, `get_block`, `get_block_region` e `suggest_arena_location`.
+- Mundo ativo confirmado em `/root/MinecraftServer/worlds/Bedrock level`; também existe backup `/root/MinecraftServer/worlds/Bedrock level.backup-20260622-171518`.
+- `world_behavior_packs.json` e `world_resource_packs.json` do mundo ativo foram lidos via MCP; o módulo `BP_TorreInvertidaAbissal`/`RP_TorreInvertidaAbissal` versão `0.6.0` está vinculado no mundo pelos UUIDs dos manifests locais.
+- Ferramenta `suggest_arena_location` executada para uma área de 64x96x64, Y preferido 80, margem 48, usando `/root/MinecraftServer/logging/bedrock.log` como evidência de atividade recente.
+- Local recomendado pelo MCP: centro `x=-373, y=80, z=368`; volume afetado estimado `x=-405..-341`, `y=48..143`, `z=336..400`; confiança `medium`.
+- Evidência do MCP: 20 coordenadas recentes encontradas no log; área recente observada `x=-530.3..72.7`, `z=353.0..383.6`; o centro sugerido fica a aproximadamente 157.1 blocos da coordenada recente mais próxima.
+- Recomendação operacional: teletransportar para `/tp @s -373 80 368`, confirmar visualmente que não há construção importante, e executar as funções da torre em sequência: `/function torre_invertida_abissal/init`, `/function torre_invertida_abissal/blocagem_sprint1`, `/function torre_invertida_abissal/superficie_sprint2`, `/function torre_invertida_abissal/eixo_aneis_sprint3`, `/function torre_invertida_abissal/laboratorios_sprint4`, `/function torre_invertida_abissal/bioma_arquivo_nucleo_sprint5`, `/function torre_invertida_abissal/polimento_sprint6`.
+- Observação: a ferramenta usa logs e heurística, não inspeção visual completa do terreno; validar in-game antes de montar definitivamente.
+
+## 2026-06-23 10:39 UTC-3 — Função única para montar a Torre Invertida Abissal
+- Dúvida recebida: se é possível colocar vários `/function` de uma vez no chat do Minecraft.
+- Resposta operacional consolidada: no chat, o operador deve executar um comando por envio; para rodar vários passos de uma vez, o fluxo correto é criar uma função agregadora `.mcfunction` que chama as demais funções em sequência.
+- Criada a função `packs/BP_TorreInvertidaAbissal/functions/torre_invertida_abissal/montar_completa.mcfunction`, que executa `init`, `blocagem_sprint1`, `superficie_sprint2`, `eixo_aneis_sprint3`, `laboratorios_sprint4`, `bioma_arquivo_nucleo_sprint5` e `polimento_sprint6` em ordem, relativa à posição do executor.
+- Atualizada a mensagem de `torre_invertida_abissal/init` para orientar o uso de `/function torre_invertida_abissal/montar_completa` quando a intenção for criar tudo de uma vez, mantendo também a sequência por etapas como alternativa.
+- Atualizados os manifests pareados `BP_TorreInvertidaAbissal` e `RP_TorreInvertidaAbissal` para `0.6.1`, conforme regra fixa de versionamento BP/RP do módulo.
+- Não foram criadas, alteradas nem commitadas texturas PNG; a alteração envolve somente arquivos texto.
+- Recomendação in-game: ir ao centro sugerido pelo MCP com `/tp @s -373 80 368`, validar visualmente que a área está livre e executar somente `/function torre_invertida_abissal/montar_completa`.
