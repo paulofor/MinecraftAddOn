@@ -2,12 +2,12 @@
   "format_version": 2,
   "header": {
     "name": "RP Academia Arcana Monumental",
-    "description": "Resource Pack pareado da Academia Arcana Monumental; Sprint 5 sem texturas PNG customizadas.",
+    "description": "Resource Pack pareado da Academia Arcana Monumental; Sprint 6 sem texturas PNG customizadas.",
     "uuid": "0afcebae-6935-4424-9fe5-62b4d6b61a42",
     "version": [
       0,
       1,
-      7
+      8
     ],
     "min_engine_version": [
       1,
@@ -22,7 +22,7 @@
       "version": [
         0,
         1,
-        7
+        8
       ]
     }
   ],
