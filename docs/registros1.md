@@ -2408,3 +2408,17 @@ Checklist executado no host via MCP readonly/projeto:
 - PNG/texturas: nenhum arquivo `.png` foi criado, alterado ou commitado; a entrega usa somente arquivos texto e blocos vanilla.
 - Validação local: `node --check` não se aplica porque não houve alteração JavaScript; validações realizadas por inspeção de comandos `.mcfunction`, JSON de manifests e `git diff --check`.
 - Pendências: playtest em mundo Bedrock para ajuste fino de escala, leitura dos lecterns e densidade visual das salas.
+
+## 2026-06-24 17:00:56 UTC-3 — Pesquisa: portal para mundo de 4D espacial
+- Pedido recebido: pesquisar se é possível criar um portal para um mundo de 4D espacial no Minecraft Bedrock/Add-Ons.
+- Fontes consultadas: documentação Microsoft Learn sobre Custom Dimension API, `TeleportOptions` da Script API e documento de definição de dimensões Bedrock.
+- Conclusão técnica: não é possível criar uma quarta dimensão espacial real no motor Bedrock; o jogo continua baseado em coordenadas 3D `x/y/z` e dimensões separadas. É viável criar uma simulação educativa de 4D usando um portal/trigger que teleporta o jogador para uma dimensão custom ou área isolada, com mecânicas de projeção 3D, salas paralelas, mudanças de estado e analogias de hipercubo/tesseract.
+- Recomendação: estruturar eventual Add-On como módulo em sprints, com BP/RP pareados, script de portal e uma dimensão/arena "4D" controlada; se usar Custom Dimensions, observar que a API está em Beta/experimental e requer Minecraft Bedrock 1.21.80+ com Beta APIs habilitado.
+- Nenhum arquivo PNG foi criado, alterado ou commitado; pesquisa e registro envolveram apenas documentação textual.
+
+## 2026-06-24 17:22:00 UTC-3 — Plano: Portal para o Mundo 4D Espacial com APIs
+- Pedido recebido: gerar o plano do portal para um mundo de 4D espacial e considerar o uso das APIs oficiais.
+- Criado o plano `docs/portal_4d_espacial_plano.md`, estruturado por sprints e com registros pós-conclusão obrigatórios em cada sprint.
+- O plano define o uso de Custom Dimension API, Script API `@minecraft/server`, eventos de interação com bloco e `TeleportOptions.dimension`, além de fallback seguro para arena isolada no Overworld caso Beta APIs/dimensões customizadas não estejam disponíveis no servidor.
+- Mantida a conclusão técnica: a quarta dimensão espacial será simulada pedagogicamente em um ambiente 3D, não implementada como quarta coordenada real do motor Bedrock.
+- Nenhum arquivo PNG foi criado, alterado ou commitado; a entrega é documental e prepara a implementação futura com BP/RP pareados.
