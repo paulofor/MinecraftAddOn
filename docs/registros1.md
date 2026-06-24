@@ -2253,6 +2253,12 @@ Checklist executado no host via MCP readonly/projeto:
 - Criado o documento `docs/academia_arcana_monumental_plano.md` com visão geral, objetivos de experiência, escala sugerida, conceito visual, zonas principais, diretrizes educativas, riscos, próximo passo e plano estruturado em 7 sprints.
 - Cada sprint inclui objetivo, entregas, critérios de aceite e espaço obrigatório de registro pós-conclusão com: o que foi feito, o que ficou faltando e impedimentos/bloqueios.
 - Não houve alteração de packs, scripts, manifests, definições, texturas PNG ou deploy no servidor.
+
+## 2026-06-24 15:23 UTC-3 — Plano de Add-On: Observatório das Estrelas Quebradas
+- Pedido recebido: criar também um plano para a construção grandiosa "O Observatório das Estrelas Quebradas".
+- Criado o documento `docs/observatorio_estrelas_quebradas_plano.md` com visão geral, objetivos de experiência, escala sugerida, conceito visual, zonas principais, diretrizes educativas, riscos, próximo passo e plano estruturado em 8 sprints.
+- Cada sprint inclui objetivo, entregas, critérios de aceite e espaço obrigatório de registro pós-conclusão com: o que foi feito, o que ficou faltando e impedimentos/bloqueios.
+- Não houve alteração de packs, scripts, manifests, definições, texturas PNG ou deploy no servidor.
 ## 2026-06-22 23:41 UTC-3 — Execução da Sprint 1: Torre Invertida Abissal
 - Pedido recebido: executar a Sprint 1 do plano `docs/torre_invertida_abissal_plano.md`.
 - Criados os packs pareados `packs/BP_TorreInvertidaAbissal` e `packs/RP_TorreInvertidaAbissal`, ambos na versão `0.1.0`, para manter rastreabilidade de módulo BP/RP desde a blocagem inicial.
