@@ -112,9 +112,9 @@ A academia deve parecer uma instituição antiga que cresceu por séculos, com e
 - O conteúdo mantém o foco educativo para jovens de 16 a 20 anos.
 
 **Registro pós-conclusão:**
-- O que foi feito:
-- O que ficou faltando:
-- Impedimentos/bloqueios:
+- O que foi feito: criada função de construção da Sprint 4 com Torre da Lógica, Torre dos Algoritmos e Torre dos Elementos, incluindo desafios curtos de padrões, verdadeiro/falso, condição, passos ordenados, caminho eficiente, repetição, causa/consequência e estados de materiais. A montagem completa foi atualizada para executar Sprints 1, 2, 3 e 4 em sequência. Detalhes em `docs/academia_arcana_monumental/sprint4_torres_educativas.md`.
+- O que ficou faltando: validação visual dentro do jogo, ajuste fino de textos em lecterns após playtest e possível evolução futura para interações com scripts/scoreboards.
+- Impedimentos/bloqueios: não houve uso de PNG por regra do projeto; a entrega usa apenas blocos vanilla, feedback visual/sonoro seguro e funções versionadas para execução em mundo de teste.
 
 ### Sprint 5 — Observatório, jardins e anfiteatro de eventos
 **Objetivo:** ampliar a sensação de campus vivo e criar espaços para atividades futuras.

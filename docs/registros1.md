@@ -2400,3 +2400,11 @@ Checklist executado no host via MCP readonly/projeto:
 - Atualizado o registro pós-conclusão da Sprint 3 em `docs/academia_arcana_monumental_plano.md`.
 - Não foram criados nem alterados arquivos PNG; a biblioteca usa apenas blocos vanilla e arquivos texto versionáveis.
 - Pendência operacional: executar em mundo Bedrock de teste e validar escala interna/externa, leitura dos lecterns, passarelas, segredos opcionais, acesso fechado ao Arquivo Proibido e performance local após playtest.
+
+## 2026-06-24 16:36:53 UTC-3 — Academia Arcana Monumental — Sprint 4
+- Trabalho realizado: executada a Sprint 4 do plano `docs/academia_arcana_monumental_plano.md`, com criação da função `torres_educativas_sprint4.mcfunction` para as torres educativas de Lógica, Algoritmos e Elementos.
+- Entregas: cada torre recebeu desafios curtos e compreensíveis com feedback por blocos vanilla, luzes, porta/pressão, sino, som e sala de síntese no pátio; `montar_completa.mcfunction` passou a executar Sprints 1, 2, 3 e 4.
+- Versionamento: manifests pareados `BP_AcademiaArcanaMonumental` e `RP_AcademiaArcanaMonumental` incrementados para `0.1.5`.
+- PNG/texturas: nenhum arquivo `.png` foi criado, alterado ou commitado; a entrega usa somente arquivos texto e blocos vanilla.
+- Validação local: `node --check` não se aplica porque não houve alteração JavaScript; validações realizadas por inspeção de comandos `.mcfunction`, JSON de manifests e `git diff --check`.
+- Pendências: playtest em mundo Bedrock para ajuste fino de escala, leitura dos lecterns e densidade visual das salas.
