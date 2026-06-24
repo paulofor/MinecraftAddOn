@@ -1,0 +1,27 @@
+{
+  "format_version": 2,
+  "header": {
+    "name": "BP Academia Arcana Monumental",
+    "description": "Behavior Pack educativo para blocagem do campus, mapa mestre e navegacao principal da Academia Arcana Monumental.",
+    "uuid": "f8c7ffba-a3d9-4a69-9752-8b9cedf16c77",
+    "version": [0, 1, 0],
+    "min_engine_version": [1, 20, 0]
+  },
+  "modules": [
+    {
+      "type": "data",
+      "uuid": "fe8d3be6-caba-45c5-b9fe-dfd31c1c8729",
+      "version": [0, 1, 0]
+    }
+  ],
+  "dependencies": [
+    {
+      "uuid": "0afcebae-6935-4424-9fe5-62b4d6b61a42",
+      "version": [0, 1, 0]
+    }
+  ],
+  "metadata": {
+    "authors": ["MinecraftAddOn"],
+    "license": "MIT"
+  }
+}

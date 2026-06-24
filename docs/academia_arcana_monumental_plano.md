@@ -55,9 +55,9 @@ A academia deve parecer uma instituição antiga que cresceu por séculos, com e
 - Há espaço suficiente para futuras salas, NPCs, scripts e expansões.
 
 **Registro pós-conclusão:**
-- O que foi feito:
-- O que ficou faltando:
-- Impedimentos/bloqueios:
+- O que foi feito: criados packs pareados BP/RP da Academia Arcana Monumental, função de inicialização, função de blocagem Sprint 1, mapa conceitual em vista superior/corte vertical, limites de escala, caminho crítico, paleta inicial de blocos e instruções de execução em mundo de teste. Detalhes em `docs/academia_arcana_monumental/sprint1_blocagem.md`.
+- O que ficou faltando: validação visual dentro do jogo em mundo de teste e ajustes finos de escala após feedback de navegação e performance.
+- Impedimentos/bloqueios: não houve uso de PNG por regra do projeto; a blocagem foi entregue como função versionada para execução segura em área livre, sem edição direta do mundo ativo.
 
 ### Sprint 2 — Portão, muralhas, pátio central e identidade visual
 **Objetivo:** construir a primeira impressão e a área de orientação do jogador.
