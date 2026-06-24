@@ -74,9 +74,9 @@ A academia deve parecer uma instituição antiga que cresceu por séculos, com e
 - O pátio central tem pelo menos quatro pontos de interesse exploráveis.
 
 **Registro pós-conclusão:**
-- O que foi feito:
-- O que ficou faltando:
-- Impedimentos/bloqueios:
+- O que foi feito: criada função de detalhamento da Sprint 2 com Portão dos Aprendizes, ponte cerimonial, arco monumental, brasões em banners, estátuas, muralhas externas, torres de canto, pátio central ampliado, fonte, quatro pontos de interesse exploráveis e sistema de orientação por cores/materiais vanilla. A montagem completa foi atualizada para executar Sprint 1 e Sprint 2 em sequência. Detalhes em `docs/academia_arcana_monumental/sprint2_portao_patio_identidade.md`.
+- O que ficou faltando: validação visual dentro do jogo, ajuste fino de escala do portão/muralhas após teste de navegação e textos finais de lecterns/placas em etapa futura.
+- Impedimentos/bloqueios: não houve uso de PNG por regra do projeto; a entrega usa apenas blocos vanilla e funções versionadas para execução em mundo de teste.
 
 ### Sprint 3 — Biblioteca Infinita e Arquivo de Conhecimento
 **Objetivo:** criar o coração narrativo e informacional da academia.
