@@ -2408,3 +2408,10 @@ Checklist executado no host via MCP readonly/projeto:
 - PNG/texturas: nenhum arquivo `.png` foi criado, alterado ou commitado; a entrega usa somente arquivos texto e blocos vanilla.
 - Validação local: `node --check` não se aplica porque não houve alteração JavaScript; validações realizadas por inspeção de comandos `.mcfunction`, JSON de manifests e `git diff --check`.
 - Pendências: playtest em mundo Bedrock para ajuste fino de escala, leitura dos lecterns e densidade visual das salas.
+
+## 2026-06-24 16:58:59 UTC-3 — Correção de ids vanilla na Sprint 4 da Academia Arcana
+- Trabalho realizado: corrigidos IDs de blocos vanilla incompatíveis com o parser de funções Bedrock em `torres_educativas_sprint4.mcfunction` após erro de deploy pós-restart.
+- Ajustes aplicados: `oak_door` -> `wooden_door`, `note_block` -> `noteblock`, `magma_block` -> `magma`, `terracotta` -> `hardened_clay`.
+- Versionamento: incrementados os manifests pareados `BP_AcademiaArcanaMonumental` e `RP_AcademiaArcanaMonumental` de `0.1.5` para `0.1.6`.
+- Evidência: validação local por busca confirmou ausência dos IDs problemáticos no arquivo da função.
+- Pendências: executar deploy e confirmar no `bedrock.log` remoto que a função `academia_arcana_monumental/torres_educativas_sprint4` carrega sem warnings de parser.
