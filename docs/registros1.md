@@ -2373,3 +2373,12 @@ Checklist executado no host via MCP readonly/projeto:
 - Atualizados os manifests pareados `BP_AcademiaArcanaMonumental` e `RP_AcademiaArcanaMonumental` para `0.1.1`, incluindo `header.version`, `modules[].version` e dependência BP → RP.
 - Não foram criadas, alteradas nem commitadas texturas PNG; a correção envolve somente arquivos texto.
 - Validações locais realizadas: busca por `stonecutter` remanescente na função, parsing JSON dos manifests e inspeção do diff Git.
+
+## 2026-06-24 00:00 UTC-3 — Academia Arcana Monumental Sprint 2
+- Executada a Sprint 2 do plano `docs/academia_arcana_monumental_plano.md`.
+- Criada a função `packs/BP_AcademiaArcanaMonumental/functions/academia_arcana_monumental/detalhamento_sprint2.mcfunction` para adicionar Portão dos Aprendizes, ponte cerimonial, arco monumental, brasões, estátuas, muralhas, torres de canto, pátio ampliado, fonte, quatro pontos de interesse e rotas com identidade visual por cores/materiais.
+- Atualizada `packs/BP_AcademiaArcanaMonumental/functions/academia_arcana_monumental/montar_completa.mcfunction` para executar Sprints 1 e 2 em sequência.
+- Atualizada `packs/BP_AcademiaArcanaMonumental/functions/academia_arcana_monumental/init.mcfunction` com instruções da Sprint 2.
+- Incrementadas as versões dos manifests pareados `packs/BP_AcademiaArcanaMonumental/manifest.json` e `packs/RP_AcademiaArcanaMonumental/manifest.json` para `0.1.2`.
+- Criada documentação detalhada em `docs/academia_arcana_monumental/sprint2_portao_patio_identidade.md`.
+- Não foram criados nem alterados arquivos PNG; a identidade visual usa apenas blocos vanilla.
