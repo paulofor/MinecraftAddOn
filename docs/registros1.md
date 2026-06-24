@@ -2436,3 +2436,12 @@ Checklist executado no host via MCP readonly/projeto:
 - PNG/texturas: nenhum arquivo `.png` foi criado, alterado ou commitado; a entrega usa somente arquivos texto e blocos vanilla.
 - Validação local: validação JSON dos manifests, inspeção de referências `.mcfunction`, verificação de ausência de PNG em mudanças e `git diff --check`.
 - Pendências: playtest em mundo Bedrock para validar escala externa, leitura visual do observatório, navegação nos jardins, segurança das pontes e capacidade do anfiteatro.
+
+## 2026-06-24 17:34:06 UTC-3 — Academia Arcana Monumental — Sprint 6
+- Trabalho realizado: executada a Sprint 6 do plano `docs/academia_arcana_monumental_plano.md`, com criação da função `arquivo_proibido_sprint6.mcfunction` para o Arquivo Proibido Subterrâneo e desafio final.
+- Entregas: entrada subterrânea conectada ao pátio/biblioteca, galeria de descida, Sala dos Arquivos Perdidos, Corredor dos Mecanismos Antigos, Câmara do Selo com desafio final de sequência/lógica/observação/causa-consequência, Câmara de Conclusão, recompensa simbólica, atalho de retorno e gancho para expansão futura.
+- Montagem: `montar_completa.mcfunction` atualizada para executar Sprints 1, 2, 3, 4, 5 e 6 em sequência.
+- Versionamento: manifests pareados `BP_AcademiaArcanaMonumental` e `RP_AcademiaArcanaMonumental` incrementados para `0.1.8`, incluindo dependência BP→RP.
+- PNG/texturas: nenhum arquivo `.png` foi criado, alterado ou commitado; a entrega usa somente arquivos texto e blocos vanilla.
+- Validação local: validação JSON dos manifests, inspeção de referências `.mcfunction`, verificação de ausência de PNG em mudanças e `git diff --check`.
+- Pendências: playtest em mundo Bedrock para validar entrada subterrânea, leitura do desafio final, iluminação do subsolo e retorno seguro ao campus.

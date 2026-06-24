@@ -150,9 +150,9 @@ A academia deve parecer uma instituição antiga que cresceu por séculos, com e
 - O jogador consegue retornar ao campus com segurança após concluir a área.
 
 **Registro pós-conclusão:**
-- O que foi feito:
-- O que ficou faltando:
-- Impedimentos/bloqueios:
+- O que foi feito: criada função de construção da Sprint 6 com entrada subterrânea conectada à biblioteca/pátio, galeria de descida, Sala dos Arquivos Perdidos, Corredor dos Mecanismos Antigos, desafio final na Câmara do Selo, Câmara de Conclusão, recompensa simbólica, atalho de retorno seguro e gancho visual para expansão futura. A montagem completa foi atualizada para executar Sprints 1, 2, 3, 4, 5 e 6 em sequência. Detalhes em `docs/academia_arcana_monumental/sprint6_arquivo_proibido_desafio_final.md`.
+- O que ficou faltando: validação visual dentro do jogo, ajuste fino da iluminação/escala do subsolo após playtest, textos finais de lecterns e eventual automação futura com scripts/scoreboards para validar respostas do desafio final.
+- Impedimentos/bloqueios: não houve uso de PNG por regra do projeto; a entrega usa apenas blocos vanilla e funções versionadas para execução em mundo de teste.
 
 ### Sprint 7 — Polimento, validação e preparação para implementação técnica
 **Objetivo:** garantir que a construção está jogável, compreensível e pronta para receber scripts ou entidades futuras.
