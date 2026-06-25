@@ -15,4 +15,4 @@ setblock 4092 96 4096 lodestone
 setblock 4100 96 4096 sea_lantern
 setblock 4096 96 4100 standing_sign
 
-say [Portal4D] Arena fallback pronta. A Sprint 3 conectara o portal a este destino quando a dimensao customizada nao estiver disponivel.
+tellraw @s {"rawtext":[{"text":"[Portal4D] Arena fallback pronta. A Sprint 3 conectara o portal a este destino quando a dimensao customizada nao estiver disponivel."}]}
