@@ -160,9 +160,9 @@ Arquivos textuais complementares podem ser adicionados em `docs/portal_4d_espaci
 - Falhas do jogador têm recuperação simples e sem soft lock.
 
 **Registro pós-conclusão:**
-- O que foi feito:
-- O que ficou faltando:
-- Impedimentos/bloqueios:
+- O que foi feito: implementadas as alas 3 e 4 da arena 4D, com sala de rotação acionada por `lapis_block`, corredor de coordenada `W` simulada acionado por `emerald_block`, progresso por tags com tentativa tolerante de dynamic properties, feedback por mensagem/título/som/partícula e blocagem complementar na função `portal_4d/construir_arena_4d`; criado também o documento `docs/portal_4d_espacial/sprint5_rotacao_w.md` registrando causa raiz, decisão e coordenadas.
+- O que ficou faltando: validar em servidor Bedrock real a execução de `runCommandAsync` para som/partícula/título, confirmar no `bedrock.log` os logs `[Portal4D]` e ajustar a linguagem das placas quando a Sprint 6 adicionar UI/narrativa.
+- Impedimentos/bloqueios: validação em jogo e leitura remota de logs não executadas neste ambiente; nenhuma textura PNG foi criada ou alterada.
 
 ### Sprint 6 — UI, narrativa e orientação educativa
 **Objetivo:** tornar a experiência clara para o público-alvo e reduzir confusão conceitual.
@@ -179,9 +179,9 @@ Arquivos textuais complementares podem ser adicionados em `docs/portal_4d_espaci
 - O retorno ao Overworld é sempre acessível.
 
 **Registro pós-conclusão:**
-- O que foi feito:
-- O que ficou faltando:
-- Impedimentos/bloqueios:
+- O que foi feito: implementada a Sprint 6 com roteiro educativo 2D → 3D → 4D por mensagens/títulos, escolhas simples por blocos (`sea_lantern` para entrar, `lectern` para repetir explicação, `lodestone`/`sea_lantern` para voltar), narrativa de conclusão no retorno, função de recuperação `portal_4d/recuperar`, atualização de `portal_4d/init` e guia `docs/portal_4d_espacial/sprint6_guia_operadores.md`.
+- O que ficou faltando: validar em servidor Bedrock real a exibição de títulos/sons, a interação com `lectern` nas três posições da arena e a clareza do roteiro com jogadores do público-alvo; UI modal com `@minecraft/server-ui` pode ser considerada em sprint futura se a versão do servidor permitir.
+- Impedimentos/bloqueios: validação em jogo e leitura remota de logs não executadas neste ambiente; a Sprint 6 usou mensagens/títulos e blocos interativos para evitar adicionar dependência nova de UI antes da validação do servidor.
 
 ### Sprint 7 — Validação no servidor, logs e hardening
 **Objetivo:** validar o Add-On no ambiente Bedrock real e estabilizar erros de API.

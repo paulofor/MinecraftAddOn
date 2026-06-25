@@ -2590,3 +2590,21 @@ Checklist executado no host via MCP readonly/projeto:
 - Validação local: `node --check` no script, validação JSON dos manifests/blocos, assert de versões `0.1.8`, verificação textual dos blocos vanilla usados na ponte e `git diff --check` executados sem erros.
 - PNG/texturas: nenhum arquivo `.png` foi criado, alterado, enviado ou commitado; a melhoria visual usa somente blocos/texturas já disponíveis e arquivos texto versionáveis.
 - Próximo passo pós-deploy: executar `/function estruturas/trilho_maritimo_rota_margens` no jogo para sobrescrever a rota antiga com o novo desenho e revalidar pelo MCP/log.
+
+## 2026-06-25 00:45:33 UTC-3
+- Execução da Sprint 5 do plano `docs/portal_4d_espacial_plano.md`.
+- Pergunta obrigatória de investigação: **por que isso aconteceu?**
+- Causa identificada: a Sprint 5 ainda estava apenas planejada; o módulo existente tinha portal, fallback e retorno da Sprint 3, mas não havia lógica nem blocagem para sala de rotação 4D, corredor de coordenada W simulada, tags de progresso ou feedback dedicado.
+- Evidências consultadas: `docs/portal_4d_espacial_plano.md`, `packs/BP_Portal4DEspacial/scripts/main.js`, `packs/BP_Portal4DEspacial/functions/portal_4d/construir_arena_4d.mcfunction` e manifests pareados BP/RP.
+- Correção aplicada: adicionadas interações por `lapis_block` e `emerald_block`, construção programática das alas 3/4, progresso por tags com tentativa tolerante de dynamic properties, feedback por mensagem/título/som/partícula, documentação da Sprint 5 e atualização de versões dos manifests pareados para `0.1.4`.
+- Validação local executada: `node --check packs/BP_Portal4DEspacial/scripts/main.js` e parsing JSON dos manifests com `python3 -m json.tool`.
+- Pendência: validar comportamento em servidor Bedrock real e consultar `bedrock.log` via MCP após deploy/playtest.
+
+## 2026-06-25 00:51:31 UTC-3
+- Execução da Sprint 6 do plano `docs/portal_4d_espacial_plano.md`.
+- Pergunta obrigatória de investigação: **por que isso aconteceu?**
+- Causa identificada: a Sprint 6 ainda estava apenas planejada; o módulo já tinha portal, retorno e desafios da Sprint 5, mas não havia roteiro educativo guiado, opção simples de repetir explicação dentro da arena nem comando de recuperação operacional dedicado.
+- Evidências consultadas: `docs/portal_4d_espacial_plano.md`, `packs/BP_Portal4DEspacial/scripts/main.js`, `packs/BP_Portal4DEspacial/functions/portal_4d/init.mcfunction`, `packs/BP_Portal4DEspacial/functions/portal_4d/construir_arena_4d.mcfunction` e manifests pareados BP/RP.
+- Correção aplicada: adicionadas mensagens/títulos com analogia 2D -> 3D -> 4D, escolhas por blocos (`sea_lantern`, `lectern`, `lodestone`, `lapis_block`, `emerald_block`), narrativa de conclusão, função `portal_4d/recuperar`, guia de operadores e atualização de versões dos manifests pareados para `0.1.5`.
+- Validação local executada: `node --check packs/BP_Portal4DEspacial/scripts/main.js`, parsing JSON dos manifests com `python3 -m json.tool` e `git diff --check`.
+- Pendência: validar comportamento em servidor Bedrock real e consultar `bedrock.log` via MCP após deploy/playtest.

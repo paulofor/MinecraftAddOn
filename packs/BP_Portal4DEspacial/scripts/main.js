@@ -8,7 +8,13 @@ const CUSTOM_CENTER = { x: 0, y: 80, z: 0 };
 const PLATFORM_RADIUS = 6;
 const PORTAL_TRIGGER_BLOCK = "minecraft:sea_lantern";
 const RETURN_TRIGGER_BLOCKS = new Set(["minecraft:lodestone", "minecraft:sea_lantern"]);
+const GUIDE_TRIGGER_BLOCK = "minecraft:lectern";
 const TELEPORT_COOLDOWN_TICKS = 60;
+const ROTATION_CONTROL_BLOCK = "minecraft:lapis_block";
+const W_CONTROL_BLOCK = "minecraft:emerald_block";
+const ROTATION_PROGRESS_TAG = "portal4d_rotacao_4d";
+const W_PROGRESS_TAG_PREFIX = "portal4d_w_";
+const arenaStates = new Map();
 
 let customDimensionRegistered = false;
 let customDimensionError = "startup ainda nao executado";
@@ -16,9 +22,46 @@ let fallbackStatusLogged = false;
 const builtDestinations = new Set();
 const playerOrigins = new Map();
 const playerCooldowns = new Map();
+const playerNarrativeSteps = new Map();
+
+const NARRATIVE_STEPS = [
+  "1/4: Imagine uma criatura 2D vendo um cubo 3D. Ela veria cortes e sombras, nao o cubo inteiro.",
+  "2/4: Aqui fazemos o mesmo com 4D: o Minecraft continua 3D, mas mostra projecoes, fatias e estados.",
+  "3/4: Interaja com o lapis_block para alternar a rotacao 4D simulada; compare as duas projecoes.",
+  "4/4: Interaja com o emerald_block para avancar W. Cada W e uma fatia visual do mesmo espaco.",
+];
+
+const OPERATOR_GUIDE = [
+  "Escolhas: sea_lantern do portal = Entrar; lectern = Repetir explicacao; lodestone/sea_lantern da arena = Voltar.",
+  "Recuperacao: /function portal_4d/montar_completa remonta portal e arena; /function portal_4d/recuperar leva o operador para a arena fallback.",
+  "Conceito-chave: isto e uma simulacao 3D de ideias 4D, nao uma quarta coordenada real do motor Bedrock.",
+];
 
 function log(message) {
   console.warn(`${PREFIX} ${message}`);
+}
+
+function sendNarrative(player, message) {
+  player.sendMessage(`${PREFIX} ${message}`);
+}
+
+function sendGuide(player) {
+  for (const line of OPERATOR_GUIDE) {
+    sendNarrative(player, line);
+  }
+}
+
+function advanceNarrative(player) {
+  const key = getPlayerKey(player);
+  const currentStep = playerNarrativeSteps.get(key) ?? 0;
+  const message = NARRATIVE_STEPS[currentStep];
+  playerNarrativeSteps.set(key, (currentStep + 1) % NARRATIVE_STEPS.length);
+  emitFeedback(player, "Guia 4D", message, "random.orb");
+  sendNarrative(player, message);
+  if (currentStep === NARRATIVE_STEPS.length - 1) {
+    sendGuide(player);
+  }
+  log(`Narrativa exibida para ${player.name}; passo=${currentStep + 1}.`);
 }
 
 function notifyOperators(message) {
@@ -80,7 +123,7 @@ function buildSafePlatform(dimensionId, center, label) {
   }
 
   setBlockSafe(dimension, { x: center.x, y: center.y - 1, z: center.z }, "minecraft:amethyst_block");
-  setBlockSafe(dimension, { x: center.x, y: center.y, z: center.z - 4 }, "minecraft:lectern");
+  setBlockSafe(dimension, { x: center.x, y: center.y, z: center.z - 4 }, GUIDE_TRIGGER_BLOCK);
   setBlockSafe(dimension, { x: center.x - 4, y: center.y, z: center.z }, "minecraft:lodestone");
   setBlockSafe(dimension, { x: center.x + 4, y: center.y, z: center.z }, "minecraft:sea_lantern");
   builtDestinations.add(key);
@@ -88,11 +131,112 @@ function buildSafePlatform(dimensionId, center, label) {
   return true;
 }
 
+function runCommandSafe(dimension, command, context) {
+  try {
+    dimension.runCommandAsync(command).catch((error) => log(`Falha no comando ${context}: ${error}`));
+  } catch (error) {
+    log(`Falha ao iniciar comando ${context}: ${error}`);
+  }
+}
+
+function emitFeedback(player, title, subtitle, sound = "random.levelup") {
+  try {
+    player.onScreenDisplay?.setTitle(title, { subtitle, fadeInDuration: 5, stayDuration: 45, fadeOutDuration: 10 });
+  } catch (error) {
+    log(`Falha ao exibir titulo para ${player.name}: ${error}`);
+  }
+
+  runCommandSafe(player.dimension, `playsound ${sound} @a ${Math.floor(player.location.x)} ${Math.floor(player.location.y)} ${Math.floor(player.location.z)} 1 1`, "feedback sonoro");
+  runCommandSafe(player.dimension, `particle minecraft:totem_particle ${Math.floor(player.location.x)} ${Math.floor(player.location.y + 1)} ${Math.floor(player.location.z)}`, "feedback de particula");
+}
+
+function addTagSafe(player, tag) {
+  try {
+    player.addTag(tag);
+  } catch (error) {
+    log(`Falha ao adicionar tag ${tag} em ${player.name}: ${error}`);
+  }
+}
+
+function setProgressPropertySafe(player, key, value) {
+  try {
+    player.setDynamicProperty?.(key, value);
+  } catch (error) {
+    log(`Dynamic property indisponivel para ${key}; progresso mantido por tag. Erro: ${error}`);
+  }
+}
+
+function isNearPoint(block, center, dimensionId, maxDistanceSquared = 49) {
+  return block?.dimension?.id === dimensionId && distanceSquared(block.location, center) <= maxDistanceSquared;
+}
+
+function fillRoomLayer(dimension, x1, y, z1, x2, z2, blockId) {
+  for (let x = x1; x <= x2; x += 1) {
+    for (let z = z1; z <= z2; z += 1) {
+      setBlockSafe(dimension, { x, y, z }, blockId);
+    }
+  }
+}
+
+function buildRotationRoom(dimension, center, state) {
+  fillRoomLayer(dimension, center.x - 5, center.y - 1, center.z - 5, center.x + 5, center.z + 5, "minecraft:smooth_quartz");
+  fillRoomLayer(dimension, center.x - 5, center.y, center.z - 5, center.x + 5, center.z + 5, "minecraft:air");
+  fillRoomLayer(dimension, center.x - 5, center.y + 1, center.z - 5, center.x + 5, center.z + 5, "minecraft:air");
+  setBlockSafe(dimension, { x: center.x, y: center.y, z: center.z }, ROTATION_CONTROL_BLOCK);
+  setBlockSafe(dimension, { x: center.x, y: center.y, z: center.z - 4 }, GUIDE_TRIGGER_BLOCK);
+  setBlockSafe(dimension, { x: center.x, y: center.y + 1, z: center.z }, "minecraft:sea_lantern");
+
+  const layoutA = [
+    { x: -3, z: -3 }, { x: -2, z: -2 }, { x: -1, z: -1 }, { x: 1, z: 1 }, { x: 2, z: 2 }, { x: 3, z: 3 },
+    { x: -3, z: 3 }, { x: 3, z: -3 },
+  ];
+  const layoutB = [
+    { x: -3, z: 0 }, { x: -2, z: 0 }, { x: -1, z: 0 }, { x: 1, z: 0 }, { x: 2, z: 0 }, { x: 3, z: 0 },
+    { x: 0, z: -3 }, { x: 0, z: 3 },
+  ];
+  const points = state % 2 === 0 ? layoutA : layoutB;
+  for (const point of points) {
+    setBlockSafe(dimension, { x: center.x + point.x, y: center.y, z: center.z + point.z }, state % 2 === 0 ? "minecraft:purple_stained_glass" : "minecraft:cyan_stained_glass");
+  }
+}
+
+function buildWCorridor(dimension, start, step) {
+  for (let offset = 0; offset <= 16; offset += 1) {
+    const x = start.x + offset;
+    const block = offset <= step * 4 ? "minecraft:amethyst_block" : "minecraft:polished_andesite";
+    setBlockSafe(dimension, { x, y: start.y - 1, z: start.z }, block);
+    setBlockSafe(dimension, { x, y: start.y, z: start.z }, "minecraft:air");
+    setBlockSafe(dimension, { x, y: start.y + 1, z: start.z }, "minecraft:air");
+    if (offset % 4 === 0) {
+      setBlockSafe(dimension, { x, y: start.y, z: start.z + 1 }, offset / 4 <= step ? "minecraft:sea_lantern" : "minecraft:redstone_lamp");
+    }
+  }
+  setBlockSafe(dimension, { x: start.x + step * 4, y: start.y, z: start.z }, W_CONTROL_BLOCK);
+  setBlockSafe(dimension, { x: start.x, y: start.y, z: start.z - 2 }, GUIDE_TRIGGER_BLOCK);
+}
+
+function getArenaStateKey(dimensionId, center) {
+  return `${dimensionId}:${center.x}:${center.y}:${center.z}`;
+}
+
+function buildSprint5Arena(dimensionId, center) {
+  const dimension = getDimensionSafe(dimensionId, false);
+  if (!dimension) {
+    return;
+  }
+  const key = getArenaStateKey(dimensionId, center);
+  const state = arenaStates.get(key) ?? { rotation: 0, w: 0 };
+  buildRotationRoom(dimension, { x: center.x + 24, y: center.y, z: center.z }, state.rotation);
+  buildWCorridor(dimension, { x: center.x, y: center.y, z: center.z + 24 }, state.w);
+}
+
 function buildAllKnownDestinations() {
   buildSafePlatform(FALLBACK_DIMENSION_ID, FALLBACK_CENTER, "arena fallback Overworld");
+  buildSprint5Arena(FALLBACK_DIMENSION_ID, FALLBACK_CENTER);
 
   if (customDimensionRegistered) {
     buildSafePlatform(CUSTOM_DIMENSION_ID, CUSTOM_CENTER, "dimensao customizada 4D");
+    buildSprint5Arena(CUSTOM_DIMENSION_ID, CUSTOM_CENTER);
     return;
   }
 
@@ -149,6 +293,7 @@ function getDestination() {
     const customDimension = getDimensionSafe(CUSTOM_DIMENSION_ID, false);
     if (customDimension) {
       buildSafePlatform(CUSTOM_DIMENSION_ID, CUSTOM_CENTER, "dimensao customizada 4D");
+      buildSprint5Arena(CUSTOM_DIMENSION_ID, CUSTOM_CENTER);
       return {
         center: CUSTOM_CENTER,
         dimension: customDimension,
@@ -159,6 +304,7 @@ function getDestination() {
 
   const fallbackDimension = getDimensionSafe(FALLBACK_DIMENSION_ID);
   buildSafePlatform(FALLBACK_DIMENSION_ID, FALLBACK_CENTER, "arena fallback Overworld");
+  buildSprint5Arena(FALLBACK_DIMENSION_ID, FALLBACK_CENTER);
   return {
     center: FALLBACK_CENTER,
     dimension: fallbackDimension,
@@ -200,6 +346,12 @@ function teleportPlayer(player, destination, message) {
   }
 }
 
+function showEntryNarrative(player) {
+  emitFeedback(player, "Entrar", "Bem-vindo: 2D -> 3D -> 4D por analogia jogavel.", "portal.travel");
+  sendNarrative(player, "Pense em uma sombra 2D de um cubo 3D. O Portal 4D faz algo parecido: mostra sombras/fatias 3D de uma ideia 4D.");
+  sendNarrative(player, "Escolhas no espaco 4D: lectern repete explicacao, lapis_block muda perspectiva, emerald_block avanca W, lodestone/sea_lantern volta.");
+}
+
 function enterPortal(player, block) {
   if (isOnTeleportCooldown(player)) {
     return;
@@ -207,6 +359,7 @@ function enterPortal(player, block) {
 
   savePlayerOrigin(player);
   player.sendMessage(`${PREFIX} Portal ativado: entrando em uma simulacao 3D de ideias 4D.`);
+  showEntryNarrative(player);
   log(`Interacao valida de ${player.name} no portal em ${block.location.x} ${block.location.y} ${block.location.z}.`);
   teleportPlayer(player, getDestination(), "Observe as projecoes, fatias e mudancas de perspectiva. Isto e uma simulacao educativa de 4D.");
 }
@@ -233,11 +386,98 @@ function returnFromPortal(player) {
     dimension: originDimension,
     label: `origem salva em ${origin.dimensionId}`,
   }, "Retorno ao ponto de origem concluido. Pense: o que mudou entre a projecao e a fatia observada?");
+  sendNarrative(player, "Conclusao: voce nao via 4D real; voce comparou projecoes, fatias e estados para construir intuicao espacial.");
+}
+
+function advanceRotationRoom(player, block, center) {
+  if (isOnTeleportCooldown(player)) {
+    return;
+  }
+  const key = getArenaStateKey(block.dimension.id, center);
+  const state = arenaStates.get(key) ?? { rotation: 0, w: 0 };
+  state.rotation = (state.rotation + 1) % 2;
+  arenaStates.set(key, state);
+  buildRotationRoom(block.dimension, { x: center.x + 24, y: center.y, z: center.z }, state.rotation);
+  addTagSafe(player, ROTATION_PROGRESS_TAG);
+  setProgressPropertySafe(player, "portal4d:rotation_state", state.rotation);
+  emitFeedback(player, "Rotacao 4D", `A mesma sala virou a projecao ${state.rotation + 1}/2.`);
+  player.sendMessage(`${PREFIX} Rotacao 4D simulada: o objeto nao mudou no motor 3D; voce esta vendo outra projecao/fatia do mesmo conceito.`);
+  log(`Rotacao 4D acionada por ${player.name}; estado=${state.rotation}.`);
+}
+
+function advanceWCorridor(player, block, center) {
+  if (isOnTeleportCooldown(player)) {
+    return;
+  }
+  const key = getArenaStateKey(block.dimension.id, center);
+  const state = arenaStates.get(key) ?? { rotation: 0, w: 0 };
+  state.w = Math.min(state.w + 1, 4);
+  arenaStates.set(key, state);
+  buildWCorridor(block.dimension, { x: center.x, y: center.y, z: center.z + 24 }, state.w);
+  addTagSafe(player, `${W_PROGRESS_TAG_PREFIX}${state.w}`);
+  setProgressPropertySafe(player, "portal4d:w_state", state.w);
+  emitFeedback(player, "Coordenada W", `W simulado = ${state.w}. Avance sem medo: ha retorno seguro.`);
+  player.sendMessage(`${PREFIX} Coordenada W simulada: cada passo muda o estado visual do mesmo corredor, como comparar fatias sucessivas.`);
+  log(`Corredor W acionado por ${player.name}; estado=${state.w}.`);
+}
+
+function handleGuideInteraction(player, block) {
+  if (block.typeId !== GUIDE_TRIGGER_BLOCK) {
+    return false;
+  }
+
+  const centers = [
+    { center: FALLBACK_CENTER, dimensionId: FALLBACK_DIMENSION_ID },
+    { center: CUSTOM_CENTER, dimensionId: CUSTOM_DIMENSION_ID },
+  ];
+
+  for (const arena of centers) {
+    const nearCenterGuide = isNearPoint(block, { x: arena.center.x, y: arena.center.y, z: arena.center.z - 4 }, arena.dimensionId, 16);
+    const nearRotationGuide = isNearPoint(block, { x: arena.center.x + 24, y: arena.center.y, z: arena.center.z - 4 }, arena.dimensionId, 16);
+    const nearWGuide = isNearPoint(block, { x: arena.center.x, y: arena.center.y, z: arena.center.z + 22 }, arena.dimensionId, 16);
+    if (nearCenterGuide || nearRotationGuide || nearWGuide) {
+      advanceNarrative(player);
+      return true;
+    }
+  }
+
+  return false;
+}
+
+function handleSprint5Interaction(player, block) {
+  const centers = [
+    { center: FALLBACK_CENTER, dimensionId: FALLBACK_DIMENSION_ID },
+    { center: CUSTOM_CENTER, dimensionId: CUSTOM_DIMENSION_ID },
+  ];
+
+  for (const arena of centers) {
+    const rotationCenter = { x: arena.center.x + 24, y: arena.center.y, z: arena.center.z };
+    const wStart = { x: arena.center.x, y: arena.center.y, z: arena.center.z + 24 };
+    if (block.typeId === ROTATION_CONTROL_BLOCK && isNearPoint(block, rotationCenter, arena.dimensionId, 64)) {
+      advanceRotationRoom(player, block, arena.center);
+      return true;
+    }
+
+    if (block.typeId === W_CONTROL_BLOCK && isNearPoint(block, wStart, arena.dimensionId, 400)) {
+      advanceWCorridor(player, block, arena.center);
+      return true;
+    }
+  }
+
+  return false;
 }
 
 function handlePlayerInteractWithBlock(event) {
   const { player, block } = event;
   if (!player || !block) {
+    return;
+  }
+
+  if (handleGuideInteraction(player, block)) {
+    return;
+  }
+
+  if (handleSprint5Interaction(player, block)) {
     return;
   }
 
@@ -287,8 +527,8 @@ if (interactWithBlockEvent?.subscribe) {
 }
 
 system.run(() => {
-  log("Sprint 3 carregada: trigger do portal, teleporte e retorno preparados.");
-  notifyOperators("Sprint 3 ativa. Interaja com a sea_lantern central do portal para entrar; use lodestone/sea_lantern da arena para retornar.");
+  log("Sprint 6 carregada: portal, narrativa, orientacao, retorno, rotacao 4D e corredor W preparados.");
+  notifyOperators("Sprint 6 ativa. Escolhas: sea_lantern=Entrar, lectern=Repetir explicacao, lodestone/sea_lantern=Voltar, lapis/emerald=desafios.");
   buildAllKnownDestinations();
 });
 
