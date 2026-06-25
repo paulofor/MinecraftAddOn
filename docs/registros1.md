@@ -2651,3 +2651,80 @@ Checklist executado no host via MCP readonly/projeto:
 - Correção aplicada: `packs/BP_Portal4DEspacial/manifest.json` passou a depender de `@minecraft/server` `2.0.0-beta`; manifests pareados `BP_Portal4DEspacial` e `RP_Portal4DEspacial` incrementados para `0.1.7`; `/function portal_4d/init` agora informa explicitamente o uso da API Microsoft (`registerCustomDimension` no `system.beforeEvents.startup`) e o fallback por compatibilidade; criada documentação `docs/portal_4d_espacial/sprint9_api_microsoft.md`.
 - Validação local prevista: `node --check packs/BP_Portal4DEspacial/scripts/main.js`, parsing JSON dos manifests, assert de versão/dependência beta e `git diff --check`.
 - Pendência: deploy/restart e validação do `bedrock.log` para confirmar `[Portal4D] Dimensao customizada registrada no startup: portal4d:espaco_4d.` em mundo com Beta APIs habilitadas.
+
+## 2026-06-25 11:55:00 UTC-3 — Verificação pós-deploy do Portal 4D 0.1.7 no servidor
+- Solicitação: usuário informou que o deploy foi feito e pediu para verificar o que falta agora.
+- Pergunta obrigatória de investigação: **por que isso aconteceu?**
+- Causa identificada: o deploy dos arquivos e a ativação do pack `BP Portal 4D Espacial` versão `0.1.7` chegaram ao mundo ativo, porém o mundo/servidor não está com o experimento **Beta APIs** habilitado. Como o BP agora solicita `@minecraft/server` `2.0.0-beta` para usar explicitamente a Custom Dimension API Microsoft, o Bedrock bloqueia o plugin antes de executar o script.
+- Evidências MCP readonly consultadas:
+  - `tools/list` em `http://186.202.209.206/mcp` respondeu normalmente.
+  - `read_file` confirmou `/root/MinecraftServer/worlds/Bedrock level/behavior_packs/BP_Portal4DEspacial/manifest.json` com versão `0.1.7` e dependência `@minecraft/server` `2.0.0-beta`.
+  - `read_file` confirmou `/root/MinecraftServer/worlds/Bedrock level/resource_packs/RP_Portal4DEspacial/manifest.json` com versão `0.1.7`.
+  - `read_file` confirmou `world_behavior_packs.json` e `world_resource_packs.json` apontando para os UUIDs do Portal 4D em versão `0.1.7`.
+  - `tail -n 260 /root/MinecraftServer/logging/bedrock.log` mostrou `Pack Stack - [06] BP Portal 4D Espacial ... version: 0.1.7`, seguido de erro: `requesting dependency on beta APIs [@minecraft/server - 2.0.0-beta], but the Beta APIs experiment is not enabled`.
+- Estado atual: deploy de arquivos e seleção do pack `0.1.7` estão corretos; runtime do Portal 4D está bloqueado pela configuração do mundo sem Beta APIs, então ainda não houve confirmação pós-deploy de `[Portal4D] Dimensao customizada registrada no startup: portal4d:espaco_4d.` para a versão `0.1.7`.
+- O que falta agora: habilitar **Beta APIs** no mundo `Bedrock level`, reiniciar o servidor Bedrock, revalidar `bedrock.log` procurando `[Portal4D] Dimensao customizada registrada no startup: portal4d:espaco_4d.`, confirmar ausência de `TypeError`/`SyntaxError` do Portal4D e executar playtest de entrada, retorno, `lectern`, `lapis_block` e `emerald_block`.
+- Observação: os avisos de schema para `digicomo:quadro_ideias` e `digicomo:trilho_maritimo*` aparecem no mesmo log, mas não são a causa do bloqueio do Portal 4D; a causa direta do Portal 4D é a ausência de Beta APIs no mundo ativo.
+
+## 2026-06-25 12:08:00 UTC-3 — Procedimento para habilitar Beta APIs do Portal 4D
+- Solicitação: usuário perguntou como habilitar o item 1 pendente, isto é, **Beta APIs** no mundo ativo.
+- Pergunta obrigatória de investigação: **por que isso aconteceu?**
+- Causa identificada: o erro pós-deploy não é falta de arquivo nem erro de versão do pack; o mundo `Bedrock level` foi iniciado sem o experimento Beta APIs, e por isso o Bedrock bloqueou o BP `Portal 4D Espacial` `0.1.7` ao detectar a dependência `@minecraft/server` `2.0.0-beta`.
+- Evidências consultadas: `docs/portal_4d_espacial/sprint9_api_microsoft.md`, `docs/registros1.md`, manifest `packs/BP_Portal4DEspacial/manifest.json` e documentação Microsoft Learn sobre Experimental Features/Beta APIs e scripting no Bedrock Dedicated Server.
+- Orientação registrada: criado `docs/portal_4d_espacial/habilitar_beta_apis_bds.md` com procedimento seguro: parar servidor, fazer backup, abrir/copiar o mundo em cliente Bedrock compatível, ativar **Experiments > Beta APIs**, republicar o mundo no servidor, reiniciar e validar `bedrock.log`.
+- Próximo passo: após habilitar Beta APIs e reiniciar, reexecutar validação via MCP readonly procurando `Pack Stack` do Portal 4D `0.1.7`, ausência do erro de Beta APIs, registro do trigger e registro de `portal4d:espaco_4d` no startup.
+
+## 2026-06-25 12:22:00 UTC-3 — Passo a passo Linux para habilitar Beta APIs no host
+- Solicitação: usuário pediu um passo a passo do que precisa fazer no Linux do host para habilitar o item 1.
+- Pergunta obrigatória de investigação: **por que isso aconteceu?**
+- Causa identificada: no Bedrock Dedicated Server não basta reiniciar ou alterar `server.properties`; a flag de experimento fica no mundo (`level.dat`). Como o Portal 4D `0.1.7` depende de `@minecraft/server` `2.0.0-beta`, o mundo precisa ter o experimento Beta APIs ativado antes do script carregar.
+- Evidências consultadas: log pós-deploy registrado anteriormente, `docs/portal_4d_espacial/habilitar_beta_apis_bds.md`, documentação Microsoft Learn sobre Beta APIs e referências técnicas sobre edição de experimentos em `level.dat` de mundos Bedrock.
+- Orientação aplicada: documentação atualizada com comandos Linux para parar `bedrock.service`, criar backup do mundo, editar `level.dat` com Python/`nbtlib` em NBT little-endian ativando `experiments.gametest=1`, `experiments_ever_used=1` e `saved_with_toggled_experiments=1`, reiniciar o serviço, validar o log e fazer rollback se necessário.
+- Próximo passo operacional: executar os comandos no host, validar ausência do erro de Beta APIs e confirmar os logs `[Portal4D] Trigger...` e `[Portal4D] Dimensao customizada registrada...`.
+
+## 2026-06-25 12:34:00 UTC-3 — Troubleshooting venv ausente no host ao habilitar Beta APIs
+- Solicitação: usuário executou os backups no host e encontrou erro `ensurepip is not available` ao criar `/tmp/bedrock-nbt` com `python3 -m venv`.
+- Pergunta obrigatória de investigação: **por que isso aconteceu?**
+- Causa identificada: o host Debian/Ubuntu não tem o pacote `python3-venv`/`python3.12-venv` instalado, então o Python não consegue criar virtualenv com `pip` embutido; isso é uma dependência do procedimento de edição NBT, não um erro no mundo ou no Portal 4D.
+- Evidências consultadas: saída do terminal do usuário confirmando backups criados com timestamp `20260625-150747` e erro do `venv`; documentação `docs/portal_4d_espacial/habilitar_beta_apis_bds.md`.
+- Orientação registrada: adicionar troubleshooting para instalar `python3.12-venv` ou `python3-venv`, recriar `/tmp/bedrock-nbt` e instalar `nbtlib`; alternativa com `python3-pip --break-system-packages` se APT/venv não estiver disponível.
+- Próximo passo: instalar pacote de venv, recriar o ambiente, criar/aplicar o script `enable_bedrock_beta_apis.py`, sincronizar `level.dat_old`, iniciar `bedrock.service` e validar `bedrock.log`.
+
+## 2026-06-25 12:48:00 UTC-3 — Correção de cópia incompleta do script Beta APIs
+- Solicitação: usuário instalou `python3.12-venv`, criou `/tmp/bedrock-nbt`, instalou `nbtlib`, mas ao colar o heredoc do script apareceu `PYint(...)` e a parte final de gravação do `level.dat` ficou ausente.
+- Pergunta obrigatória de investigação: **por que isso aconteceu?**
+- Causa identificada: erro de cópia/colagem do heredoc no terminal; o script foi encerrado/colado de forma incompleta e não contém a etapa que serializa e grava `new_raw` em `level.dat`.
+- Evidências consultadas: saída do terminal enviada pelo usuário e procedimento em `docs/portal_4d_espacial/habilitar_beta_apis_bds.md`.
+- Orientação registrada: não executar o script parcial; sobrescrever `/tmp/enable_bedrock_beta_apis.py` com o conteúdo completo, validar com `python -m py_compile`, conferir `tail -n 20` e só então aplicar no `level.dat`.
+- Próximo passo: recriar o script completo no host, validar sintaxe, aplicar, sincronizar `level.dat_old`, iniciar `bedrock.service` e validar `bedrock.log`.
+
+## 2026-06-25 12:59:00 UTC-3 — `py_compile` passou, mas script Beta APIs ainda incompleto
+- Solicitação: usuário validou `/tmp/enable_bedrock_beta_apis.py` com `py_compile` sem erro, porém o trecho colado ainda terminava em `nbt_file["experiments_ever_used"] = Byte(1)` e não continha gravação do `level.dat`.
+- Pergunta obrigatória de investigação: **por que isso aconteceu?**
+- Causa identificada: `py_compile` só verifica sintaxe Python; um script truncado pode ser sintaticamente válido mesmo sem a etapa funcional de escrita (`level_dat.write_bytes(new_raw)`). A causa é completude insuficiente do heredoc, não erro de dependência.
+- Evidências consultadas: saída de terminal do usuário e guia `docs/portal_4d_espacial/habilitar_beta_apis_bds.md`.
+- Orientação registrada: anexar o bloco final ausente ao script, validar sintaxe e completude com `grep` procurando `saved_with_toggled_experiments`, `level_dat.write_bytes` e `Beta APIs habilitado`, antes de aplicar no mundo.
+- Próximo passo: anexar bloco final, rodar validações, executar o script no `level.dat`, sincronizar `level.dat_old`, iniciar `bedrock.service` e checar `bedrock.log`.
+
+## 2026-06-25 13:10:00 UTC-3 — Método base64 para evitar quebra de heredoc do script Beta APIs
+- Solicitação: usuário continuou recebendo erros de Bash porque trechos Python/prompt foram colados fora do heredoc ao tentar completar `/tmp/enable_bedrock_beta_apis.py`.
+- Pergunta obrigatória de investigação: **por que isso aconteceu?**
+- Causa identificada: o terminal recebeu conteúdo Python como comandos Bash, provavelmente por quebra/interrupção do heredoc ou colagem com prompts misturados; isso corrompeu o fluxo manual de criação do script, apesar de algumas linhas terem sido escritas no arquivo.
+- Evidências consultadas: saída do terminal com múltiplos `syntax error near unexpected token`, `command not found` e `grep` mostrando duplicação de trechos no script.
+- Orientação registrada: adicionar método alternativo por base64 para recriar `/tmp/enable_bedrock_beta_apis.py` sem digitar/colar código Python diretamente, seguido de `py_compile`, `grep` de completude, aplicação no `level.dat`, sincronização de `level.dat_old` e start do serviço.
+- Próximo passo: usar o bloco base64, validar o script, aplicar no mundo e checar o `bedrock.log`.
+
+## 2026-06-25 13:18:00 UTC-3 — Beta APIs aplicada ao `level.dat` do mundo ativo
+- Solicitação/contexto: usuário executou `/tmp/enable_bedrock_beta_apis.py` no host contra `/root/MinecraftServer/worlds/Bedrock level/level.dat`.
+- Pergunta obrigatória de investigação: **por que isso aconteceu?**
+- Causa/estado identificado: após substituir o fluxo manual por base64, o script completo foi aplicado com sucesso ao `level.dat`; a saída confirmou `Beta APIs habilitado`, backup adicional `level.dat.pre-beta-apis` e tags `experiments.gametest=1`, `experiments_ever_used=1`, `saved_with_toggled_experiments=1`.
+- Evidência usada: saída do terminal enviada pelo usuário.
+- Próximo passo: copiar `level.dat` para `level.dat_old`, iniciar `bedrock.service`, validar `bedrock.log` para confirmar ausência do erro de Beta APIs e presença dos logs `[Portal4D] Trigger...` e `[Portal4D] Dimensao customizada registrada no startup: portal4d:espaco_4d.`.
+
+## 2026-06-25 13:32:00 UTC-3 — Correção da versão inválida `@minecraft/server` `2.0.0-beta` no BDS
+- Solicitação/contexto: após aplicar Beta APIs no `level.dat`, iniciar o servidor e validar o log, usuário reportou novo erro em runtime para o Portal 4D `0.1.7`.
+- Pergunta obrigatória de investigação: **por que isso aconteceu?**
+- Causa identificada: a causa deixou de ser `Beta APIs experiment is not enabled`; o novo erro é `requested invalid version [2.0.0-beta] of [@minecraft/server]`. O BDS `1.26.30.5` aceita o pack no Pack Stack, mas rejeita a versão literal `2.0.0-beta` do módulo `@minecraft/server`.
+- Evidências consultadas: saída do `bedrock.log` enviada pelo usuário com `Pack Stack` do `BP Portal 4D Espacial` `0.1.7`, seguida de `failed to create context`, `requested invalid version [2.0.0-beta]` e `run failed`; registros anteriores mostram que `portal4d:espaco_4d` já foi registrado no mesmo servidor quando o manifest usava `@minecraft/server` `2.0.0`.
+- Correção aplicada: `packs/BP_Portal4DEspacial/manifest.json` voltou a depender de `@minecraft/server` `2.0.0`; manifests pareados `BP_Portal4DEspacial` e `RP_Portal4DEspacial` incrementados para `0.1.8`; mensagens de `portal_4d/init.mcfunction` atualizadas para remover referência a `2.0.0-beta`; criada documentação `docs/portal_4d_espacial/sprint10_compatibilidade_bds_126.md`.
+- Próximo passo: publicar/deploy da versão `0.1.8`, reiniciar `bedrock.service` e validar `bedrock.log` procurando `Pack Stack` `0.1.8`, `[Portal4D] Trigger...`, `[Portal4D] Dimensao customizada registrada...` e ausência de `requested invalid version [2.0.0-beta]`.

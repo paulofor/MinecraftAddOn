@@ -30,3 +30,28 @@ Se a Beta API não estiver ativa, o módulo deve continuar funcional via fallbac
 - **O que foi feito:** manifest do BP ajustado para `@minecraft/server` `2.0.0-beta`, manifests BP/RP versionados para `0.1.7`, mensagens de `init` atualizadas para explicitar a API Microsoft e registro da decisão nesta sprint.
 - **O que ficou faltando:** publicar no servidor, reiniciar Bedrock e validar o `bedrock.log` do mundo ativo.
 - **Impedimentos/bloqueios:** validação de runtime depende de deploy/restart e de mundo com Beta APIs habilitadas.
+
+## Verificação pós-deploy — 2026-06-25 11:55 UTC-3
+
+### Resultado observado no servidor
+- O deploy dos arquivos chegou ao mundo ativo: manifests BP/RP do `Portal4D` estão em `0.1.7` nos diretórios de `worlds/Bedrock level`.
+- `world_behavior_packs.json` e `world_resource_packs.json` também apontam para os UUIDs pareados do Portal 4D em versão `0.1.7`.
+- O `bedrock.log` do restart de `2026-06-25 14:47:55` carregou `BP Portal 4D Espacial` versão `0.1.7` no Pack Stack.
+
+### Bloqueio encontrado
+O runtime do script foi bloqueado antes da inicialização do Portal 4D porque o mundo ativo não está com **Beta APIs** habilitado:
+
+```text
+[Scripting] Plugin [BP Portal 4D Espacial - 0.1.7] - requesting dependency on beta APIs [@minecraft/server - 2.0.0-beta], but the Beta APIs experiment is not enabled.
+```
+
+### Próximo passo obrigatório
+1. Habilitar **Beta APIs** no mundo `Bedrock level`.
+2. Reiniciar o Bedrock Dedicated Server.
+3. Revalidar `/root/MinecraftServer/logging/bedrock.log` e confirmar:
+   - `Pack Stack` com `BP Portal 4D Espacial` `0.1.7`;
+   - ausência do erro de Beta APIs;
+   - presença de `[Portal4D] Trigger de interacao com bloco registrado para o portal 4D.`;
+   - presença de `[Portal4D] Dimensao customizada registrada no startup: portal4d:espaco_4d.`;
+   - criação das plataformas segura fallback e customizada.
+4. Executar playtest em jogo: entrada pelo portal, retorno, `lectern`, `lapis_block` e `emerald_block`.
