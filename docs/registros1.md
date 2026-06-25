@@ -2505,3 +2505,11 @@ Checklist executado no host via MCP readonly/projeto:
 - PNG/texturas: nenhum arquivo `.png` foi criado, alterado ou commitado; a entrega usa somente blocos vanilla e arquivos texto versionáveis.
 - Validação local: validação JSON dos manifests, `node --check` no script, verificação de ausência de PNG em mudanças e `git diff --check`.
 - Pendências: testar em mundo Bedrock real a interação com a `sea_lantern` central, o teleporte para dimensão customizada/fallback, o retorno ao ponto de origem e os logs `[Portal4D]` no `bedrock.log`.
+
+## 2026-06-24 22:01:19 UTC-3 — Correção de parsing em funções Bedrock pós-deploy
+- Trabalho realizado: corrigidos erros de parsing reportados no `bedrock.log` para as funções `portal_4d/construir_arena_4d` e `estruturas/trilho_maritimo_*`.
+- Portal 4D: substituído `say [Portal4D] ...` por `tellraw @s ...`, evitando rejeição do token `[` no início da mensagem em função Bedrock.
+- Trem Marítimo: os comandos `setblock` das funções de estrutura passaram a usar os identificadores customizados de bloco entre aspas (`"digicomo:trilho_maritimo"` e `"digicomo:trilho_maritimo_luz"`), evitando falha de parse do nome de bloco customizado durante o carregamento da função.
+- Versionamento: manifests pareados de `BP_Portal4DEspacial`/`RP_Portal4DEspacial` e `BP_TremMaritimo`/`RP_TremMaritimo` incrementados para `0.1.3`.
+- Validação local: executadas verificações textuais para garantir ausência do padrão problemático `say [Portal4D]` e de `setblock` com `digicomo:*` sem aspas nas funções alteradas.
+- Pendências: após deploy, revalidar `bedrock.log` a partir da nova linha pós-restart para confirmar que as funções carregam sem warnings de parse.
