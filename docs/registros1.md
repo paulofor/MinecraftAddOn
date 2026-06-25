@@ -2544,3 +2544,25 @@ Checklist executado no host via MCP readonly/projeto:
 - Solicitação atendida: atualizado `AGENTS.md` para tornar obrigatório investigar e registrar por que o problema aconteceu antes de propor ou aplicar solução.
 - Regra adicionada: sempre perguntar explicitamente “por que isso aconteceu?”, consultar registros/logs/histórico/arquivos impactados, diferenciar correção de sintoma de causa raiz e registrar evidências, hipóteses e próximos passos quando houver incerteza.
 - Escopo da regra: bugs, falhas de deploy, erros de runtime, problemas de textura, problemas de API, workflows e qualquer comportamento inesperado.
+
+## 2026-06-25 00:48:00 UTC-3 — Verificação MCP do Trem Marítimo no servidor
+- Solicitação: verificar se o trem ficou bom no servidor usando o MCP Server em `http://186.202.209.206/mcp`.
+- Pergunta obrigatória de causa raiz: por que isso aconteceu?
+- Evidências consultadas: registros anteriores deste arquivo, `tools/list` do MCP, listagem de `/root/MinecraftServer/logging` e `tail -n 800 /root/MinecraftServer/logging/bedrock.log` via `run_read_command`.
+- Resultado da verificação: o Trem Marítimo ainda não ficou bom no servidor; o pack `BP Trem Maritimo` aparece carregado no stack do mundo ativo `worlds/Bedrock level/behavior_packs/BP_TremMaritimo`, versão `0.1.6`, mas o log pós-restart registra erro de script e erro de parsing dos blocos customizados.
+- Causa raiz identificada 1: o script usa `world.afterEvents.scriptEventReceive.subscribe(...)`, porém o padrão funcional observado em outro módulo do projeto usa `system.afterEvents.scriptEventReceive.subscribe(...)`; por isso `scriptEventReceive` fica `undefined` em `world.afterEvents` e o servidor registra `TypeError: cannot read property 'subscribe' of undefined` em `main.js:123`.
+- Causa raiz identificada 2: os blocos `digicomo:trilho_maritimo` e `digicomo:trilho_maritimo_luz` definem `minecraft:friction` como `0.98`, mas o Bedrock aceito pelo servidor informa faixa válida `[0, 0.900000]`; por isso as duas definições de bloco falham no parse e os blocos customizados não carregam corretamente.
+- Estado visual esperado: como as definições dos blocos customizados falharam e o handler de `scriptevent` não inicializou, não há evidência de que a construção customizada do trem esteja funcionando/boa no servidor neste momento.
+- Próximo passo recomendado: corrigir o script para assinar `system.afterEvents.scriptEventReceive`, ajustar `minecraft:friction` para no máximo `0.9` nos dois blocos, incrementar os manifests pareados BP/RP do Trem Marítimo e revalidar com novo restart/deploy pelo MCP/log.
+- PNG/texturas: nenhum arquivo `.png` foi criado, alterado, enviado ou commitado nesta verificação.
+
+## 2026-06-25 01:05:00 UTC-3 — Execução do próximo passo do Trem Marítimo
+- Solicitação: executar o próximo passo recomendado na verificação MCP anterior do Trem Marítimo.
+- Pergunta obrigatória de causa raiz: por que isso aconteceu?
+- Evidências usadas antes da correção: registro de verificação MCP anterior, `bedrock.log` com `TypeError` em `main.js:123`, erros de parsing de `minecraft:friction` fora do intervalo `[0, 0.900000]`, script local do Trem Marítimo e definições dos blocos customizados.
+- Correção aplicada 1: `packs/BP_TremMaritimo/scripts/main.js` passou a importar `system` e assinar `system.afterEvents.scriptEventReceive.subscribe(...)`, alinhando o handler de `scriptevent` ao padrão já funcional no projeto.
+- Correção aplicada 2: `packs/BP_TremMaritimo/blocks/trilho_maritimo.json` e `packs/BP_TremMaritimo/blocks/trilho_maritimo_luz.json` tiveram `minecraft:friction` ajustado de `0.98` para `0.9`, que é o limite máximo aceito pelo servidor conforme erro observado.
+- Versionamento: manifests pareados `BP_TremMaritimo` e `RP_TremMaritimo` incrementados de `0.1.6` para `0.1.7`, incluindo todos os módulos, para rastreabilidade e deploy consistente.
+- Validação local: `node --check` no script, validação JSON dos manifests/blocos, assert local do intervalo de fricção, verificação textual de ausência de `world.afterEvents.scriptEventReceive` e `minecraft:friction: 0.98`, e `git diff --check` executados sem erros.
+- Deploy/restart: não executado nesta rodada porque o ambiente local não possui chave SSH (`~/.ssh/id_ed25519`) e o MCP disponível não oferece ferramenta de escrita/sincronização de arquivos texto de packs; após merge/deploy oficial, revalidar `bedrock.log` via MCP para confirmar carregamento da versão `0.1.7` sem `TypeError`/erros de parsing do Trem Marítimo.
+- PNG/texturas: nenhum arquivo `.png` foi criado, alterado, enviado ou commitado; a correção afeta apenas arquivos texto.

@@ -1,4 +1,4 @@
-import { world } from "@minecraft/server";
+import { system, world } from "@minecraft/server";
 
 const PREFIX = "[TremMaritimo]";
 const SCRIPT_EVENT_ID = "digicomo:trem_maritimo";
@@ -120,7 +120,7 @@ function buildRoute(source) {
   notify(source, message);
 }
 
-world.afterEvents.scriptEventReceive.subscribe((event) => {
+system.afterEvents.scriptEventReceive.subscribe((event) => {
   if (event.id !== SCRIPT_EVENT_ID) {
     return;
   }
