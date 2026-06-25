@@ -2,20 +2,34 @@
   "format_version": 2,
   "header": {
     "name": "RP Portal 4D Espacial",
-    "description": "Resource Pack pareado do Portal para o Mundo 4D Espacial; Sprint 1 sem texturas PNG customizadas.",
+    "description": "Resource Pack pareado do Portal para o Mundo 4D Espacial; Sprint 3 sem texturas PNG customizadas.",
     "uuid": "8f20b59f-9163-4197-8f6a-d354d8dd6f3c",
-    "version": [0, 1, 0],
-    "min_engine_version": [1, 20, 0]
+    "version": [
+      0,
+      1,
+      2
+    ],
+    "min_engine_version": [
+      1,
+      20,
+      0
+    ]
   },
   "modules": [
     {
       "type": "resources",
       "uuid": "2e35541d-975e-476a-816f-2ae56b4d22a4",
-      "version": [0, 1, 0]
+      "version": [
+        0,
+        1,
+        2
+      ]
     }
   ],
   "metadata": {
-    "authors": ["MinecraftAddOn"],
+    "authors": [
+      "MinecraftAddOn"
+    ],
     "license": "MIT"
   }
 }
