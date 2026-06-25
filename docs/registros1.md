@@ -2728,3 +2728,16 @@ Checklist executado no host via MCP readonly/projeto:
 - Evidências consultadas: saída do `bedrock.log` enviada pelo usuário com `Pack Stack` do `BP Portal 4D Espacial` `0.1.7`, seguida de `failed to create context`, `requested invalid version [2.0.0-beta]` e `run failed`; registros anteriores mostram que `portal4d:espaco_4d` já foi registrado no mesmo servidor quando o manifest usava `@minecraft/server` `2.0.0`.
 - Correção aplicada: `packs/BP_Portal4DEspacial/manifest.json` voltou a depender de `@minecraft/server` `2.0.0`; manifests pareados `BP_Portal4DEspacial` e `RP_Portal4DEspacial` incrementados para `0.1.8`; mensagens de `portal_4d/init.mcfunction` atualizadas para remover referência a `2.0.0-beta`; criada documentação `docs/portal_4d_espacial/sprint10_compatibilidade_bds_126.md`.
 - Próximo passo: publicar/deploy da versão `0.1.8`, reiniciar `bedrock.service` e validar `bedrock.log` procurando `Pack Stack` `0.1.8`, `[Portal4D] Trigger...`, `[Portal4D] Dimensao customizada registrada...` e ausência de `requested invalid version [2.0.0-beta]`.
+
+## 2026-06-25 15:48:00 UTC-3 — Verificação pós-deploy 0.1.8 ainda com dependência beta no host
+- Solicitação: usuário informou que terminou o deploy e pediu verificação de logs e estado do mundo.
+- Pergunta obrigatória de investigação: **por que isso aconteceu?**
+- Causa identificada: o deploy ativou os packs `Portal4D` em versão `0.1.8` no mundo, mas o manifest remoto ativo do BP em `/root/MinecraftServer/worlds/Bedrock level/behavior_packs/BP_Portal4DEspacial/manifest.json` ainda contém `@minecraft/server` `2.0.0-beta`. Assim, o BDS `1.26.30.5` carrega o Pack Stack `0.1.8`, mas continua rejeitando o módulo por `requested invalid version [2.0.0-beta]`.
+- Evidências MCP readonly consultadas:
+  - `read_file` do manifest remoto do BP confirmou `version: [0,1,8]`, porém dependência `@minecraft/server` ainda como `2.0.0-beta`.
+  - `read_file` do manifest remoto do RP confirmou `0.1.8`.
+  - `world_behavior_packs.json` e `world_resource_packs.json` apontam para os UUIDs do Portal 4D em `0.1.8`.
+  - `tail -n 220 /root/MinecraftServer/logging/bedrock.log` mostrou restart `2026-06-25 15:39:43`, `Experiment(s) active: gtst`, Pack Stack `BP Portal 4D Espacial` `0.1.8`, seguido de `requested invalid version [2.0.0-beta] of [@minecraft/server]`.
+  - `get_block` em pontos da arena fallback retornou `minecraft:air`/`missing_subchunk`, compatível com script não executado no restart atual.
+- Estado atual: Beta APIs/experimento está ativo (`gtst`), versão do pack é `0.1.8`, mas o arquivo remoto do BP não recebeu a correção de dependência para `@minecraft/server` `2.0.0`.
+- Correção necessária no host: ajustar o manifest remoto ativo para `@minecraft/server` `2.0.0` ou redeployar o arquivo corrigido do repositório; depois reiniciar `bedrock.service` e validar logs `[Portal4D] Trigger...` e `[Portal4D] Dimensao customizada registrada...`.
