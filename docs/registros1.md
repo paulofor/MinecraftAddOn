@@ -2471,3 +2471,21 @@ Checklist executado no host via MCP readonly/projeto:
 - PNG/texturas: nenhum arquivo `.png` foi criado, alterado ou adicionado; a blocagem usa somente blocos vanilla e arquivos texto versionáveis.
 - Validação local: validação JSON dos manifests, `node --check` no script inicial, verificação de ausência de PNG em mudanças e `git diff --check`.
 - Pendências: carregar os packs em um mundo Bedrock de teste e executar `/function portal_4d/construir_portal` para validar escala, leitura visual e compatibilidade dos blocos vanilla no servidor.
+## 2026-06-24 21:24:53 UTC-3 — Portal 4D Espacial — Sprint 2
+- Trabalho realizado: executada a Sprint 2 do plano `docs/portal_4d_espacial_plano.md`, com implementação de registro tolerante da dimensão customizada `portal4d:espaco_4d` durante `system.beforeEvents.startup`.
+- Entregas: `packs/BP_Portal4DEspacial/scripts/main.js` agora cria plataformas seguras por script, registra logs `[Portal4D]`, mantém motivo de fallback e prepara a arena fallback no Overworld em `4096 96 4096` quando `dimensionRegistry/registerCustomDimension` não estiver disponível.
+- Funções: criada `packs/BP_Portal4DEspacial/functions/portal_4d/construir_arena_4d.mcfunction`; `init.mcfunction` e `montar_completa.mcfunction` foram atualizadas para orientar e montar a Sprint 2.
+- Versionamento: manifests pareados `BP_Portal4DEspacial` e `RP_Portal4DEspacial` incrementados de `0.1.0` para `0.1.1`, incluindo dependência BP→RP.
+- Documentação: criado `docs/portal_4d_espacial/sprint2_dimensao_fallback.md` e atualizado o registro pós-conclusão da Sprint 2 no plano mestre.
+- PNG/texturas: nenhum arquivo `.png` foi criado, alterado ou commitado; a entrega usa somente blocos vanilla e arquivos texto versionáveis.
+- Validação local: validação JSON dos manifests, `node --check` no script, verificação de ausência de PNG em mudanças e `git diff --check`.
+- Pendências: validar em mundo Bedrock real com e sem Beta APIs, confirmar mensagens `[Portal4D]` no `bedrock.log` e testar a criação efetiva da plataforma em dimensão customizada quando disponível.
+## 2026-06-24 21:29:27 UTC-3 — Portal 4D Espacial — Sprint 3
+- Trabalho realizado: executada a Sprint 3 do plano `docs/portal_4d_espacial_plano.md`, transformando o portal físico em interação jogável por Script API.
+- Entregas: `packs/BP_Portal4DEspacial/scripts/main.js` agora assina `world.afterEvents.playerInteractWithBlock`, valida a `sea_lantern` central pela moldura de `crying_obsidian`, `purple_stained_glass` e `lodestone`, salva origem do jogador em memória, teleporta para `portal4d:espaco_4d` quando disponível ou para a arena fallback no Overworld, e permite retorno por blocos de referência na arena.
+- Operação: `packs/BP_Portal4DEspacial/functions/portal_4d/init.mcfunction` foi atualizado com instruções da Sprint 3 para entrada, fallback, retorno e diagnóstico por `bedrock.log`.
+- Versionamento: manifests pareados `BP_Portal4DEspacial` e `RP_Portal4DEspacial` incrementados de `0.1.1` para `0.1.2`, incluindo dependência BP→RP.
+- Documentação: criado `docs/portal_4d_espacial/sprint3_trigger_portal.md` e atualizado o registro pós-conclusão da Sprint 3 no plano mestre.
+- PNG/texturas: nenhum arquivo `.png` foi criado, alterado ou commitado; a entrega usa somente blocos vanilla e arquivos texto versionáveis.
+- Validação local: validação JSON dos manifests, `node --check` no script, verificação de ausência de PNG em mudanças e `git diff --check`.
+- Pendências: testar em mundo Bedrock real a interação com a `sea_lantern` central, o teleporte para dimensão customizada/fallback, o retorno ao ponto de origem e os logs `[Portal4D]` no `bedrock.log`.

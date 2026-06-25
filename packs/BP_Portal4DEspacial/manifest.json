@@ -2,29 +2,49 @@
   "format_version": 2,
   "header": {
     "name": "BP Portal 4D Espacial",
-    "description": "Behavior Pack educativo do Portal para o Mundo 4D Espacial; Sprint 1 com portal vanilla e base de scripts.",
+    "description": "Behavior Pack educativo do Portal para o Mundo 4D Espacial; Sprint 3 com portal vanilla e base de scripts.",
     "uuid": "3d3fab9a-bc52-4bb3-9cd4-d7dff474bfbb",
-    "version": [0, 1, 0],
-    "min_engine_version": [1, 20, 0]
+    "version": [
+      0,
+      1,
+      2
+    ],
+    "min_engine_version": [
+      1,
+      20,
+      0
+    ]
   },
   "modules": [
     {
       "type": "data",
       "uuid": "6c07e6e6-4980-42df-9502-639bf4c74065",
-      "version": [0, 1, 0]
+      "version": [
+        0,
+        1,
+        2
+      ]
     },
     {
       "type": "script",
       "language": "javascript",
       "uuid": "95bf1079-2a7b-47f5-aefb-1df0a694416b",
-      "version": [0, 1, 0],
+      "version": [
+        0,
+        1,
+        2
+      ],
       "entry": "scripts/main.js"
     }
   ],
   "dependencies": [
     {
       "uuid": "8f20b59f-9163-4197-8f6a-d354d8dd6f3c",
-      "version": [0, 1, 0]
+      "version": [
+        0,
+        1,
+        2
+      ]
     },
     {
       "module_name": "@minecraft/server",
@@ -32,7 +52,9 @@
     }
   ],
   "metadata": {
-    "authors": ["MinecraftAddOn"],
+    "authors": [
+      "MinecraftAddOn"
+    ],
     "license": "MIT"
   }
 }
