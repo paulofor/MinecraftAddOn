@@ -199,9 +199,9 @@ Arquivos textuais complementares podem ser adicionados em `docs/portal_4d_espaci
 - Registros de evidência atualizados em `docs/registros1.md`.
 
 **Registro pós-conclusão:**
-- O que foi feito:
-- O que ficou faltando:
-- Impedimentos/bloqueios:
+- O que foi feito: executado checklist local com parsing JSON dos manifests, `node --check` do script e `git diff --check`; validados via MCP readonly os manifests remotos no mundo ativo, o carregamento do `BP Portal 4D Espacial` versão `0.1.5` no `bedrock.log`, os logs `[Portal4D]` de trigger, dimensão customizada e plataformas seguras, além do documento `docs/portal_4d_espacial/sprint7_validacao_servidor.md` com evidências e causa raiz.
+- O que ficou faltando: realizar playtest manual em jogo para confirmar entrada/saída do portal, repetição de explicação no `lectern`, rotação no `lapis_block` e avanço de W no `emerald_block`; se houver falha, coletar novo log antes de alterar código.
+- Impedimentos/bloqueios: o MCP readonly não tem reinício configurado (`BEDROCK_RESTART_CMD` ausente), então a tentativa de restart via tool falhou e a validação usou o último restart registrado; nenhum erro `TypeError`/`SyntaxError` do `Portal4D` foi encontrado no recorte validado.
 
 ### Sprint 8 — Polimento, playtest e expansão
 **Objetivo:** melhorar estética, ritmo e potencial de expansão do Mundo 4D.
@@ -218,9 +218,9 @@ Arquivos textuais complementares podem ser adicionados em `docs/portal_4d_espaci
 - A arquitetura permite novas salas sem reescrever o portal.
 
 **Registro pós-conclusão:**
-- O que foi feito:
-- O que ficou faltando:
-- Impedimentos/bloqueios:
+- O que foi feito: adicionados polimento visual e reforço de luz/legibilidade, roteiro de oficina de 10 a 15 minutos, pontos de expansão para matrizes/projeções/topologia/grafos, checklist de playtest para perfis iniciante/intermediário/avançado e documento final `docs/portal_4d_espacial/sprint8_guia_professores_playtest.md`; a montagem completa passou a executar `portal_4d/polimento_sprint8`.
+- O que ficou faltando: publicar/deploy da versão `0.1.6`, reiniciar o Bedrock e executar playtest real com os três perfis para medir tempo, clareza e eventuais soft locks.
+- Impedimentos/bloqueios: validação em jogo não foi executada neste ambiente; nenhum PNG foi criado/alterado, e a Sprint 8 usa apenas blocos vanilla e arquivos texto versionáveis.
 
 ## Checklist inicial de implementação
 - Confirmar versão do Bedrock Server e se Beta APIs podem ser habilitadas no mundo de teste.
