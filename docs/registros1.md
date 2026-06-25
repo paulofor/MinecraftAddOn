@@ -2633,3 +2633,21 @@ Checklist executado no host via MCP readonly/projeto:
 - Validação local prevista: `node --check packs/BP_Portal4DEspacial/scripts/main.js`, parsing JSON dos manifests, assert de versão `0.1.6` e `git diff --check`.
 - Pendência: publicar/deploy, reiniciar servidor Bedrock e executar playtest real com os três perfis, revalidando `bedrock.log` por `[Portal4D]`, `[Scripting]`, `TypeError` e `SyntaxError`.
 - PNG/texturas: nenhum arquivo `.png` foi criado, alterado, enviado ou commitado; a Sprint 8 usa somente blocos vanilla e arquivos texto.
+
+## 2026-06-25 03:10:00 UTC-3 — Consulta de status do Portal 4D com API Microsoft
+- Solicitação: responder como está a implementação do espaço 4D usando a API da Microsoft.
+- Pergunta obrigatória de investigação: **por que isso aconteceu?**
+- Causa/estado identificado: a implementação atual usa a Script API oficial do Minecraft Bedrock como caminho preferencial para registrar a dimensão customizada `portal4d:espaco_4d`, mas mantém fallback seguro no Overworld porque a própria Custom Dimension API depende de Beta APIs/compatibilidade do servidor e pode estar indisponível em alguns ambientes.
+- Evidências locais consultadas: `packs/BP_Portal4DEspacial/scripts/main.js`, manifests pareados `packs/BP_Portal4DEspacial/manifest.json` e `packs/RP_Portal4DEspacial/manifest.json`, documentação das Sprints 7/8 em `docs/portal_4d_espacial/` e registros anteriores neste arquivo.
+- Evidência Microsoft Learn: consulta ao MCP oficial `https://learn.microsoft.com/api/mcp` com `tools/list` e `microsoft_docs_search` confirmou a orientação de registrar Custom Dimensions durante `system.beforeEvents.startup` via `event.dimensionRegistry.registerCustomDimension(...)`, além de lembrar que a API é experimental e exige Bedrock 1.21.80+ com Beta APIs habilitadas.
+- Estado resumido: código local está na versão `0.1.6`; a última validação remota registrada carregou `0.1.5` no mundo ativo e confirmou no `bedrock.log` o registro de `portal4d:espaco_4d`; a versão `0.1.6` ainda tem pendência de deploy/playtest real.
+- Nenhuma alteração funcional foi aplicada nesta consulta; registro criado apenas para rastreabilidade conforme AGENTS.md.
+
+## 2026-06-25 03:25:00 UTC-3 — Portal 4D: optar explicitamente pela API Microsoft Custom Dimensions
+- Solicitação: usuário reforçou que gostaria muito de usar a API da Microsoft no espaço 4D.
+- Pergunta obrigatória de investigação: **por que isso aconteceu?**
+- Causa identificada: embora o script já usasse `system.beforeEvents.startup` e `event.dimensionRegistry.registerCustomDimension("portal4d:espaco_4d")`, o manifest do BP ainda declarava `@minecraft/server` como `2.0.0`; a documentação oficial Microsoft Learn consultada para Custom Dimensions indica que o recurso é experimental/beta e requer opt-in do módulo beta, então o estado anterior ficava ambíguo para quem queria uso explícito da API Microsoft.
+- Evidências consultadas: `packs/BP_Portal4DEspacial/scripts/main.js`, manifests pareados BP/RP, `packs/BP_Portal4DEspacial/functions/portal_4d/init.mcfunction`, registros anteriores e MCP Microsoft Learn (`microsoft_docs_search`) para Custom Dimension API.
+- Correção aplicada: `packs/BP_Portal4DEspacial/manifest.json` passou a depender de `@minecraft/server` `2.0.0-beta`; manifests pareados `BP_Portal4DEspacial` e `RP_Portal4DEspacial` incrementados para `0.1.7`; `/function portal_4d/init` agora informa explicitamente o uso da API Microsoft (`registerCustomDimension` no `system.beforeEvents.startup`) e o fallback por compatibilidade; criada documentação `docs/portal_4d_espacial/sprint9_api_microsoft.md`.
+- Validação local prevista: `node --check packs/BP_Portal4DEspacial/scripts/main.js`, parsing JSON dos manifests, assert de versão/dependência beta e `git diff --check`.
+- Pendência: deploy/restart e validação do `bedrock.log` para confirmar `[Portal4D] Dimensao customizada registrada no startup: portal4d:espaco_4d.` em mundo com Beta APIs habilitadas.

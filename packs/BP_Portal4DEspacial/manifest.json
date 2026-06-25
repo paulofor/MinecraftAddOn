@@ -2,12 +2,12 @@
   "format_version": 2,
   "header": {
     "name": "BP Portal 4D Espacial",
-    "description": "Behavior Pack educativo do Portal para o Mundo 4D Espacial; Sprint 8 com portal vanilla e polimento, playtest e expansao.",
+    "description": "Behavior Pack educativo do Portal para o Mundo 4D Espacial; Sprint 9 com Custom Dimension API Microsoft em beta e fallback seguro.",
     "uuid": "3d3fab9a-bc52-4bb3-9cd4-d7dff474bfbb",
     "version": [
       0,
       1,
-      6
+      7
     ],
     "min_engine_version": [
       1,
@@ -22,7 +22,7 @@
       "version": [
         0,
         1,
-        6
+        7
       ]
     },
     {
@@ -32,7 +32,7 @@
       "version": [
         0,
         1,
-        6
+        7
       ],
       "entry": "scripts/main.js"
     }
@@ -43,12 +43,12 @@
       "version": [
         0,
         1,
-        6
+        7
       ]
     },
     {
       "module_name": "@minecraft/server",
-      "version": "2.0.0"
+      "version": "2.0.0-beta"
     }
   ],
   "metadata": {
