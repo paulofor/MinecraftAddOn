@@ -2463,3 +2463,11 @@ Checklist executado no host via MCP readonly/projeto:
 - Ponto recomendado para criação em mundo de teste: teleportar o jogador para uma área livre e distante de construções, por exemplo `1000 80 1000`, usando esse ponto como centro do Pátio das Casas Arcanas.
 - Comandos sugeridos no jogo: `/tp @s 1000 80 1000`, `/gamemode creative @s`, `/function academia_arcana_monumental/init`, `/function academia_arcana_monumental/montar_completa` e, após terminar a montagem/inspeção, `/gamemode survival @s` para sair do modo criativo.
 - Validações executadas: conferência de referências internas de funções sem alvo ausente e validação JSON dos manifests BP/RP.
+
+## 2026-06-24 21:20:00 UTC-3 — Portal 4D Espacial — Sprint 1
+- Trabalho realizado: executada a Sprint 1 do plano `docs/portal_4d_espacial_plano.md`, com criação dos packs pareados `BP_Portal4DEspacial` e `RP_Portal4DEspacial`.
+- Entregas: manifests iniciais versionados em `0.1.0`, dependência BP → RP, módulo de script `@minecraft/server`, script inicial `scripts/main.js`, funções `portal_4d/init`, `portal_4d/construir_portal` e `portal_4d/montar_completa`.
+- Documentação: criado `docs/portal_4d_espacial/sprint1_mapa_conceitual.md` com mapa conceitual, decisão de uso de Custom Dimension API e fallback obrigatório para arena isolada no Overworld.
+- PNG/texturas: nenhum arquivo `.png` foi criado, alterado ou adicionado; a blocagem usa somente blocos vanilla e arquivos texto versionáveis.
+- Validação local: validação JSON dos manifests, `node --check` no script inicial, verificação de ausência de PNG em mudanças e `git diff --check`.
+- Pendências: carregar os packs em um mundo Bedrock de teste e executar `/function portal_4d/construir_portal` para validar escala, leitura visual e compatibilidade dos blocos vanilla no servidor.
