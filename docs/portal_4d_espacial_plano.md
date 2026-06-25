@@ -101,9 +101,9 @@ Arquivos textuais complementares podem ser adicionados em `docs/portal_4d_espaci
 - O jogador nunca é teleportado para queda livre ou bloco perigoso.
 
 **Registro pós-conclusão:**
-- O que foi feito:
-- O que ficou faltando:
-- Impedimentos/bloqueios:
+- O que foi feito: implementado `main.js` da Sprint 2 com tentativa de registro de `portal4d:espaco_4d` em `system.beforeEvents.startup`, detecção tolerante de indisponibilidade de `dimensionRegistry`, criação programática de plataformas seguras e logs prefixados com `[Portal4D]`; criada também a função `portal_4d/construir_arena_4d` para reforçar a arena fallback no Overworld em `4096 96 4096`.
+- O que ficou faltando: validar em mundo Bedrock real se o servidor está com Beta APIs habilitado e confirmar no `bedrock.log` se a dimensão customizada foi registrada ou se o fallback foi usado; o trigger jogável e teleporte por interação permanecem para a Sprint 3.
+- Impedimentos/bloqueios: validação em jogo e leitura de log remoto não executadas neste ambiente; a Custom Dimension API depende de versão compatível e Beta APIs ativas no mundo.
 
 ### Sprint 3 — Trigger do portal por Script API
 **Objetivo:** transformar o portal em uma interação jogável, evitando dependência de múltiplos comandos manuais.
@@ -122,9 +122,9 @@ Arquivos textuais complementares podem ser adicionados em `docs/portal_4d_espaci
 - O jogador consegue retornar ao ponto de origem.
 
 **Registro pós-conclusão:**
-- O que foi feito:
-- O que ficou faltando:
-- Impedimentos/bloqueios:
+- O que foi feito: implementado trigger jogável com `world.afterEvents.playerInteractWithBlock`, validação estrutural da `sea_lantern` central do portal para evitar falsos positivos, teleporte para dimensão customizada quando disponível ou arena fallback no Overworld, salvamento de origem em memória para retorno, mensagens educativas curtas e logs `[Portal4D]` para diagnóstico.
+- O que ficou faltando: validar em servidor Bedrock real a interação com a moldura construída por `/function portal_4d/montar_completa`, confirmar no `bedrock.log` os eventos de entrada/retorno e ajustar coordenadas/assinatura do portal se o playtest apontar variação de blocos.
+- Impedimentos/bloqueios: validação em jogo não executada neste ambiente; o retorno salva origem apenas em memória da sessão atual, portanto persistência entre reinícios pode ser evoluída em sprint futura com dynamic properties se necessário.
 
 ### Sprint 4 — Arena 4D: Projeção e fatias 3D
 **Objetivo:** construir os primeiros desafios educativos dentro do Mundo 4D simulado.
