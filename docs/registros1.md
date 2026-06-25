@@ -2471,6 +2471,22 @@ Checklist executado no host via MCP readonly/projeto:
 - PNG/texturas: nenhum arquivo `.png` foi criado, alterado ou adicionado; a blocagem usa somente blocos vanilla e arquivos texto versionáveis.
 - Validação local: validação JSON dos manifests, `node --check` no script inicial, verificação de ausência de PNG em mudanças e `git diff --check`.
 - Pendências: carregar os packs em um mundo Bedrock de teste e executar `/function portal_4d/construir_portal` para validar escala, leitura visual e compatibilidade dos blocos vanilla no servidor.
+
+## 2026-06-24 21:35:52 UTC-3
+- Criação inicial do módulo `Trem Maritimo` para representar um trilho decorativo mais bonito, pensado para uma linha de trem sobre a água.
+- Arquivos adicionados: `packs/BP_TremMaritimo` e `packs/RP_TremMaritimo` com blocos/itens `digicomo:trilho_maritimo` e `digicomo:trilho_maritimo_luz`.
+- As texturas foram referenciadas somente a partir de texturas vanilla já existentes (`rail_normal`, `prismarine_bricks`, `dark_prismarine`, `sea_lantern`, `iron_block`), sem adicionar ou commitar arquivos `.png`.
+- Versionamento inicial dos manifests BP/RP definido como `0.1.0` para rastreabilidade do novo módulo.
+
+## 2026-06-24 21:36:28 UTC-3
+- Complemento do módulo `Trem Maritimo`: adicionada a função `estruturas/trilho_maritimo_segmento.mcfunction` para criar rapidamente um trecho decorativo 3x9 sobre a água.
+- Versionamento dos manifests BP/RP atualizado de `0.1.0` para `0.1.1`, pois o módulo recebeu nova função/objeto textual.
+
+## 2026-06-24 21:49:51 UTC-3
+- Complemento do módulo `Trem Maritimo`: adicionada a função `estruturas/trilho_maritimo_rota_margens.mcfunction` para construir uma rota completa entre os pontos candidatos `-8 64 386` e `82 64 352`.
+- A rota cria uma faixa de trilho decorativo com 3 blocos de largura, iluminação intercalada no eixo central e plataformas 5x5 nas duas extremidades para representar as margens/estações.
+- Versionamento dos manifests pareados BP/RP atualizado de `0.1.1` para `0.1.2`, conforme regra de rastreabilidade de objetos do módulo.
+- PNG/texturas: nenhum arquivo `.png` foi criado, alterado ou adicionado; a implementação continua usando apenas arquivos texto e texturas vanilla referenciadas por JSON.
 ## 2026-06-24 21:24:53 UTC-3 — Portal 4D Espacial — Sprint 2
 - Trabalho realizado: executada a Sprint 2 do plano `docs/portal_4d_espacial_plano.md`, com implementação de registro tolerante da dimensão customizada `portal4d:espaco_4d` durante `system.beforeEvents.startup`.
 - Entregas: `packs/BP_Portal4DEspacial/scripts/main.js` agora cria plataformas seguras por script, registra logs `[Portal4D]`, mantém motivo de fallback e prepara a arena fallback no Overworld em `4096 96 4096` quando `dimensionRegistry/registerCustomDimension` não estiver disponível.

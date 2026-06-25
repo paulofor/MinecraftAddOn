@@ -1,0 +1,25 @@
+{
+  "format_version": [1, 1, 0],
+  "digicomo:trilho_maritimo": {
+    "textures": {
+      "up": "trilho_maritimo_topo",
+      "down": "trilho_maritimo_base",
+      "north": "trilho_maritimo_lateral",
+      "south": "trilho_maritimo_lateral",
+      "east": "trilho_maritimo_lateral",
+      "west": "trilho_maritimo_lateral"
+    },
+    "sound": "metal"
+  },
+  "digicomo:trilho_maritimo_luz": {
+    "textures": {
+      "up": "trilho_maritimo_luz_topo",
+      "down": "trilho_maritimo_base",
+      "north": "trilho_maritimo_luz_lateral",
+      "south": "trilho_maritimo_luz_lateral",
+      "east": "trilho_maritimo_luz_lateral",
+      "west": "trilho_maritimo_luz_lateral"
+    },
+    "sound": "metal"
+  }
+}

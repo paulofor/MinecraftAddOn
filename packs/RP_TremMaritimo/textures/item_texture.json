@@ -1,0 +1,12 @@
+{
+  "resource_pack_name": "trem_maritimo",
+  "texture_name": "atlas.items",
+  "texture_data": {
+    "trilho_maritimo_item": {
+      "textures": "textures/blocks/rail_normal"
+    },
+    "trilho_maritimo_luz_item": {
+      "textures": "textures/blocks/sea_lantern"
+    }
+  }
+}
