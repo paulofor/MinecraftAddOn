@@ -82,9 +82,9 @@ Arquivos textuais complementares podem ser adicionados em `docs/portal_4d_espaci
 - O plano indica claramente quando usar dimensão custom e quando usar arena fallback.
 
 **Registro pós-conclusão:**
-- O que foi feito:
-- O que ficou faltando:
-- Impedimentos/bloqueios:
+- O que foi feito: criados os packs pareados `BP_Portal4DEspacial` e `RP_Portal4DEspacial` em versão `0.1.0`, com dependência BP → RP, módulo de script `@minecraft/server`, funções `portal_4d/init`, `portal_4d/construir_portal` e `portal_4d/montar_completa`, além do documento `docs/portal_4d_espacial/sprint1_mapa_conceitual.md` com mapa conceitual e decisão de fallback.
+- O que ficou faltando: validar carregamento dos packs e executar `/function portal_4d/construir_portal` em um mundo Bedrock de teste; a interação/teleporte do portal fica para sprints posteriores.
+- Impedimentos/bloqueios: nenhum bloqueio local; validação visual em jogo não foi executada neste ambiente.
 
 ### Sprint 2 — Registro de dimensão customizada e fallback seguro
 **Objetivo:** implementar a infraestrutura de destino usando APIs, com tolerância a ambiente sem Beta APIs.
