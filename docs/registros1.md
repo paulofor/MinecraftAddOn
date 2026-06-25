@@ -2758,3 +2758,50 @@ Checklist executado no host via MCP readonly/projeto:
 - Evidências usadas: trecho do `bedrock.log` enviado pelo usuário; consulta MCP readonly ao log remoto mostrando BDS `1.26.30.5`, experimento `gtst` ativo e versões disponíveis sem `2.0.0-beta`; inspeção local de `packs/BP_Portal4DEspacial/manifest.json`; registros anteriores em `docs/portal_4d_espacial/sprint10_compatibilidade_bds_126.md` e `docs/registros1.md`.
 - Correção aplicada: `packs/BP_Portal4DEspacial/manifest.json` alterado para `@minecraft/server` `2.0.0`; manifests BP/RP pareados incrementados para `0.1.9`; criada documentação `docs/portal_4d_espacial/sprint11_correcao_manifest_runtime.md`; nenhum PNG foi criado ou alterado.
 - Próximo passo: executar novo deploy/restart e validar no `bedrock.log` que o Pack Stack mostra `BP Portal 4D Espacial` `0.1.9` e que não aparecem `requested invalid version [2.0.0-beta]`, `failed to create context` nem `run failed, no runtime or context available`.
+
+## 2026-06-25 13:15:00 UTC-3 — Verificação se o modo 4D pode ser testado agora
+- Solicitação/contexto: usuário pediu para verificar se já pode testar o modo 4D do jogo.
+- Pergunta obrigatória de causa raiz: **por que isso aconteceu?**
+- Causa/estado identificado: a pendência anterior era o runtime do `BP Portal 4D Espacial` não iniciar porque o mundo ativo primeiro estava sem Beta APIs e depois recebeu manifest remoto com dependência inválida `@minecraft/server` `2.0.0-beta`. A verificação atual mostra que essa causa foi removida no ambiente ativo: o mundo está com experimento `gtst`, o pack ativo é `BP Portal 4D Espacial` `0.1.9`, o manifest remoto usa `@minecraft/server` `2.0.0`, e o script registrou o trigger e a dimensão customizada.
+- Evidências MCP readonly consultadas:
+  - `tools/list` respondeu com sucesso no endpoint `http://186.202.209.206/mcp`.
+  - `read_file` de `/root/MinecraftServer/worlds/Bedrock level/behavior_packs/BP_Portal4DEspacial/manifest.json` confirmou versão `0.1.9` e dependência `@minecraft/server` `2.0.0`.
+  - `read_file` de `/root/MinecraftServer/worlds/Bedrock level/resource_packs/RP_Portal4DEspacial/manifest.json` confirmou versão `0.1.9`.
+  - `read_file` de `world_behavior_packs.json` e `world_resource_packs.json` confirmou BP/RP do Portal 4D selecionados em versão `0.1.9`.
+  - `tail -n 300 /root/MinecraftServer/logging/bedrock.log` mostrou restart `2026-06-25 16:06:56 UTC`, `Experiment(s) active: gtst`, Pack Stack com `BP Portal 4D Espacial` `0.1.9`, logs `[Portal4D] Trigger de interacao com bloco registrado para o portal 4D.`, `[Portal4D] Dimensao customizada registrada no startup: portal4d:espaco_4d.`, criação da arena fallback e criação da plataforma da dimensão customizada.
+- Validação local: `node --check packs/BP_Portal4DEspacial/scripts/main.js` passou sem erro de sintaxe.
+- Conclusão operacional: sim, o modo 4D está pronto para playtest agora. Testar entrada pela `sea_lantern` central do portal, explicação no `lectern`, retorno por `lodestone`/`sea_lantern` na arena, rotação com `lapis_block` e coordenada W com `emerald_block`.
+- Atenção: os avisos de schema de `digicomo:quadro_ideias` e `digicomo:trilho_maritimo*` ainda aparecem no log, mas não são bloqueadores do Portal 4D porque o runtime do `[Portal4D]` iniciou e criou as plataformas. Se alguma interação do playtest falhar, o próximo passo é reproduzir no jogo e reconsultar o `bedrock.log` filtrando `[Portal4D]`, `TypeError`, `SyntaxError`, `failed to create context` e `run failed`.
+
+## 2026-06-25 13:28:00 UTC-3 — Orientação para localizar ou montar o Portal 4D no jogo
+- Solicitação/contexto: usuário perguntou como achar o portal depois da validação de que o modo 4D pode ser testado.
+- Pergunta obrigatória de causa raiz: **por que isso aconteceu?**
+- Causa/estado identificado: a verificação anterior confirmou que o runtime do Portal 4D está carregado, mas não informou uma coordenada fixa do portal de entrada. A causa da dúvida é que a função `portal_4d/construir_portal` cria o portal com coordenadas relativas ao executor (`~`), então o portal físico fica no local onde um operador executou `/function portal_4d/montar_completa` ou `/function portal_4d/construir_portal`, e não necessariamente em uma coordenada global documentada. Já a arena/destino fallback tem coordenada fixa em `4096 96 4096`.
+- Evidências consultadas:
+  - `packs/BP_Portal4DEspacial/functions/portal_4d/montar_completa.mcfunction` chama `portal_4d/init`, `portal_4d/construir_portal`, `portal_4d/construir_arena_4d` e `portal_4d/polimento_sprint8`.
+  - `packs/BP_Portal4DEspacial/functions/portal_4d/construir_portal.mcfunction` usa `fill ~...` e `setblock ~...`, confirmando montagem relativa ao jogador/comando executor; a `sea_lantern` de entrada fica no centro/base da estrutura e outra `sea_lantern` fica no alto da moldura.
+  - `packs/BP_Portal4DEspacial/scripts/main.js` define `FALLBACK_CENTER = { x: 4096, y: 96, z: 4096 }`, `CUSTOM_CENTER = { x: 0, y: 80, z: 0 }`, `PORTAL_TRIGGER_BLOCK = minecraft:sea_lantern` e o guia operacional com `/function portal_4d/montar_completa` e `/function portal_4d/recuperar`.
+  - `tail -n 120 /root/MinecraftServer/logging/bedrock.log` confirmou que o pack `0.1.9` carregou e criou as plataformas seguras em `minecraft:overworld @ 4096 96 4096` e `portal4d:espaco_4d @ 0 80 0`.
+- Orientação operacional: se o portal físico não estiver visível, usar permissões de operador e executar `/function portal_4d/montar_completa` em uma área plana onde o teste deve começar; isso monta o portal ao redor do jogador e reconstrói a arena. Depois, interagir com a `sea_lantern` central do portal. Para ir direto ao destino/recuperação, usar `/function portal_4d/recuperar`, que teleporta para `4096 96 4096` no Overworld.
+- Próximo passo de melhoria: em uma sprint futura, criar uma função com coordenada fixa ou marcador de spawn do portal para reduzir ambiguidade para playtests sem operador.
+
+## 2026-06-25 13:36:00 UTC-3 — Persistência do portal físico do Portal 4D
+- Solicitação/contexto: usuário perguntou se o portal fica sempre no mesmo lugar ou se some depois.
+- Pergunta obrigatória de causa raiz: **por que isso aconteceu?**
+- Causa/estado identificado: a dúvida surgiu porque o portal de entrada não tem coordenada global fixa no módulo; ele é criado por função com coordenadas relativas ao executor. Como a função usa comandos vanilla `fill`/`setblock`, os blocos do portal ficam gravados no mundo como qualquer construção normal e não há rotina no script que apague automaticamente o portal físico depois do uso, do restart ou do teleporte.
+- Evidências consultadas:
+  - `packs/BP_Portal4DEspacial/functions/portal_4d/construir_portal.mcfunction` declara que deve ser executado em área livre e que a estrutura é relativa ao executor, usando `fill ~...` e `setblock ~...` para criar piso, moldura, `sea_lantern`, `lodestone`, `lectern`, vidros e sinalização.
+  - `packs/BP_Portal4DEspacial/functions/portal_4d/montar_completa.mcfunction` apenas chama `init`, `construir_portal`, `construir_arena_4d` e `polimento_sprint8`; não há etapa de remoção do portal.
+  - `packs/BP_Portal4DEspacial/scripts/main.js` monitora interações e reconstrói plataformas/arena segura, mas não contém rotina de limpeza automática para desfazer a estrutura relativa criada por `construir_portal`.
+- Conclusão operacional: depois de montado, o portal permanece naquele lugar até alguém quebrar os blocos, sobrescrever a área ou executar comandos para limpar/reconstruir. Se `/function portal_4d/montar_completa` for executado em outro ponto, um novo portal será criado nesse outro ponto; o antigo não some automaticamente.
+- Orientação prática: escolher uma área plana de teste, executar `/function portal_4d/montar_completa` uma vez nesse local e usar essa área como ponto fixo do playtest. Se o portal parecer ter sumido, investigar primeiro se a área foi modificada por jogador/comando, se a função foi executada em outro lugar ou se o jogador está procurando na arena `4096 96 4096` em vez do local de montagem do portal físico.
+
+## 2026-06-25 13:43:00 UTC-3 — Avaliação estética do portal físico do Portal 4D
+- Solicitação/contexto: usuário perguntou se o portal vai ser bonito.
+- Pergunta obrigatória de causa raiz: **por que isso aconteceu?**
+- Causa/estado identificado: a dúvida surgiu porque as validações anteriores confirmaram funcionamento, localização e persistência, mas não descreveram claramente a aparência visual. O portal atual é propositalmente vanilla e funcional, sem PNG customizado, usando uma paleta de `crying_obsidian`, `purple_stained_glass`, `amethyst_block`, `sea_lantern`, `soul_lantern`, `lodestone`, `lectern` e faixas de vidro azul/ciano/branco para comunicar projeções/fatias 4D.
+- Evidências consultadas:
+  - `packs/BP_Portal4DEspacial/functions/portal_4d/construir_portal.mcfunction` cria base em `smooth_stone`/`polished_deepslate`, núcleo em `amethyst_block`, moldura de `crying_obsidian`, preenchimento de `purple_stained_glass`, iluminação com `sea_lantern`/`soul_lantern`, `lodestone`, `lectern` e faixas de vidro em gradiente azul.
+  - `packs/BP_Portal4DEspacial/functions/portal_4d/polimento_sprint8.mcfunction` adiciona iluminação e legibilidade na arena, marcadores de expansão com `gold_block`, `diamond_block`, `copper_block`, `emerald_block` e reforços visuais com `sea_lantern`.
+  - `docs/portal_4d_espacial/sprint8_guia_professores_playtest.md` confirma que o polimento usa apenas blocos vanilla e não requer PNG customizado.
+- Conclusão operacional: sim, o portal deve ficar visualmente interessante para playtest educativo — roxo/brilhante, com moldura escura, vidro roxo e luzes — mas ainda é uma versão vanilla de oficina, não uma peça final cinematográfica com partículas/texturas custom. Se a meta for “uau visual”, o próximo passo recomendado é uma sprint de embelezamento com geometria maior, simetria, partículas por comando, som/feedback e decoração da área de chegada, mantendo a regra de não commitar PNG.
