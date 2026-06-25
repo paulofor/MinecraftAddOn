@@ -2521,3 +2521,26 @@ Checklist executado no host via MCP readonly/projeto:
 - PNG/texturas: nenhum arquivo `.png` foi criado, alterado ou commitado; a correção afeta apenas arquivos texto.
 - Validação local: verificação textual confirmou ausência de `setblock` com identificadores `digicomo:trilho_maritimo*` entre aspas nas funções do módulo e `git diff --check` foi executado sem erros.
 - Pendências: após deploy/restart, revalidar o `bedrock.log` a partir da nova linha pós-restart para confirmar que `estruturas/trilho_maritimo_segmento` carrega sem warnings de parse.
+
+## 2026-06-24 23:24:01 UTC-3 — Correção definitiva dos erros de parse do Trem Marítimo
+- Trabalho realizado: lidos os registros anteriores antes de corrigir, para evitar repetir as tentativas já registradas com identificadores customizados com aspas e sem aspas.
+- Causa consolidada: o `bedrock.log` pós-restart continuou rejeitando `setblock ... digicomo:trilho_maritimo*` nas funções `estruturas/trilho_maritimo_segmento` e `estruturas/trilho_maritimo_rota_margens`; portanto, para parar os erros de runtime agora, as funções de construção não devem depender de `setblock` com bloco customizado nesse ambiente.
+- Correção aplicada: substituídos os `setblock` das funções de estrutura por blocos vanilla estáveis equivalentes visualmente: `prismarine_bricks` para o trilho marítimo e `sea_lantern` para os pontos luminosos.
+- Os blocos/itens customizados do módulo permanecem definidos no BP/RP para uso manual/inventário, mas as funções automáticas passam a usar fallback vanilla para carregar sem warnings de parser.
+- Versionamento: manifests pareados `BP_TremMaritimo` e `RP_TremMaritimo` incrementados de `0.1.4` para `0.1.5`, conforme regra fixa para módulos com BP/RP pareados.
+- PNG/texturas: nenhum arquivo `.png` foi criado, alterado ou commitado; a correção afeta apenas arquivos texto.
+- Validação local: verificação textual deve confirmar ausência de `setblock ... digicomo:trilho_maritimo*` nas funções do módulo, evitando repetir as tentativas anteriores.
+- Pendência: após deploy/restart, revalidar o `bedrock.log` a partir da nova linha pós-restart para confirmar ausência de `Function estruturas/trilho_maritimo_* failed to load`.
+
+## 2026-06-24 23:27:46 UTC-3 — Correção do Trem Marítimo preservando blocos customizados
+- Resposta ao feedback: não há problema conceitual em usar `digicomo:trilho_maritimo`; o problema observado era especificamente o parser de `.mcfunction` rejeitar `setblock ... digicomo:trilho_maritimo*` durante o carregamento das funções no Bedrock, antes da execução do comando.
+- Ajuste aplicado para não abandonar o trilho customizado: as funções `estruturas/trilho_maritimo_segmento` e `estruturas/trilho_maritimo_rota_margens` agora disparam `scriptevent digicomo:trem_maritimo`, e o novo script `packs/BP_TremMaritimo/scripts/main.js` posiciona os blocos customizados pela Script API.
+- Resultado esperado: as funções deixam de conter linhas `setblock` com `digicomo:*` (evitando o erro de parse), mas a construção em runtime continua usando `digicomo:trilho_maritimo` e `digicomo:trilho_maritimo_luz`.
+- Versionamento: manifests pareados `BP_TremMaritimo` e `RP_TremMaritimo` incrementados de `0.1.5` para `0.1.6`; o BP recebeu módulo `script` e dependência `@minecraft/server` para rastreabilidade do novo mecanismo.
+- PNG/texturas: nenhum arquivo `.png` foi criado, alterado ou commitado; a correção usa apenas arquivos texto e os blocos/texturas já definidos no módulo.
+- Pendência: após deploy/restart, validar no `bedrock.log` ausência de `Function estruturas/trilho_maritimo_* failed to load` e presença de logs `[TremMaritimo]` ao executar as funções.
+
+## 2026-06-24 23:31:07 UTC-3 — Governança: investigação obrigatória de causa raiz
+- Solicitação atendida: atualizado `AGENTS.md` para tornar obrigatório investigar e registrar por que o problema aconteceu antes de propor ou aplicar solução.
+- Regra adicionada: sempre perguntar explicitamente “por que isso aconteceu?”, consultar registros/logs/histórico/arquivos impactados, diferenciar correção de sintoma de causa raiz e registrar evidências, hipóteses e próximos passos quando houver incerteza.
+- Escopo da regra: bugs, falhas de deploy, erros de runtime, problemas de textura, problemas de API, workflows e qualquer comportamento inesperado.

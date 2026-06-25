@@ -2,12 +2,12 @@
   "format_version": 2,
   "header": {
     "name": "BP Trem Maritimo",
-    "description": "Behavior Pack com trilho decorativo para trem sobre a agua.",
+    "description": "Behavior Pack com trilho decorativo para trem sobre a agua; funções usam Script API para posicionar blocos customizados.",
     "uuid": "f46a8b96-64fb-47e3-8b55-d4043af0e524",
     "version": [
       0,
       1,
-      4
+      6
     ],
     "min_engine_version": [
       1,
@@ -22,8 +22,25 @@
       "version": [
         0,
         1,
-        4
+        6
       ]
+    },
+    {
+      "type": "script",
+      "language": "javascript",
+      "uuid": "5fc2b9cf-47e7-4829-a3f4-a91a424c7ffb",
+      "version": [
+        0,
+        1,
+        6
+      ],
+      "entry": "scripts/main.js"
+    }
+  ],
+  "dependencies": [
+    {
+      "module_name": "@minecraft/server",
+      "version": "2.0.0"
     }
   ]
 }

@@ -5,6 +5,18 @@
 ## Objetivo do projeto
 Este projeto tem como objetivo criar funcionalidades de Add-Ons com foco educativo para jovens de 16 a 20 anos.
 
+## Regra obrigatória de investigação de causa raiz
+Antes de propor ou aplicar qualquer solução, investigue e registre **por que o problema aconteceu**.
+
+Diretriz fixa:
+- não resolver apenas o sintoma;
+- sempre perguntar explicitamente: **"por que isso aconteceu?"**;
+- consultar registros existentes, logs, histórico de tentativas e arquivos impactados antes de escolher a correção;
+- se houver uma solução aparente, validar se ela explica a causa raiz ou se apenas contorna o erro;
+- registrar a causa identificada, evidências usadas e, quando ainda houver incerteza, a hipótese mais provável e o próximo passo de validação.
+
+Essa regra vale para bugs, falhas de deploy, erros de runtime, problemas de textura, problemas de API, workflows e qualquer comportamento inesperado.
+
 ## Containers de apoio
 - **Server**: container responsável por executar e validar os serviços principais do projeto.
 - **MCP**: container de apoio para integração de contexto, automações e suporte às operações de desenvolvimento.
