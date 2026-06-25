@@ -13,10 +13,7 @@ setblock ~ ~ ~ sea_lantern
 fill ~-3 ~1 ~ ~-3 ~5 ~ crying_obsidian
 fill ~3 ~1 ~ ~3 ~5 ~ crying_obsidian
 fill ~-3 ~5 ~ ~3 ~5 ~ crying_obsidian
-fill ~-2 ~2 ~ ~2 ~4 ~ air
-fill ~-2 ~2 ~ ~2 ~4 ~ purple_stained_glass
-setblock ~ ~3 ~ sea_lantern
-setblock ~ ~1 ~ lodestone
+fill ~-2 ~1 ~ ~2 ~4 ~ air
 
 # Indicadores visuais de projecao/fatias 4D simuladas.
 setblock ~-5 ~1 ~-3 lectern
@@ -34,4 +31,5 @@ fill ~-5 ~1 ~-4 ~5 ~1 ~-4 soul_lantern
 setblock ~-1 ~1 ~2 standing_sign
 setblock ~1 ~1 ~2 standing_sign
 
-tellraw @s {"rawtext":[{"text":"[Portal4D] Portal construido. Sprint 3 usara a sea_lantern central como bloco-chave de interacao."}]}
+tellraw @s {"rawtext":[{"text":"[Portal4D] Portal construido. Para entrar, caminhe pelo vao roxo/aberto como em um portal do Nether."}]}
+tellraw @s {"rawtext":[{"text":"[Portal4D] Dica: se nada acontecer, pare no centro do vao por um instante ou use/interaja na sea_lantern do piso; o lectern apenas repete a explicacao."}]}

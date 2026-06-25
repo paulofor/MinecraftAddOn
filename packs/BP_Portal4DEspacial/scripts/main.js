@@ -10,6 +10,7 @@ const PORTAL_TRIGGER_BLOCK = "minecraft:sea_lantern";
 const RETURN_TRIGGER_BLOCKS = new Set(["minecraft:lodestone", "minecraft:sea_lantern"]);
 const GUIDE_TRIGGER_BLOCK = "minecraft:lectern";
 const TELEPORT_COOLDOWN_TICKS = 80;
+const PORTAL_WALK_CHECK_INTERVAL_TICKS = 10;
 const ROTATION_CONTROL_BLOCK = "minecraft:lapis_block";
 const W_CONTROL_BLOCK = "minecraft:emerald_block";
 const ROTATION_PROGRESS_TAG = "portal4d_rotacao_4d";
@@ -39,7 +40,9 @@ const NARRATIVE_STEPS = [
 ];
 
 const OPERATOR_GUIDE = [
-  "Escolhas: sea_lantern do portal = Entrar; lectern = Repetir explicacao; lodestone/sea_lantern da arena = Voltar.",
+  "Como entrar: caminhe pelo vao roxo do portal, como em um portal do Nether; a sea_lantern do piso continua sendo atalho por interacao.",
+  "Se nada acontecer, pare no centro do vao por um instante ou use/interaja na sea_lantern do piso; o lectern apenas repete a explicacao.",
+  "Escolhas: atravessar o portal = Entrar; sea_lantern do piso = atalho; lectern = Repetir explicacao; lodestone/sea_lantern da arena = Voltar.",
   "Recuperacao: /function portal_4d/montar_completa remonta portal, arena e polimento; /function portal_4d/recuperar leva o operador para a arena fallback.",
   "Conceito-chave: isto e uma simulacao 3D de ideias 4D, nao uma quarta coordenada real do motor Bedrock.",
   "Tempo sugerido: 10 a 15 minutos para uma oficina curta; use grupos iniciante, intermediario e avancado no playtest.",
@@ -280,19 +283,44 @@ function distanceSquared(a, b) {
   return dx * dx + dy * dy + dz * dz;
 }
 
+function isPortalFrameCenter(dimension, center) {
+  const { x, y, z } = center;
+  const hasFloorTrigger = getBlockTypeId(dimension, { x, y, z }) === PORTAL_TRIGGER_BLOCK;
+  const hasLeftFrame = getBlockTypeId(dimension, { x: x - 3, y: y + 1, z }) === "minecraft:crying_obsidian" && getBlockTypeId(dimension, { x: x - 3, y: y + 5, z }) === "minecraft:crying_obsidian";
+  const hasRightFrame = getBlockTypeId(dimension, { x: x + 3, y: y + 1, z }) === "minecraft:crying_obsidian" && getBlockTypeId(dimension, { x: x + 3, y: y + 5, z }) === "minecraft:crying_obsidian";
+  const hasTopFrame = getBlockTypeId(dimension, { x, y: y + 5, z }) === "minecraft:crying_obsidian";
+
+  return hasFloorTrigger && hasLeftFrame && hasRightFrame && hasTopFrame;
+}
+
 function isPortalFrameSeaLantern(block) {
-  if (!block || block.typeId !== PORTAL_TRIGGER_BLOCK) {
-    return false;
+  return Boolean(block && block.typeId === PORTAL_TRIGGER_BLOCK && isPortalFrameCenter(block.dimension, block.location));
+}
+
+function getPortalCenterFromPlayer(player) {
+  const dimension = player.dimension;
+  const location = player.location;
+  const playerX = Math.floor(location.x);
+  const playerY = Math.floor(location.y);
+  const playerZ = Math.floor(location.z);
+
+  for (let x = playerX - 2; x <= playerX + 2; x += 1) {
+    for (let z = playerZ - 1; z <= playerZ + 1; z += 1) {
+      const center = { x, y: playerY - 1, z };
+      if (!isPortalFrameCenter(dimension, center)) {
+        continue;
+      }
+
+      const insideX = location.x >= center.x - 2 && location.x <= center.x + 3;
+      const insideY = location.y >= center.y + 1 && location.y <= center.y + 4.8;
+      const insideZ = Math.abs(location.z - (center.z + 0.5)) <= 0.9;
+      if (insideX && insideY && insideZ) {
+        return center;
+      }
+    }
   }
 
-  const { dimension, location } = block;
-  const { x, y, z } = location;
-  const hasLodestoneBase = getBlockTypeId(dimension, { x, y: y - 2, z }) === "minecraft:lodestone";
-  const hasGlassInterior = getBlockTypeId(dimension, { x, y: y - 1, z }) === "minecraft:purple_stained_glass";
-  const hasObsidianFrameX = getBlockTypeId(dimension, { x: x - 3, y, z }) === "minecraft:crying_obsidian" && getBlockTypeId(dimension, { x: x + 3, y, z }) === "minecraft:crying_obsidian";
-  const hasObsidianFrameY = getBlockTypeId(dimension, { x: x - 3, y: y + 2, z }) === "minecraft:crying_obsidian" && getBlockTypeId(dimension, { x: x + 3, y: y + 2, z }) === "minecraft:crying_obsidian";
-
-  return hasLodestoneBase && hasGlassInterior && (hasObsidianFrameX || hasObsidianFrameY);
+  return undefined;
 }
 
 function isNearDestinationArena(block, center, dimensionId) {
@@ -379,16 +407,25 @@ function showEntryNarrative(player) {
   sendNarrative(player, "Escolhas no espaco 4D: lectern repete explicacao, lapis_block muda perspectiva, emerald_block avanca W, lodestone/sea_lantern volta. Ala oeste mostra futuras expansoes.");
 }
 
-function enterPortal(player, block) {
+function enterPortal(player, triggerLocation, triggerMode = "interacao") {
   if (isOnTeleportCooldown(player)) {
     return;
   }
 
   savePlayerOrigin(player);
-  player.sendMessage(`${PREFIX} Portal ativado: entrando em uma simulacao 3D de ideias 4D.`);
+  player.sendMessage(`${PREFIX} Portal ativado: atravessando o vao 4D como um portal do Nether.`);
   showEntryNarrative(player);
-  log(`Interacao valida de ${player.name} no portal em ${block.location.x} ${block.location.y} ${block.location.z}.`);
+  log(`Entrada valida de ${player.name} no portal por ${triggerMode} em ${triggerLocation.x} ${triggerLocation.y} ${triggerLocation.z}.`);
   teleportPlayer(player, getDestination(), "Observe as projecoes, fatias e mudancas de perspectiva. Isto e uma simulacao educativa de 4D.");
+}
+
+function handlePortalWalkthrough() {
+  for (const player of world.getPlayers()) {
+    const portalCenter = getPortalCenterFromPlayer(player);
+    if (portalCenter) {
+      enterPortal(player, portalCenter, "travessia");
+    }
+  }
 }
 
 function returnFromPortal(player) {
@@ -510,7 +547,7 @@ function handlePlayerInteractWithBlock(event) {
   }
 
   if (isPortalFrameSeaLantern(block)) {
-    enterPortal(player, block);
+    enterPortal(player, block.location, "interacao sea_lantern");
     return;
   }
 
@@ -563,3 +600,7 @@ system.run(() => {
 system.runInterval(() => {
   buildAllKnownDestinations();
 }, 200);
+
+system.runInterval(() => {
+  handlePortalWalkthrough();
+}, PORTAL_WALK_CHECK_INTERVAL_TICKS);
