@@ -1,0 +1,6 @@
+pack.name=RP Trem Marítimo
+pack.description=Visual do trilho luminoso para trem sobre a água.
+tile.digicomo:trilho_maritimo.name=Trilho Marítimo
+tile.digicomo:trilho_maritimo_luz.name=Trilho Marítimo Luminoso
+item.digicomo:trilho_maritimo.name=Trilho Marítimo
+item.digicomo:trilho_maritimo_luz.name=Trilho Marítimo Luminoso

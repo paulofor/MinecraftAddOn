@@ -1,0 +1,23 @@
+{
+  "num_mip_levels": 4,
+  "padding": 8,
+  "resource_pack_name": "trem_maritimo",
+  "texture_name": "atlas.terrain",
+  "texture_data": {
+    "trilho_maritimo_topo": {
+      "textures": "textures/blocks/rail_normal"
+    },
+    "trilho_maritimo_lateral": {
+      "textures": "textures/blocks/prismarine_bricks"
+    },
+    "trilho_maritimo_base": {
+      "textures": "textures/blocks/dark_prismarine"
+    },
+    "trilho_maritimo_luz_topo": {
+      "textures": "textures/blocks/sea_lantern"
+    },
+    "trilho_maritimo_luz_lateral": {
+      "textures": "textures/blocks/iron_block"
+    }
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "format_version": 2,
+  "header": {
+    "name": "RP Trem Maritimo",
+    "description": "Resource Pack com visual de trilho luminoso para trem sobre a agua.",
+    "uuid": "8a6a67f8-b38c-4267-b150-78b7ea33770a",
+    "version": [
+      0,
+      1,
+      2
+    ],
+    "min_engine_version": [
+      1,
+      20,
+      80
+    ]
+  },
+  "modules": [
+    {
+      "type": "resources",
+      "uuid": "fd84f709-904c-45cf-89f4-24a1d4a82c85",
+      "version": [
+        0,
+        1,
+        2
+      ]
+    }
+  ]
+}

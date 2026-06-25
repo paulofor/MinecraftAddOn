@@ -1,0 +1,29 @@
+{
+  "format_version": 2,
+  "header": {
+    "name": "BP Trem Maritimo",
+    "description": "Behavior Pack com trilho decorativo para trem sobre a agua.",
+    "uuid": "f46a8b96-64fb-47e3-8b55-d4043af0e524",
+    "version": [
+      0,
+      1,
+      2
+    ],
+    "min_engine_version": [
+      1,
+      20,
+      80
+    ]
+  },
+  "modules": [
+    {
+      "type": "data",
+      "uuid": "a51857f4-cefd-4340-ad52-aed64b905cb6",
+      "version": [
+        0,
+        1,
+        2
+      ]
+    }
+  ]
+}
