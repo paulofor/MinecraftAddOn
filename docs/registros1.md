@@ -2544,3 +2544,49 @@ Checklist executado no host via MCP readonly/projeto:
 - Solicitação atendida: atualizado `AGENTS.md` para tornar obrigatório investigar e registrar por que o problema aconteceu antes de propor ou aplicar solução.
 - Regra adicionada: sempre perguntar explicitamente “por que isso aconteceu?”, consultar registros/logs/histórico/arquivos impactados, diferenciar correção de sintoma de causa raiz e registrar evidências, hipóteses e próximos passos quando houver incerteza.
 - Escopo da regra: bugs, falhas de deploy, erros de runtime, problemas de textura, problemas de API, workflows e qualquer comportamento inesperado.
+
+## 2026-06-25 00:48:00 UTC-3 — Verificação MCP do Trem Marítimo no servidor
+- Solicitação: verificar se o trem ficou bom no servidor usando o MCP Server em `http://186.202.209.206/mcp`.
+- Pergunta obrigatória de causa raiz: por que isso aconteceu?
+- Evidências consultadas: registros anteriores deste arquivo, `tools/list` do MCP, listagem de `/root/MinecraftServer/logging` e `tail -n 800 /root/MinecraftServer/logging/bedrock.log` via `run_read_command`.
+- Resultado da verificação: o Trem Marítimo ainda não ficou bom no servidor; o pack `BP Trem Maritimo` aparece carregado no stack do mundo ativo `worlds/Bedrock level/behavior_packs/BP_TremMaritimo`, versão `0.1.6`, mas o log pós-restart registra erro de script e erro de parsing dos blocos customizados.
+- Causa raiz identificada 1: o script usa `world.afterEvents.scriptEventReceive.subscribe(...)`, porém o padrão funcional observado em outro módulo do projeto usa `system.afterEvents.scriptEventReceive.subscribe(...)`; por isso `scriptEventReceive` fica `undefined` em `world.afterEvents` e o servidor registra `TypeError: cannot read property 'subscribe' of undefined` em `main.js:123`.
+- Causa raiz identificada 2: os blocos `digicomo:trilho_maritimo` e `digicomo:trilho_maritimo_luz` definem `minecraft:friction` como `0.98`, mas o Bedrock aceito pelo servidor informa faixa válida `[0, 0.900000]`; por isso as duas definições de bloco falham no parse e os blocos customizados não carregam corretamente.
+- Estado visual esperado: como as definições dos blocos customizados falharam e o handler de `scriptevent` não inicializou, não há evidência de que a construção customizada do trem esteja funcionando/boa no servidor neste momento.
+- Próximo passo recomendado: corrigir o script para assinar `system.afterEvents.scriptEventReceive`, ajustar `minecraft:friction` para no máximo `0.9` nos dois blocos, incrementar os manifests pareados BP/RP do Trem Marítimo e revalidar com novo restart/deploy pelo MCP/log.
+- PNG/texturas: nenhum arquivo `.png` foi criado, alterado, enviado ou commitado nesta verificação.
+
+## 2026-06-25 01:05:00 UTC-3 — Execução do próximo passo do Trem Marítimo
+- Solicitação: executar o próximo passo recomendado na verificação MCP anterior do Trem Marítimo.
+- Pergunta obrigatória de causa raiz: por que isso aconteceu?
+- Evidências usadas antes da correção: registro de verificação MCP anterior, `bedrock.log` com `TypeError` em `main.js:123`, erros de parsing de `minecraft:friction` fora do intervalo `[0, 0.900000]`, script local do Trem Marítimo e definições dos blocos customizados.
+- Correção aplicada 1: `packs/BP_TremMaritimo/scripts/main.js` passou a importar `system` e assinar `system.afterEvents.scriptEventReceive.subscribe(...)`, alinhando o handler de `scriptevent` ao padrão já funcional no projeto.
+- Correção aplicada 2: `packs/BP_TremMaritimo/blocks/trilho_maritimo.json` e `packs/BP_TremMaritimo/blocks/trilho_maritimo_luz.json` tiveram `minecraft:friction` ajustado de `0.98` para `0.9`, que é o limite máximo aceito pelo servidor conforme erro observado.
+- Versionamento: manifests pareados `BP_TremMaritimo` e `RP_TremMaritimo` incrementados de `0.1.6` para `0.1.7`, incluindo todos os módulos, para rastreabilidade e deploy consistente.
+- Validação local: `node --check` no script, validação JSON dos manifests/blocos, assert local do intervalo de fricção, verificação textual de ausência de `world.afterEvents.scriptEventReceive` e `minecraft:friction: 0.98`, e `git diff --check` executados sem erros.
+- Deploy/restart: não executado nesta rodada porque o ambiente local não possui chave SSH (`~/.ssh/id_ed25519`) e o MCP disponível não oferece ferramenta de escrita/sincronização de arquivos texto de packs; após merge/deploy oficial, revalidar `bedrock.log` via MCP para confirmar carregamento da versão `0.1.7` sem `TypeError`/erros de parsing do Trem Marítimo.
+- PNG/texturas: nenhum arquivo `.png` foi criado, alterado, enviado ou commitado; a correção afeta apenas arquivos texto.
+
+## 2026-06-25 01:18:00 UTC-3 — Revalidação MCP do Trem Marítimo após correção 0.1.7
+- Solicitação: verificar novamente o Trem Marítimo no servidor usando o MCP Server.
+- Pergunta obrigatória de causa raiz: por que isso aconteceu?
+- Evidências consultadas: `tools/list`, leitura remota dos arquivos no mundo ativo (`BP_TremMaritimo/manifest.json`, `RP_TremMaritimo/manifest.json`, `scripts/main.js`, blocos `trilho_maritimo*.json`), `tail -n 260 /root/MinecraftServer/logging/bedrock.log` e leitura LevelDB por `get_block`/`get_block_region` nas coordenadas previstas da rota.
+- Resultado técnico pós-deploy: o servidor já carregou `BP Trem Maritimo` versão `0.1.7` no mundo ativo; o log pós-restart às `2026-06-24 23:50:54` mostra `[TremMaritimo] Script carregado` e não repete o `TypeError` de `scriptEventReceive` nem os erros de parsing de `minecraft:friction` dos blocos customizados.
+- Confirmação dos arquivos remotos: `scripts/main.js` no mundo ativo contém `import { system, world }` e `system.afterEvents.scriptEventReceive`; os arquivos de bloco remotos usam `minecraft:friction` ajustado para `0.9`.
+- Observação restante: o log ainda mostra warnings de item para `minecraft:block_placer -> replace_block_item`, inclusive nos itens `digicomo:trilho_maritimo` e `digicomo:trilho_maritimo_luz`; isso não impediu o carregamento do script/blocos na janela validada, mas deve ser tratado em uma limpeza de schema se o item apresentar comportamento estranho no inventário.
+- Validação visual/estrutura: a leitura LevelDB em `-8 64 386` retornou `minecraft:air` e a região da margem oeste retornou `0` blocos não-ar; não há evidência de que a função de montagem da rota tenha sido executada depois da correção. Portanto, o carregamento do módulo ficou bom, mas a aparência final do trem/rota ainda precisa ser reproduzida no jogo com `/function estruturas/trilho_maritimo_rota_margens` ou `/function estruturas/trilho_maritimo_segmento` e nova leitura MCP.
+- Causa provável do estado parcial: a correção foi publicada e carregada, mas não houve execução registrada dos `scriptevent`/functions de construção após o restart; sem executar a função, o mundo permanece sem a rota nos pontos amostrados.
+- Próximo passo recomendado: executar a função de montagem no jogo/console, observar logs `[TremMaritimo] ... concluida com ... blocos customizados` e revalidar com `get_block_region` nas margens/rota.
+- PNG/texturas: nenhum arquivo `.png` foi criado, alterado, enviado ou commitado nesta revalidação.
+
+## 2026-06-25 01:32:00 UTC-3 — Melhoria visual do Trem Marítimo para ponte/trilho
+- Solicitação: melhorar o visual do Trem Marítimo para parecer uma ponte/trilho de trem de verdade, com suportes, guarda-corpo e estações melhores.
+- Pergunta obrigatória de causa raiz: por que isso aconteceu?
+- Causa identificada: a versão anterior montava uma faixa larga de blocos customizados cheios, com textura de trilho em toda a largura; isso funcionava tecnicamente, mas visualmente parecia uma passarela blocuda sobre a água, não uma ponte ferroviária.
+- Correção aplicada: `packs/BP_TremMaritimo/scripts/main.js` agora constrói a rota com trilho customizado central, deck lateral de `minecraft:prismarine_bricks`, bordas de `minecraft:dark_prismarine`, guarda-corpo de `minecraft:iron_bars`, pilares de suporte até `Y=61`, iluminação espaçada e estações maiores com borda/luzes nas duas margens.
+- Segmento de teste: `/function estruturas/trilho_maritimo_segmento` também passou a usar o novo desenho de ponte-trilho, facilitando validação curta antes de reconstruir a rota inteira.
+- Documentação operacional: comentários das functions `estruturas/trilho_maritimo_segmento` e `estruturas/trilho_maritimo_rota_margens` foram atualizados para descrever deck, guarda-corpo, suportes e estações.
+- Versionamento: manifests pareados `BP_TremMaritimo` e `RP_TremMaritimo` incrementados de `0.1.7` para `0.1.8`, incluindo todos os módulos, conforme regra fixa para módulos com BP/RP pareados.
+- Validação local: `node --check` no script, validação JSON dos manifests/blocos, assert de versões `0.1.8`, verificação textual dos blocos vanilla usados na ponte e `git diff --check` executados sem erros.
+- PNG/texturas: nenhum arquivo `.png` foi criado, alterado, enviado ou commitado; a melhoria visual usa somente blocos/texturas já disponíveis e arquivos texto versionáveis.
+- Próximo passo pós-deploy: executar `/function estruturas/trilho_maritimo_rota_margens` no jogo para sobrescrever a rota antiga com o novo desenho e revalidar pelo MCP/log.
