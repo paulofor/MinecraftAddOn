@@ -2513,3 +2513,11 @@ Checklist executado no host via MCP readonly/projeto:
 - Versionamento: manifests pareados de `BP_Portal4DEspacial`/`RP_Portal4DEspacial` e `BP_TremMaritimo`/`RP_TremMaritimo` incrementados para `0.1.3`.
 - Validação local: executadas verificações textuais para garantir ausência do padrão problemático `say [Portal4D]` e de `setblock` com `digicomo:*` sem aspas nas funções alteradas.
 - Pendências: após deploy, revalidar `bedrock.log` a partir da nova linha pós-restart para confirmar que as funções carregam sem warnings de parse.
+
+## 2026-06-25 00:00:00 UTC-3 — Correção de parsing do Trem Marítimo pós-restart
+- Trabalho realizado: corrigidos os warnings de runtime do `bedrock.log` na função `estruturas/trilho_maritimo_segmento`, removendo aspas dos identificadores customizados nos comandos `setblock` das funções `estruturas/trilho_maritimo_segmento.mcfunction` e `estruturas/trilho_maritimo_rota_margens.mcfunction`.
+- Causa identificada: o parser de funções Bedrock rejeitou o formato com aspas (`"digicomo:..."`) como token inesperado; os identificadores de bloco customizados devem permanecer sem aspas no argumento de `setblock`.
+- Versionamento: manifests pareados `BP_TremMaritimo` e `RP_TremMaritimo` incrementados de `0.1.3` para `0.1.4`, conforme regra fixa para módulos com BP/RP pareados.
+- PNG/texturas: nenhum arquivo `.png` foi criado, alterado ou commitado; a correção afeta apenas arquivos texto.
+- Validação local: verificação textual confirmou ausência de `setblock` com identificadores `digicomo:trilho_maritimo*` entre aspas nas funções do módulo e `git diff --check` foi executado sem erros.
+- Pendências: após deploy/restart, revalidar o `bedrock.log` a partir da nova linha pós-restart para confirmar que `estruturas/trilho_maritimo_segmento` carrega sem warnings de parse.
