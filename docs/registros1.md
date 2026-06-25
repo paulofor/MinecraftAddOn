@@ -2608,3 +2608,28 @@ Checklist executado no host via MCP readonly/projeto:
 - Correção aplicada: adicionadas mensagens/títulos com analogia 2D -> 3D -> 4D, escolhas por blocos (`sea_lantern`, `lectern`, `lodestone`, `lapis_block`, `emerald_block`), narrativa de conclusão, função `portal_4d/recuperar`, guia de operadores e atualização de versões dos manifests pareados para `0.1.5`.
 - Validação local executada: `node --check packs/BP_Portal4DEspacial/scripts/main.js`, parsing JSON dos manifests com `python3 -m json.tool` e `git diff --check`.
 - Pendência: validar comportamento em servidor Bedrock real e consultar `bedrock.log` via MCP após deploy/playtest.
+
+## 2026-06-25 02:43:35 UTC-3 — Execução da Sprint 7 do Portal 4D Espacial
+- Solicitação: executar a Sprint 7 de `docs/portal_4d_espacial_plano.md`.
+- Pergunta obrigatória de investigação: **por que isso aconteceu?**
+- Causa identificada: a Sprint 7 ainda estava sem registro de conclusão; as Sprints 5 e 6 haviam implementado lógica/narrativa, mas faltava validar o estado local contra o pack efetivamente carregado no servidor Bedrock e consultar `bedrock.log` via MCP readonly antes de aplicar qualquer hardening.
+- Evidências consultadas: plano `docs/portal_4d_espacial_plano.md`, registros anteriores em `docs/registros1.md`, `packs/BP_Portal4DEspacial/scripts/main.js`, manifests pareados BP/RP locais, `tools/list` do MCP, `read_file` dos manifests remotos em `/root/MinecraftServer/worlds/Bedrock level`, e `tail -n 500 /root/MinecraftServer/logging/bedrock.log` via `run_read_command`.
+- Validação local: parsing JSON dos manifests `BP_Portal4DEspacial` e `RP_Portal4DEspacial`, `node --check packs/BP_Portal4DEspacial/scripts/main.js` e `git diff --check` executados sem erro.
+- Resultado remoto: o mundo ativo carregou `BP Portal 4D Espacial` versão `0.1.5`; os manifests remotos do BP/RP também estão em `0.1.5`; o log validado contém `[Portal4D] Trigger de interacao com bloco registrado`, `[Portal4D] Dimensao customizada registrada no startup: portal4d:espaco_4d` e criação de plataformas seguras no Overworld e na dimensão customizada.
+- Hardening: nenhum ajuste de código foi aplicado porque não houve evidência de `TypeError` ou `SyntaxError` do `Portal4D` no recorte validado; o fallback para Overworld permanece implementado para ambientes sem Custom Dimension API.
+- Impedimento operacional: a tentativa de `restart_bedrock` via MCP falhou com `Reinício não configurado: defina BEDROCK_RESTART_CMD no ambiente do MCP`; por isso, a evidência de runtime foi baseada no último restart registrado no log.
+- Pendência: executar playtest manual no jogo para confirmar entrada, saída, `lectern`, `lapis_block` e `emerald_block`; se algo falhar, investigar novamente pelo `bedrock.log` antes de alterar código.
+- PNG/texturas: nenhum arquivo `.png` foi criado, alterado, enviado ou commitado; a sprint alterou apenas documentação e registros.
+
+## 2026-06-25 02:53:14 UTC-3 — Execução da Sprint 8 do Portal 4D Espacial
+- Solicitação: executar a Sprint 8 de `docs/portal_4d_espacial_plano.md`.
+- Pergunta obrigatória de investigação: **por que isso aconteceu?**
+- Causa identificada: a Sprint 8 ainda estava apenas planejada; as sprints anteriores entregaram portal, arena, narrativa e validação de carregamento, mas faltava consolidar polimento visual, ritmo de oficina, checklist de playtest por perfis e pontos de expansão sem reescrever o fluxo de portal.
+- Evidências consultadas: `docs/portal_4d_espacial_plano.md`, registro da Sprint 7 em `docs/portal_4d_espacial/sprint7_validacao_servidor.md`, script `packs/BP_Portal4DEspacial/scripts/main.js`, função `packs/BP_Portal4DEspacial/functions/portal_4d/construir_arena_4d.mcfunction`, montagem `packs/BP_Portal4DEspacial/functions/portal_4d/montar_completa.mcfunction` e manifests pareados BP/RP.
+- Correção aplicada: o script passou a usar plataforma central um pouco maior, cooldown levemente ampliado, mensagens de roteiro de 10-15 minutos, reforço de iluminação no corredor W, pontos de expansão programáticos para matrizes/projeções/topologia/grafos e log/aviso de Sprint 8.
+- Funções: adicionada `portal_4d/polimento_sprint8.mcfunction` com luz, legibilidade e marcadores vanilla de expansão; `portal_4d/montar_completa` agora executa essa função após construir portal e arena.
+- Documentação: criado `docs/portal_4d_espacial/sprint8_guia_professores_playtest.md` com roteiro para professores/mediadores, checklist de playtest para perfis iniciante/intermediário/avançado, comandos úteis e critérios de sucesso.
+- Versionamento: manifests pareados `BP_Portal4DEspacial` e `RP_Portal4DEspacial` incrementados de `0.1.5` para `0.1.6`, incluindo módulos e dependência BP -> RP, conforme regra do projeto.
+- Validação local prevista: `node --check packs/BP_Portal4DEspacial/scripts/main.js`, parsing JSON dos manifests, assert de versão `0.1.6` e `git diff --check`.
+- Pendência: publicar/deploy, reiniciar servidor Bedrock e executar playtest real com os três perfis, revalidando `bedrock.log` por `[Portal4D]`, `[Scripting]`, `TypeError` e `SyntaxError`.
+- PNG/texturas: nenhum arquivo `.png` foi criado, alterado, enviado ou commitado; a Sprint 8 usa somente blocos vanilla e arquivos texto.

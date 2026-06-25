@@ -5,15 +5,21 @@ const CUSTOM_DIMENSION_ID = "portal4d:espaco_4d";
 const FALLBACK_DIMENSION_ID = "minecraft:overworld";
 const FALLBACK_CENTER = { x: 4096, y: 96, z: 4096 };
 const CUSTOM_CENTER = { x: 0, y: 80, z: 0 };
-const PLATFORM_RADIUS = 6;
+const PLATFORM_RADIUS = 7;
 const PORTAL_TRIGGER_BLOCK = "minecraft:sea_lantern";
 const RETURN_TRIGGER_BLOCKS = new Set(["minecraft:lodestone", "minecraft:sea_lantern"]);
 const GUIDE_TRIGGER_BLOCK = "minecraft:lectern";
-const TELEPORT_COOLDOWN_TICKS = 60;
+const TELEPORT_COOLDOWN_TICKS = 80;
 const ROTATION_CONTROL_BLOCK = "minecraft:lapis_block";
 const W_CONTROL_BLOCK = "minecraft:emerald_block";
 const ROTATION_PROGRESS_TAG = "portal4d_rotacao_4d";
 const W_PROGRESS_TAG_PREFIX = "portal4d_w_";
+const EXPANSION_MARKERS = [
+  { dx: -24, dz: 0, block: "minecraft:gold_block", label: "matrizes" },
+  { dx: -24, dz: 6, block: "minecraft:diamond_block", label: "projecoes" },
+  { dx: -24, dz: 12, block: "minecraft:copper_block", label: "topologia" },
+  { dx: -24, dz: 18, block: "minecraft:emerald_block", label: "grafos" },
+];
 const arenaStates = new Map();
 
 let customDimensionRegistered = false;
@@ -29,12 +35,14 @@ const NARRATIVE_STEPS = [
   "2/4: Aqui fazemos o mesmo com 4D: o Minecraft continua 3D, mas mostra projecoes, fatias e estados.",
   "3/4: Interaja com o lapis_block para alternar a rotacao 4D simulada; compare as duas projecoes.",
   "4/4: Interaja com o emerald_block para avancar W. Cada W e uma fatia visual do mesmo espaco.",
+  "Extra: blocos dourado/diamante/cobre/esmeralda na ala oeste marcam futuras expansoes: matrizes, projecoes, topologia e grafos.",
 ];
 
 const OPERATOR_GUIDE = [
   "Escolhas: sea_lantern do portal = Entrar; lectern = Repetir explicacao; lodestone/sea_lantern da arena = Voltar.",
-  "Recuperacao: /function portal_4d/montar_completa remonta portal e arena; /function portal_4d/recuperar leva o operador para a arena fallback.",
+  "Recuperacao: /function portal_4d/montar_completa remonta portal, arena e polimento; /function portal_4d/recuperar leva o operador para a arena fallback.",
   "Conceito-chave: isto e uma simulacao 3D de ideias 4D, nao uma quarta coordenada real do motor Bedrock.",
+  "Tempo sugerido: 10 a 15 minutos para uma oficina curta; use grupos iniciante, intermediario e avancado no playtest.",
 ];
 
 function log(message) {
@@ -201,6 +209,12 @@ function buildRotationRoom(dimension, center, state) {
 }
 
 function buildWCorridor(dimension, start, step) {
+  for (let side = -1; side <= 1; side += 2) {
+    for (let offset = 0; offset <= 16; offset += 4) {
+      setBlockSafe(dimension, { x: start.x + offset, y: start.y, z: start.z + side }, "minecraft:sea_lantern");
+    }
+  }
+
   for (let offset = 0; offset <= 16; offset += 1) {
     const x = start.x + offset;
     const block = offset <= step * 4 ? "minecraft:amethyst_block" : "minecraft:polished_andesite";
@@ -213,6 +227,18 @@ function buildWCorridor(dimension, start, step) {
   }
   setBlockSafe(dimension, { x: start.x + step * 4, y: start.y, z: start.z }, W_CONTROL_BLOCK);
   setBlockSafe(dimension, { x: start.x, y: start.y, z: start.z - 2 }, GUIDE_TRIGGER_BLOCK);
+}
+
+function buildExpansionAnchors(dimension, center) {
+  fillRoomLayer(dimension, center.x - 28, center.y - 1, center.z - 2, center.x - 20, center.z + 22, "minecraft:deepslate_tiles");
+  fillRoomLayer(dimension, center.x - 28, center.y, center.z - 2, center.x - 20, center.z + 22, "minecraft:air");
+  fillRoomLayer(dimension, center.x - 28, center.y + 1, center.z - 2, center.x - 20, center.z + 22, "minecraft:air");
+  setBlockSafe(dimension, { x: center.x - 24, y: center.y, z: center.z - 2 }, GUIDE_TRIGGER_BLOCK);
+  setBlockSafe(dimension, { x: center.x - 20, y: center.y, z: center.z + 22 }, "minecraft:sea_lantern");
+  for (const marker of EXPANSION_MARKERS) {
+    setBlockSafe(dimension, { x: center.x + marker.dx, y: center.y, z: center.z + marker.dz }, marker.block);
+    setBlockSafe(dimension, { x: center.x + marker.dx + 1, y: center.y, z: center.z + marker.dz }, "minecraft:sea_lantern");
+  }
 }
 
 function getArenaStateKey(dimensionId, center) {
@@ -228,6 +254,7 @@ function buildSprint5Arena(dimensionId, center) {
   const state = arenaStates.get(key) ?? { rotation: 0, w: 0 };
   buildRotationRoom(dimension, { x: center.x + 24, y: center.y, z: center.z }, state.rotation);
   buildWCorridor(dimension, { x: center.x, y: center.y, z: center.z + 24 }, state.w);
+  buildExpansionAnchors(dimension, center);
 }
 
 function buildAllKnownDestinations() {
@@ -347,9 +374,9 @@ function teleportPlayer(player, destination, message) {
 }
 
 function showEntryNarrative(player) {
-  emitFeedback(player, "Entrar", "Bem-vindo: 2D -> 3D -> 4D por analogia jogavel.", "portal.travel");
+  emitFeedback(player, "Entrar", "Roteiro de 10-15 min: observar, comparar, interagir e concluir.", "portal.travel");
   sendNarrative(player, "Pense em uma sombra 2D de um cubo 3D. O Portal 4D faz algo parecido: mostra sombras/fatias 3D de uma ideia 4D.");
-  sendNarrative(player, "Escolhas no espaco 4D: lectern repete explicacao, lapis_block muda perspectiva, emerald_block avanca W, lodestone/sea_lantern volta.");
+  sendNarrative(player, "Escolhas no espaco 4D: lectern repete explicacao, lapis_block muda perspectiva, emerald_block avanca W, lodestone/sea_lantern volta. Ala oeste mostra futuras expansoes.");
 }
 
 function enterPortal(player, block) {
@@ -435,7 +462,8 @@ function handleGuideInteraction(player, block) {
     const nearCenterGuide = isNearPoint(block, { x: arena.center.x, y: arena.center.y, z: arena.center.z - 4 }, arena.dimensionId, 16);
     const nearRotationGuide = isNearPoint(block, { x: arena.center.x + 24, y: arena.center.y, z: arena.center.z - 4 }, arena.dimensionId, 16);
     const nearWGuide = isNearPoint(block, { x: arena.center.x, y: arena.center.y, z: arena.center.z + 22 }, arena.dimensionId, 16);
-    if (nearCenterGuide || nearRotationGuide || nearWGuide) {
+    const nearExpansionGuide = isNearPoint(block, { x: arena.center.x - 24, y: arena.center.y, z: arena.center.z - 2 }, arena.dimensionId, 25);
+    if (nearCenterGuide || nearRotationGuide || nearWGuide || nearExpansionGuide) {
       advanceNarrative(player);
       return true;
     }
@@ -527,8 +555,8 @@ if (interactWithBlockEvent?.subscribe) {
 }
 
 system.run(() => {
-  log("Sprint 6 carregada: portal, narrativa, orientacao, retorno, rotacao 4D e corredor W preparados.");
-  notifyOperators("Sprint 6 ativa. Escolhas: sea_lantern=Entrar, lectern=Repetir explicacao, lodestone/sea_lantern=Voltar, lapis/emerald=desafios.");
+  log("Sprint 8 carregada: polimento, ritmo de oficina, playtest e pontos de expansao preparados.");
+  notifyOperators("Sprint 8 ativa. Tempo sugerido 10-15 min; valide perfis iniciante/intermediario/avancado e pontos de expansao.");
   buildAllKnownDestinations();
 });
 
