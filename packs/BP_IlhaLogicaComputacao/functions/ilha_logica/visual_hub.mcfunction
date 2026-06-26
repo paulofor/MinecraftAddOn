@@ -148,4 +148,4 @@ replaceitem block ~-12 ~1 ~10 slot.container 1 paper 1
 replaceitem block ~-8 ~1 ~10 slot.container 0 redstone 1
 replaceitem block ~-8 ~1 ~10 slot.container 1 book 1
 
-tellraw @s {"rawtext":[{"text":"[IlhaLogica] Hub visual ampliado com trilha de baus. Para textos mais legiveis, use a Lanterna/Lectern e abra o Painel escuro de leitura."}]}
+tellraw @s {"rawtext":[{"text":"[IlhaLogica] Hub visual ampliado com trilha de baus. Para textos mais legiveis, mire na Lanterna/Lectern e use/interaja (botao direito, LT ou toque) para abrir o Painel escuro de leitura."}]}
