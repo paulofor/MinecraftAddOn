@@ -2903,3 +2903,15 @@ Checklist executado no host via MCP readonly/projeto:
 - Risco aceito: se `system.beforeEvents.startup`/`dimensionRegistry.registerCustomDimension` falhar ou o mundo perder Beta APIs/compatibilidade, o portal não cairá no fallback Overworld; ele avisará o jogador e exigirá correção operacional da API.
 - Validações locais: `node --check packs/BP_Portal4DEspacial/scripts/main.js`; `python -m json.tool packs/BP_Portal4DEspacial/manifest.json`; `python -m json.tool packs/RP_Portal4DEspacial/manifest.json`; `git diff --check`.
 - Próximo passo em servidor: publicar/reiniciar BP/RP `0.1.18`, atravessar o portal e confirmar no `bedrock.log` `Dimensao customizada registrada no startup`, `Teleporte concluido ... dimensao customizada 4D @ 0.5 80 0.5` e ausência de fallback para Overworld.
+
+## 2026-06-26 01:57:54 UTC-3 — Portal 4D: erro de parse em `/function portal_4d/recuperar`
+- Pergunta obrigatória de causa raiz: por que isso aconteceu?
+- Sintoma/erro pós-deploy: validação do `bedrock.log` após restart apontou `Function portal_4d/recuperar failed to load correctly` e `Error on line 7: command failed to parse with error 'Syntax error: Unexpected "[": at "say >>[<<Portal4D] "'`.
+- Evidências consultadas antes da correção:
+  - log informado pelo workflow pós-deploy apontou a linha 7 da função `portal_4d/recuperar`;
+  - inspeção local de `packs/BP_Portal4DEspacial/functions/portal_4d/recuperar.mcfunction` confirmou `say [Portal4D] Recuperacao solicitada via scriptevent...` na linha 7;
+  - busca local por `^say \[` confirmou que a ocorrência problemática era apenas essa função.
+- Causa raiz identificada: o comando `say` no parser de functions do Bedrock rejeitou a mensagem iniciando diretamente com colchete (`[Portal4D]`). A intenção era apenas emitir feedback textual, mas o formato escolhido não era aceito no carregamento de `.mcfunction`, quebrando a função inteira.
+- Correção aplicada: substituído o `say [Portal4D] ...` por `tellraw @s {"rawtext":[{"text":"[Portal4D] ..."}]}`, mantendo o feedback ao executor sem iniciar um comando `say` com colchete. Manifests pareados `packs/BP_Portal4DEspacial/manifest.json` e `packs/RP_Portal4DEspacial/manifest.json` incrementados para `0.1.19`. Nenhum PNG foi criado ou alterado.
+- Validações locais: `node --check packs/BP_Portal4DEspacial/scripts/main.js`; `python -m json.tool packs/BP_Portal4DEspacial/manifest.json`; `python -m json.tool packs/RP_Portal4DEspacial/manifest.json`; `rg -n '^say \[' packs/BP_Portal4DEspacial/functions`; `git diff --check`.
+- Próximo passo em servidor: publicar/reiniciar BP/RP `0.1.19` e reexecutar a validação pós-deploy do `bedrock.log` a partir da linha marcada para confirmar ausência de `Function portal_4d/recuperar failed to load correctly`.
