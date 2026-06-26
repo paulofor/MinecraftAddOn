@@ -2,12 +2,12 @@
   "format_version": 2,
   "header": {
     "name": "BP Portal 4D Espacial",
-    "description": "Behavior Pack educativo do Portal para o Mundo 4D Espacial; corrige carregamento do script de travessia.",
+    "description": "Behavior Pack educativo do Portal 4D; usa a dimensão customizada da API Microsoft como destino único.",
     "uuid": "3d3fab9a-bc52-4bb3-9cd4-d7dff474bfbb",
     "version": [
       0,
       1,
-      16
+      18
     ],
     "min_engine_version": [
       1,
@@ -22,7 +22,7 @@
       "version": [
         0,
         1,
-        16
+        18
       ]
     },
     {
@@ -32,7 +32,7 @@
       "version": [
         0,
         1,
-        16
+        18
       ],
       "entry": "scripts/main.js"
     }
@@ -43,7 +43,7 @@
       "version": [
         0,
         1,
-        16
+        18
       ]
     },
     {
