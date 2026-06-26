@@ -2,12 +2,12 @@
   "format_version": 2,
   "header": {
     "name": "BP Ilha Lógica e Computação",
-    "description": "Base canônica do Behavior Pack para a trilha educativa de Teoria de Conjuntos; melhora instruções de interação no hub.",
+    "description": "Base canônica do Behavior Pack para a trilha educativa de Teoria de Conjuntos; protege hint próximo contra coordenadas fora do mundo.",
     "uuid": "35b76ace-b514-401c-8994-0678e4e6f68c",
     "version": [
       0,
       3,
-      4
+      5
     ],
     "min_engine_version": [
       1,
@@ -22,7 +22,7 @@
       "version": [
         0,
         3,
-        4
+        5
       ]
     },
     {
@@ -32,7 +32,7 @@
       "version": [
         0,
         3,
-        4
+        5
       ],
       "entry": "scripts/main.js"
     }

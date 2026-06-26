@@ -10,6 +10,6 @@ tellraw @s {"rawtext":[{"text":"[Portal4D] Se nada acontecer, caminhe pela base 
 tellraw @s {"rawtext":[{"text":"[Portal4D] Escolhas: atravessar o portal entra; sea_lantern do piso tambem entra; lectern repete explicacao; lodestone/sea_lantern da arena volta; lapis/emerald acionam desafios."}]}
 tellraw @s {"rawtext":[{"text":"[Portal4D] O script valida a moldura do portal antes de teleportar, evitando disparos por sea_lanterns comuns fora da estrutura."}]}
 tellraw @s {"rawtext":[{"text":"[Portal4D] API Microsoft: o BP usa @minecraft/server 2.0.0 e tenta registerCustomDimension no system.beforeEvents.startup para criar portal4d:espaco_4d."}]}
-tellraw @s {"rawtext":[{"text":"[Portal4D] Se a Custom Dimension API nao estiver disponivel nesta versao, o destino cai para a arena fallback no Overworld em 4096 96 4096."}]}
+tellraw @s {"rawtext":[{"text":"[Portal4D] Por seguranca, a entrada usa a arena 4D segura no Overworld em 4096 96 4096; a dimensao customizada fica somente registrada ate validarmos piso/limites."}]}
 tellraw @s {"rawtext":[{"text":"[Portal4D] Local fixo: use /function portal_4d/ir_para_portal para montar/localizar o portal canonico e teleportar para a entrada 0 129 34."}]}
 tellraw @s {"rawtext":[{"text":"[Portal4D] A experiencia explica 2D -> 3D -> 4D por analogia: projecoes, fatias, rotacao e coordenada W simulada. Confira o bedrock.log por [Portal4D]."}]}

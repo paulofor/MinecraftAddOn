@@ -298,11 +298,16 @@ function findNearbyHubBlock(player) {
           continue;
         }
 
-        const candidate = player.dimension.getBlock({
-          x: baseX + dx,
-          y: baseY + dy,
-          z: baseZ + dz,
-        });
+        let candidate;
+        try {
+          candidate = player.dimension.getBlock({
+            x: baseX + dx,
+            y: baseY + dy,
+            z: baseZ + dz,
+          });
+        } catch {
+          continue;
+        }
 
         if (candidate && (HUB_TRIGGER_BLOCKS.has(candidate.typeId) || getAnswerStation(candidate))) {
           return candidate;
