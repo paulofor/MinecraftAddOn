@@ -2,12 +2,12 @@
   "format_version": 2,
   "header": {
     "name": "BP Portal 4D Espacial",
-    "description": "Behavior Pack educativo do Portal para o Mundo 4D Espacial; Sprint 17 usa arena 4D segura no Overworld.",
+    "description": "Behavior Pack educativo do Portal 4D; corrige recuperação para destino customizado único.",
     "uuid": "3d3fab9a-bc52-4bb3-9cd4-d7dff474bfbb",
     "version": [
       0,
       1,
-      15
+      19
     ],
     "min_engine_version": [
       1,
@@ -22,7 +22,7 @@
       "version": [
         0,
         1,
-        15
+        19
       ]
     },
     {
@@ -32,7 +32,7 @@
       "version": [
         0,
         1,
-        15
+        19
       ],
       "entry": "scripts/main.js"
     }
@@ -43,7 +43,7 @@
       "version": [
         0,
         1,
-        15
+        19
       ]
     },
     {

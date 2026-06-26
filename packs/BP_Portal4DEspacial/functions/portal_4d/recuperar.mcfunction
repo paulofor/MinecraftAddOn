@@ -1,8 +1,7 @@
 # Sprint 6 - recuperacao operacional do Portal 4D Espacial.
-# Use quando um operador ou jogador de teste precisar voltar para a arena fallback segura.
+# Usa scriptevent para levar o executor ao destino unico portal4d:espaco_4d pela Script API.
 
 title @s title §bPortal 4D — Recuperação
-title @s subtitle §fTeleportando para a arena fallback segura
-teleport @s 4096 96 4096
-tellraw @s {"rawtext":[{"text":"[Portal4D] Recuperacao executada. Use /function portal_4d/montar_completa para reconstruir portal e arena, se necessario."}]}
-tellraw @s {"rawtext":[{"text":"[Portal4D] Na arena: lectern repete explicacao; lodestone/sea_lantern retorna quando sua origem estiver salva pela sessao do script."}]}
+title @s subtitle §fTeleportando para portal4d:espaco_4d
+execute as @s at @s run scriptevent portal4d:recuperar destino_custom
+tellraw @s {"rawtext":[{"text":"[Portal4D] Recuperacao solicitada via scriptevent; confira o bedrock.log por [Portal4D]."}]}
