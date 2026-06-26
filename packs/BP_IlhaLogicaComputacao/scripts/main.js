@@ -337,7 +337,7 @@ system.runInterval(() => {
       continue;
     }
 
-    player.onScreenDisplay.setActionBar("§e[IlhaLogica] Use a Lanterna/Lectern para abrir o painel escuro de leitura.");
+    player.onScreenDisplay.setActionBar("§e[IlhaLogica] Mire na Lanterna/Lectern e use/interaja (botão direito, LT ou toque) para abrir o painel.");
   }
 }, PROXIMITY_HINT_INTERVAL_TICKS);
 
