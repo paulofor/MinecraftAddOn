@@ -8,6 +8,7 @@ const PLATFORM_RADIUS = 7;
 const DIMENSION_IDENTITY_RADIUS = 10;
 const IMMERSION_RADIUS = 18;
 const TESSERACT_CENTER = { x: CUSTOM_CENTER.x, y: CUSTOM_CENTER.y + 6, z: CUSTOM_CENTER.z + 2 };
+const HYPERCUBE_ROOM = { halfWidth: 12, halfDepth: 12, height: 15 };
 const PORTAL_TRIGGER_BLOCK = "minecraft:sea_lantern";
 const RETURN_TRIGGER_BLOCKS = new Set(["minecraft:lodestone", "minecraft:sea_lantern"]);
 const GUIDE_TRIGGER_BLOCK = "minecraft:lectern";
@@ -187,6 +188,46 @@ function buildTesseractProjection(dimension, center) {
   }
 }
 
+function buildHypercubeRoom(dimension, center) {
+  const minX = center.x - HYPERCUBE_ROOM.halfWidth;
+  const maxX = center.x + HYPERCUBE_ROOM.halfWidth;
+  const minZ = center.z - HYPERCUBE_ROOM.halfDepth;
+  const maxZ = center.z + HYPERCUBE_ROOM.halfDepth;
+  const floorY = center.y - 1;
+  const ceilingY = center.y + HYPERCUBE_ROOM.height;
+
+  for (let x = minX; x <= maxX; x += 1) {
+    for (let z = minZ; z <= maxZ; z += 1) {
+      const axis = x === center.x || z === center.z;
+      const nearCenter = Math.abs(x - center.x) <= 2 && Math.abs(z - center.z) <= 2;
+      const floorBlock = nearCenter ? "minecraft:amethyst_block" : axis ? "minecraft:deepslate_tiles" : "minecraft:blackstone";
+      setBlockSafe(dimension, { x, y: floorY, z }, floorBlock);
+      setBlockSafe(dimension, { x, y: ceilingY, z }, (x + z) % 4 === 0 ? "minecraft:sea_lantern" : "minecraft:black_stained_glass");
+    }
+  }
+
+  for (let y = center.y; y <= ceilingY; y += 1) {
+    for (let x = minX; x <= maxX; x += 1) {
+      const doorway = Math.abs(x - center.x) <= 2 && y <= center.y + 3;
+      setBlockSafe(dimension, { x, y, z: minZ }, doorway ? "minecraft:air" : "minecraft:black_stained_glass");
+      setBlockSafe(dimension, { x, y, z: maxZ }, doorway ? "minecraft:air" : "minecraft:black_stained_glass");
+    }
+    for (let z = minZ; z <= maxZ; z += 1) {
+      const doorway = Math.abs(z - center.z) <= 2 && y <= center.y + 3;
+      setBlockSafe(dimension, { x: minX, y, z }, doorway ? "minecraft:air" : "minecraft:black_stained_glass");
+      setBlockSafe(dimension, { x: maxX, y, z }, doorway ? "minecraft:air" : "minecraft:black_stained_glass");
+    }
+  }
+
+  setLineSafe(dimension, { x: minX + 1, y: center.y + 1, z: minZ + 1 }, { x: maxX - 1, y: center.y + 1, z: minZ + 1 }, "minecraft:sea_lantern");
+  setLineSafe(dimension, { x: minX + 1, y: center.y + 1, z: maxZ - 1 }, { x: maxX - 1, y: center.y + 1, z: maxZ - 1 }, "minecraft:sea_lantern");
+  setLineSafe(dimension, { x: minX + 1, y: center.y + 1, z: minZ + 1 }, { x: minX + 1, y: center.y + 1, z: maxZ - 1 }, "minecraft:sea_lantern");
+  setLineSafe(dimension, { x: maxX - 1, y: center.y + 1, z: minZ + 1 }, { x: maxX - 1, y: center.y + 1, z: maxZ - 1 }, "minecraft:sea_lantern");
+
+  setBlockSafe(dimension, { x: center.x, y: center.y, z: center.z }, "minecraft:air");
+  setBlockSafe(dimension, { x: center.x, y: center.y + 1, z: center.z }, "minecraft:air");
+}
+
 function buildImmersive4DChamber(dimension, center) {
   for (let x = center.x - IMMERSION_RADIUS; x <= center.x + IMMERSION_RADIUS; x += 1) {
     for (let z = center.z - IMMERSION_RADIUS; z <= center.z + IMMERSION_RADIUS; z += 1) {
@@ -211,6 +252,7 @@ function buildImmersive4DChamber(dimension, center) {
     setBlockSafe(dimension, { x: center.x + IMMERSION_RADIUS, y: center.y + 8, z: center.z + offset }, "minecraft:sea_lantern");
   }
 
+  buildHypercubeRoom(dimension, center);
   buildTesseractProjection(dimension, TESSERACT_CENTER);
 
   const sliceBlocks = ["minecraft:redstone_block", "minecraft:gold_block", "minecraft:emerald_block", "minecraft:lapis_block", "minecraft:diamond_block"];
@@ -594,9 +636,9 @@ function teleportPlayer(player, destination, message) {
 }
 
 function showEntryNarrative(player) {
-  emitFeedback(player, "Experiencia 4D", "Entre no hipercubo projetado: cubos conectados, fatias W e eixos impossiveis.", "portal.travel");
+  emitFeedback(player, "Sala do Hipercubo", "Ambiente escuro: tesseracto projetado, fatias W e controle de perspectiva.", "portal.travel");
   sendNarrative(player, "O Bedrock continua 3D; por isso a experiência 4D é uma simulação navegável: projeção de tesseracto, fatias W e mudança de perspectiva.");
-  sendNarrative(player, "No centro, compare o cubo roxo externo com o cubo ciano interno; as lanternas conectam vertices como uma sombra 3D de um objeto 4D.");
+  sendNarrative(player, "A sala foi fechada para reduzir o céu comum: compare o cubo roxo externo com o cubo ciano interno e siga as conexões luminosas.");
   sendNarrative(player, "Use lapis_block para alternar perspectiva, emerald_block para avançar W e lectern para receber o roteiro guiado.");
 }
 
@@ -609,7 +651,7 @@ function enterPortal(player, triggerLocation, triggerMode = "interacao") {
   player.sendMessage(`${PREFIX} Portal ativado: atravessando o vao 4D como um portal do Nether.`);
   showEntryNarrative(player);
   log(`Entrada valida de ${player.name} no portal por ${triggerMode} em ${triggerLocation.x} ${triggerLocation.y} ${triggerLocation.z}.`);
-  teleportPlayer(player, getDestination(), "Você está na simulação 4D: caminhe pelo hipercubo projetado, compare fatias W e mude a perspectiva.");
+  teleportPlayer(player, getDestination(), "Você entrou na Sala do Hipercubo: observe o tesseracto projetado, caminhe pelas fatias W e mude a perspectiva.");
 }
 
 function handlePortalWalkthrough() {
@@ -623,7 +665,7 @@ function handlePortalWalkthrough() {
 
 function showCustomDimensionStatus(player) {
   try {
-    player.onScreenDisplay?.setActionBar("§d[Portal4D] Experiência 4D: tesseracto projetado + fatias W | lectern=guia | lapis=perspectiva | emerald=W | lodestone/sea_lantern=voltar");
+    player.onScreenDisplay?.setActionBar("§d[Portal4D] Sala do Hipercubo | tesseracto + fatias W | lectern=guia | lapis=perspectiva | emerald=W | lodestone/sea_lantern=voltar");
   } catch (error) {
     log(`Falha ao exibir actionbar da dimensao customizada para ${player.name}: ${error}`);
   }

@@ -2949,3 +2949,25 @@ Checklist executado no host via MCP readonly/projeto:
 - Correção aplicada: a área central da dimensão customizada agora constrói uma câmara imersiva 4D com piso escuro/roxo, bordas de contenção, projeção de tesseracto (cubo roxo externo, cubo ciano interno e conexões luminosas), linhas de fatias W coloridas e controles centrais para perspectiva/W; mensagens de entrada e actionbar foram reescritas para explicar que a vivência é uma simulação 3D navegável de ideias 4D. Manifests BP/RP pareados do Portal 4D foram incrementados para `0.1.21`. Nenhum PNG foi criado ou alterado.
 - Limite explícito: o Minecraft Bedrock continua renderizando três dimensões espaciais; o addon não consegue transformar a percepção humana/jogo em quatro eixos espaciais reais. A entrega viável é uma experiência didática baseada em projeções, fatias e mudanças de referência.
 - Próximo passo em servidor: publicar/reiniciar BP/RP `0.1.21`, atravessar o portal e validar se a chegada mostra imediatamente o hipercubo projetado, as fatias W e o roteiro no actionbar; ajustar escala/cores após playtest real.
+
+## 2026-06-26 03:05:31 UTC-3 — Validação visual da experiência 4D em jogo
+- Pergunta obrigatória de causa raiz: por que isso aconteceu?
+- Solicitação/contexto: usuário enviou captura da chegada no Portal 4D perguntando se a experiência esperada era “assim”.
+- Evidências consultadas:
+  - a captura mostra o actionbar `Experiência 4D: tesseracto projetado + fatias W`, estruturas transparentes roxas/cianas, linhas de sea lanterns e a câmara escura/roxa adicionada na versão `0.1.21`;
+  - `bedrock.log` via MCP readonly confirma reconstruções repetidas da plataforma em `portal4d:espaco_4d @ 0 80 0` e teleportes/resgates concluídos para `dimensao customizada 4D @ 0.5 80 0.5`;
+  - `packs/BP_Portal4DEspacial/scripts/main.js` agora constrói a câmara 4D por `buildImmersive4DChamber`, `buildTesseractProjection` e controles W/perspectiva.
+- Causa/estado identificado: sim, a captura corresponde à experiência 4D simulada entregue pela versão atual: não é uma quarta dimensão física real, mas uma sala em 3D que representa conceitos 4D por projeção de tesseracto, fatias W, eixos/linhas de referência e HUD pedagógico.
+- Observação de qualidade: o excesso de sea lanterns/vidros e a sobreposição com céu/nuvens ainda podem dificultar a leitura do tesseracto. Se o objetivo for uma sensação mais “alienígena” e menos “estrutura de blocos no céu”, a próxima melhoria deve reduzir ruído visual, escurecer/fechar o entorno e criar uma sequência guiada de salas/fatias em vez de mostrar tudo de uma vez.
+- Próximo passo recomendado: coletar feedback do playtest; se o usuário quiser, executar uma nova sprint de refinamento visual para transformar a cena em um percurso imersivo: entrada escura, sala do hipercubo, corredor W, sala de rotação e retorno, com menos elementos simultâneos na primeira visão.
+
+## 2026-06-26 03:11:52 UTC-3 — Portal 4D: criação da Sala do Hipercubo
+- Pergunta obrigatória de causa raiz: por que isso aconteceu?
+- Solicitação/contexto: após validar a cena 4D inicial, usuário pediu “faça a sala”, em referência ao refinamento visual sugerido para deixar a experiência menos espalhada no céu e mais imersiva.
+- Evidências consultadas antes da correção:
+  - captura anterior mostrava a experiência funcionando, mas ainda aberta ao céu/nuvens e com muitos elementos simultâneos;
+  - registros anteriores indicavam que a cena atual já representava tesseracto/fatias W, mas poderia ficar visualmente ruidosa;
+  - inspeção de `packs/BP_Portal4DEspacial/scripts/main.js` mostrou que o tesseracto era construído em área aberta, sem sala fechada/escura para guiar o foco do jogador.
+- Causa raiz identificada: a implementação anterior construía uma arena 4D, não uma sala. Como o entorno permanecia aberto e iluminado pelo céu padrão do Bedrock, a leitura do hipercubo competia com nuvens, lanternas externas e estruturas laterais.
+- Correção aplicada: adicionada `buildHypercubeRoom`, que cria uma Sala do Hipercubo escura com piso, teto, paredes de vidro escuro, aberturas controladas, linhas de luz no contorno e ponto de chegada livre; a sala é construída antes do tesseracto para enquadrar o cubo roxo/ciano e reduzir ruído visual. Mensagens de entrada/actionbar passaram a chamar explicitamente “Sala do Hipercubo”. Manifests BP/RP pareados do Portal 4D foram incrementados para `0.1.22`. Nenhum PNG foi criado ou alterado.
+- Próximo passo em servidor: publicar/reiniciar BP/RP `0.1.22`, atravessar o portal e validar se a primeira visão agora parece uma sala fechada do hipercubo, com menos interferência do céu e melhor leitura do tesseracto.
