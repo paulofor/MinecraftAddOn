@@ -2,12 +2,12 @@
   "format_version": 2,
   "header": {
     "name": "RP Portal 4D Espacial",
-    "description": "Resource Pack pareado do Portal para o Mundo 4D Espacial; Sprint 17 pareado ao BP 0.1.15; sem PNG customizado.",
+    "description": "Resource Pack pareado do Portal 4D Espacial; versão 0.1.18 pareada ao BP; sem PNG customizado.",
     "uuid": "8f20b59f-9163-4197-8f6a-d354d8dd6f3c",
     "version": [
       0,
       1,
-      15
+      18
     ],
     "min_engine_version": [
       1,
@@ -22,7 +22,7 @@
       "version": [
         0,
         1,
-        15
+        18
       ]
     }
   ],

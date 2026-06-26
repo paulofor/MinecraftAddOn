@@ -2,10 +2,8 @@ import { system, world } from "@minecraft/server";
 
 const PREFIX = "[Portal4D]";
 const CUSTOM_DIMENSION_ID = "portal4d:espaco_4d";
-const FALLBACK_DIMENSION_ID = "minecraft:overworld";
-const FALLBACK_CENTER = { x: 4096, y: 96, z: 4096 };
 const CUSTOM_CENTER = { x: 0, y: 80, z: 0 };
-const USE_CUSTOM_DIMENSION_DESTINATION = false;
+const USE_CUSTOM_DIMENSION_DESTINATION = true;
 const PLATFORM_RADIUS = 7;
 const PORTAL_TRIGGER_BLOCK = "minecraft:sea_lantern";
 const RETURN_TRIGGER_BLOCKS = new Set(["minecraft:lodestone", "minecraft:sea_lantern"]);
@@ -18,6 +16,7 @@ const ROTATION_CONTROL_BLOCK = "minecraft:lapis_block";
 const W_CONTROL_BLOCK = "minecraft:emerald_block";
 const ROTATION_PROGRESS_TAG = "portal4d_rotacao_4d";
 const W_PROGRESS_TAG_PREFIX = "portal4d_w_";
+const RECOVERY_SCRIPT_EVENT_ID = "portal4d:recuperar";
 const EXPANSION_MARKERS = [
   { dx: -24, dz: 0, block: "minecraft:gold_block", label: "matrizes" },
   { dx: -24, dz: 6, block: "minecraft:diamond_block", label: "projecoes" },
@@ -46,8 +45,8 @@ const OPERATOR_GUIDE = [
   "Como entrar: caminhe pelo vao roxo do portal, como em um portal do Nether; nao precisa ficar exatamente no centro.",
   "A zona de entrada e larga: passe pela abertura entre as colunas ou pela base roxa; a sea_lantern do piso continua sendo atalho por interacao.",
   "Escolhas: atravessar o portal = Entrar; sea_lantern do piso = atalho; lectern = Repetir explicacao; lodestone/sea_lantern da arena = Voltar.",
-  "Recuperacao: /function portal_4d/montar_completa remonta portal, arena e polimento; /function portal_4d/recuperar leva o operador para a arena fallback.",
-  "Seguranca: a entrada envia para a arena 4D segura no Overworld; a dimensao customizada fica desativada ate validarmos piso e limites.",
+  "Recuperacao: /function portal_4d/montar_completa remonta portal, arena e polimento; /function portal_4d/recuperar reconstrói a dimensão 4D e leva o operador ao destino customizado.",
+  "Seguranca: a entrada usa a dimensao Microsoft Custom Dimension API como destino unico; se a API nao registrar, o portal avisa e nao usa fallback no Overworld.",
   "Conceito-chave: isto e uma simulacao 3D de ideias 4D, nao uma quarta coordenada real do motor Bedrock.",
   "Tempo sugerido: 10 a 15 minutos para uma oficina curta; use grupos iniciante, intermediario e avancado no playtest.",
 ];
@@ -117,9 +116,9 @@ function setBlockSafe(dimension, location, blockId) {
   }
 }
 
-function buildSafePlatform(dimensionId, center, label) {
+function buildSafePlatform(dimensionId, center, label, force = false) {
   const key = `${dimensionId}:${center.x}:${center.y}:${center.z}`;
-  if (builtDestinations.has(key)) {
+  if (!force && builtDestinations.has(key)) {
     return true;
   }
 
@@ -141,6 +140,13 @@ function buildSafePlatform(dimensionId, center, label) {
   setBlockSafe(dimension, { x: center.x, y: center.y, z: center.z - 4 }, GUIDE_TRIGGER_BLOCK);
   setBlockSafe(dimension, { x: center.x - 4, y: center.y, z: center.z }, "minecraft:lodestone");
   setBlockSafe(dimension, { x: center.x + 4, y: center.y, z: center.z }, "minecraft:sea_lantern");
+  const anchorBlock = getBlockTypeId(dimension, { x: center.x, y: center.y - 1, z: center.z });
+  if (anchorBlock !== "minecraft:amethyst_block") {
+    builtDestinations.delete(key);
+    log(`Plataforma ${label} ainda nao verificou bloco ancora em ${center.x} ${center.y - 1} ${center.z}; bloco atual=${anchorBlock ?? "indisponivel"}.`);
+    return false;
+  }
+
   builtDestinations.add(key);
   log(`Plataforma segura criada para ${label} em ${dimensionId} @ ${center.x} ${center.y} ${center.z}.`);
   return true;
@@ -272,17 +278,14 @@ function buildSprint5Arena(dimensionId, center) {
 }
 
 function buildAllKnownDestinations() {
-  buildSafePlatform(FALLBACK_DIMENSION_ID, FALLBACK_CENTER, "arena fallback Overworld");
-  buildSprint5Arena(FALLBACK_DIMENSION_ID, FALLBACK_CENTER);
-
   if (customDimensionRegistered) {
-    buildSafePlatform(CUSTOM_DIMENSION_ID, CUSTOM_CENTER, "dimensao customizada 4D");
+    buildSafePlatform(CUSTOM_DIMENSION_ID, CUSTOM_CENTER, "dimensao customizada 4D", true);
     buildSprint5Arena(CUSTOM_DIMENSION_ID, CUSTOM_CENTER);
     return;
   }
 
   if (!fallbackStatusLogged) {
-    log(`Dimensao customizada nao ativa; fallback permanece em ${FALLBACK_CENTER.x} ${FALLBACK_CENTER.y} ${FALLBACK_CENTER.z}. Motivo: ${customDimensionError}`);
+    log(`Dimensao customizada ainda nao ativa; destino unico bloqueado ate registerCustomDimension estar disponivel. Motivo: ${customDimensionError}`);
     fallbackStatusLogged = true;
   }
 }
@@ -360,31 +363,33 @@ function isOnTeleportCooldown(player) {
 }
 
 function getDestination() {
-  if (USE_CUSTOM_DIMENSION_DESTINATION && customDimensionRegistered) {
-    const customDimension = getDimensionSafe(CUSTOM_DIMENSION_ID, false);
-    if (customDimension) {
-      buildSafePlatform(CUSTOM_DIMENSION_ID, CUSTOM_CENTER, "dimensao customizada 4D");
-      buildSprint5Arena(CUSTOM_DIMENSION_ID, CUSTOM_CENTER);
-      return {
-        center: CUSTOM_CENTER,
-        dimension: customDimension,
-        label: "dimensao customizada 4D",
-      };
-    }
+  if (!USE_CUSTOM_DIMENSION_DESTINATION) {
+    log("Configuracao invalida: Portal 4D deve usar a dimensao customizada como destino unico.");
   }
 
-  if (customDimensionRegistered && !USE_CUSTOM_DIMENSION_DESTINATION && !fallbackStatusLogged) {
-    log("Dimensao customizada registrada, mas destino customizado desativado por seguranca; usando arena 4D segura no Overworld.");
-    fallbackStatusLogged = true;
+  if (!customDimensionRegistered) {
+    return {
+      center: CUSTOM_CENTER,
+      dimension: undefined,
+      label: `dimensao customizada indisponivel (${customDimensionError})`,
+    };
   }
 
-  const fallbackDimension = getDimensionSafe(FALLBACK_DIMENSION_ID);
-  buildSafePlatform(FALLBACK_DIMENSION_ID, FALLBACK_CENTER, "arena fallback Overworld");
-  buildSprint5Arena(FALLBACK_DIMENSION_ID, FALLBACK_CENTER);
+  const customDimension = getDimensionSafe(CUSTOM_DIMENSION_ID, false);
+  if (!customDimension) {
+    return {
+      center: CUSTOM_CENTER,
+      dimension: undefined,
+      label: "dimensao customizada registrada, mas inacessivel",
+    };
+  }
+
+  buildSafePlatform(CUSTOM_DIMENSION_ID, CUSTOM_CENTER, "dimensao customizada 4D", true);
+  buildSprint5Arena(CUSTOM_DIMENSION_ID, CUSTOM_CENTER);
   return {
-    center: FALLBACK_CENTER,
-    dimension: fallbackDimension,
-    label: "arena fallback Overworld",
+    center: CUSTOM_CENTER,
+    dimension: customDimension,
+    label: "dimensao customizada 4D",
   };
 }
 
@@ -399,10 +404,27 @@ function savePlayerOrigin(player) {
   });
 }
 
+function reinforceDestinationAfterTeleport(player, destination) {
+  system.runTimeout(() => {
+    buildSafePlatform(destination.dimension.id, destination.center, destination.label, true);
+    buildSprint5Arena(destination.dimension.id, destination.center);
+
+    if (player.location.y < destination.center.y - 2) {
+      player.teleport({
+        x: destination.center.x + 0.5,
+        y: destination.center.y,
+        z: destination.center.z + 0.5,
+      }, { dimension: destination.dimension, rotation: { x: 0, y: 180 } });
+      player.sendMessage(`${PREFIX} Segurança: arena reconstruída e posição corrigida para evitar queda/água.`);
+      log(`Reposicionamento de seguranca aplicado para ${player.name} em ${destination.label}.`);
+    }
+  }, 1);
+}
+
 function teleportPlayer(player, destination, message) {
   if (!destination.dimension) {
-    player.sendMessage(`${PREFIX} Nao foi possivel localizar uma dimensao segura para teleporte. Avise um operador.`);
-    log(`Teleporte cancelado para ${player.name}: dimensao de destino indisponivel.`);
+    player.sendMessage(`${PREFIX} A dimensão customizada 4D ainda não está disponível. Avise um operador e confira Beta APIs/registerCustomDimension no bedrock.log.`);
+    log(`Teleporte cancelado para ${player.name}: ${destination.label}.`);
     return;
   }
 
@@ -413,7 +435,9 @@ function teleportPlayer(player, destination, message) {
   };
 
   try {
+    buildSafePlatform(destination.dimension.id, destination.center, destination.label, true);
     player.teleport(target, { dimension: destination.dimension, rotation: { x: 0, y: 180 } });
+    reinforceDestinationAfterTeleport(player, destination);
     player.sendMessage(`${PREFIX} ${message}`);
     log(`Teleporte concluido para ${player.name}: ${destination.label} @ ${target.x} ${target.y} ${target.z}.`);
   } catch (error) {
@@ -437,7 +461,7 @@ function enterPortal(player, triggerLocation, triggerMode = "interacao") {
   player.sendMessage(`${PREFIX} Portal ativado: atravessando o vao 4D como um portal do Nether.`);
   showEntryNarrative(player);
   log(`Entrada valida de ${player.name} no portal por ${triggerMode} em ${triggerLocation.x} ${triggerLocation.y} ${triggerLocation.z}.`);
-  teleportPlayer(player, getDestination(), "Observe as projecoes, fatias e mudancas de perspectiva na arena 4D segura do Overworld.");
+  teleportPlayer(player, getDestination(), "Observe as projecoes, fatias e mudancas de perspectiva na dimensao customizada 4D da API Microsoft.");
 }
 
 function handlePortalWalkthrough() {
@@ -455,21 +479,12 @@ function rescueUnsafePortalPlayers() {
       continue;
     }
 
-    player.sendMessage(`${PREFIX} Resgate automatico: a dimensao customizada ficou insegura. Voltando para a arena 4D segura no Overworld.`);
+    player.sendMessage(`${PREFIX} Resgate automatico: reconstruindo o piso da dimensao customizada 4D e reposicionando no destino unico.`);
     teleportPlayer(player, {
-      center: FALLBACK_CENTER,
-      dimension: getDimensionSafe(FALLBACK_DIMENSION_ID),
-      label: "resgate fallback Overworld",
-    }, "Resgate concluido. A experiencia 4D continua na arena segura do Overworld.");
-  }
-}
-
-function handlePortalWalkthrough() {
-  for (const player of world.getPlayers()) {
-    const portalCenter = getPortalCenterFromPlayer(player);
-    if (portalCenter) {
-      enterPortal(player, portalCenter, "travessia");
-    }
+      center: CUSTOM_CENTER,
+      dimension: getDimensionSafe(CUSTOM_DIMENSION_ID),
+      label: "resgate na dimensao customizada 4D",
+    }, "Resgate concluido dentro da dimensao customizada 4D.");
   }
 }
 
@@ -480,12 +495,7 @@ function returnFromPortal(player) {
 
   const origin = playerOrigins.get(getPlayerKey(player));
   if (!origin) {
-    player.sendMessage(`${PREFIX} Origem nao encontrada nesta sessao. Voltando para uma area segura proxima ao portal fallback.`);
-    teleportPlayer(player, {
-      center: { x: FALLBACK_CENTER.x, y: FALLBACK_CENTER.y, z: FALLBACK_CENTER.z + 4 },
-      dimension: getDimensionSafe(FALLBACK_DIMENSION_ID),
-      label: "retorno fallback Overworld",
-    }, "Retorno fallback concluido. Reative o portal a partir do mundo de teste se necessario.");
+    player.sendMessage(`${PREFIX} Origem nao encontrada nesta sessao. Use /function portal_4d/recuperar para reposicionar no centro da dimensao 4D.`);
     return;
   }
 
@@ -496,6 +506,15 @@ function returnFromPortal(player) {
     label: `origem salva em ${origin.dimensionId}`,
   }, "Retorno ao ponto de origem concluido. Pense: o que mudou entre a projecao e a fatia observada?");
   sendNarrative(player, "Conclusao: voce nao via 4D real; voce comparou projecoes, fatias e estados para construir intuicao espacial.");
+}
+
+function recoverToCustomDimension(player) {
+  if (!player) {
+    log("Recuperacao por scriptevent ignorada: sourceEntity ausente.");
+    return;
+  }
+
+  teleportPlayer(player, getDestination(), "Recuperacao concluida no destino unico portal4d:espaco_4d.");
 }
 
 function advanceRotationRoom(player, block, center) {
@@ -536,7 +555,6 @@ function handleGuideInteraction(player, block) {
   }
 
   const centers = [
-    { center: FALLBACK_CENTER, dimensionId: FALLBACK_DIMENSION_ID },
     { center: CUSTOM_CENTER, dimensionId: CUSTOM_DIMENSION_ID },
   ];
 
@@ -556,7 +574,6 @@ function handleGuideInteraction(player, block) {
 
 function handleSprint5Interaction(player, block) {
   const centers = [
-    { center: FALLBACK_CENTER, dimensionId: FALLBACK_DIMENSION_ID },
     { center: CUSTOM_CENTER, dimensionId: CUSTOM_DIMENSION_ID },
   ];
 
@@ -596,7 +613,7 @@ function handlePlayerInteractWithBlock(event) {
     return;
   }
 
-  if (isNearDestinationArena(block, FALLBACK_CENTER, FALLBACK_DIMENSION_ID) || isNearDestinationArena(block, CUSTOM_CENTER, CUSTOM_DIMENSION_ID)) {
+  if (isNearDestinationArena(block, CUSTOM_CENTER, CUSTOM_DIMENSION_ID)) {
     returnFromPortal(player);
   }
 }
@@ -620,12 +637,12 @@ if (startupEvent?.subscribe) {
     } catch (error) {
       customDimensionRegistered = false;
       customDimensionError = `${error}`;
-      log(`Falha ao registrar ${CUSTOM_DIMENSION_ID}; usando fallback seguro no Overworld. Erro: ${error}`);
+      log(`Falha ao registrar ${CUSTOM_DIMENSION_ID}; destino unico indisponivel ate corrigir Beta APIs/Custom Dimension API. Erro: ${error}`);
     }
   });
 } else {
   customDimensionError = "system.beforeEvents.startup indisponivel nesta versao da Script API";
-  log(`${customDimensionError}; usando fallback seguro no Overworld.`);
+  log(`${customDimensionError}; destino unico indisponivel ate atualizar/habilitar a Script API.`);
 }
 
 const interactWithBlockEvent = world.afterEvents?.playerInteractWithBlock;
@@ -634,6 +651,18 @@ if (interactWithBlockEvent?.subscribe) {
   log("Trigger de interacao com bloco registrado para o portal 4D.");
 } else {
   log("world.afterEvents.playerInteractWithBlock indisponivel; use funcoes manuais ate atualizar a Script API.");
+}
+
+const scriptEventReceive = system.afterEvents?.scriptEventReceive;
+if (scriptEventReceive?.subscribe) {
+  scriptEventReceive.subscribe((event) => {
+    if (event.id === RECOVERY_SCRIPT_EVENT_ID) {
+      recoverToCustomDimension(event.sourceEntity);
+    }
+  });
+  log("Scriptevent de recuperacao registrado para o destino unico 4D.");
+} else {
+  log("system.afterEvents.scriptEventReceive indisponivel; /function portal_4d/recuperar nao podera acionar recuperacao por script.");
 }
 
 system.run(() => {
