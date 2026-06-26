@@ -5,6 +5,7 @@ const CUSTOM_DIMENSION_ID = "portal4d:espaco_4d";
 const CUSTOM_CENTER = { x: 0, y: 80, z: 0 };
 const USE_CUSTOM_DIMENSION_DESTINATION = true;
 const PLATFORM_RADIUS = 7;
+const DIMENSION_IDENTITY_RADIUS = 10;
 const PORTAL_TRIGGER_BLOCK = "minecraft:sea_lantern";
 const RETURN_TRIGGER_BLOCKS = new Set(["minecraft:lodestone", "minecraft:sea_lantern"]);
 const GUIDE_TRIGGER_BLOCK = "minecraft:lectern";
@@ -116,6 +117,37 @@ function setBlockSafe(dimension, location, blockId) {
   }
 }
 
+function buildApiDimensionIdentity(dimension, center) {
+  for (let x = center.x - DIMENSION_IDENTITY_RADIUS; x <= center.x + DIMENSION_IDENTITY_RADIUS; x += 1) {
+    for (let z = center.z - DIMENSION_IDENTITY_RADIUS; z <= center.z + DIMENSION_IDENTITY_RADIUS; z += 1) {
+      const isBorder = x === center.x - DIMENSION_IDENTITY_RADIUS || x === center.x + DIMENSION_IDENTITY_RADIUS || z === center.z - DIMENSION_IDENTITY_RADIUS || z === center.z + DIMENSION_IDENTITY_RADIUS;
+      if (isBorder) {
+        setBlockSafe(dimension, { x, y: center.y - 1, z }, "minecraft:magenta_glazed_terracotta");
+      }
+    }
+  }
+
+  const pillars = [
+    { x: center.x - DIMENSION_IDENTITY_RADIUS, z: center.z - DIMENSION_IDENTITY_RADIUS },
+    { x: center.x + DIMENSION_IDENTITY_RADIUS, z: center.z - DIMENSION_IDENTITY_RADIUS },
+    { x: center.x - DIMENSION_IDENTITY_RADIUS, z: center.z + DIMENSION_IDENTITY_RADIUS },
+    { x: center.x + DIMENSION_IDENTITY_RADIUS, z: center.z + DIMENSION_IDENTITY_RADIUS },
+  ];
+  for (const pillar of pillars) {
+    for (let y = center.y; y <= center.y + 5; y += 1) {
+      setBlockSafe(dimension, { x: pillar.x, y, z: pillar.z }, y % 2 === 0 ? "minecraft:crying_obsidian" : "minecraft:purple_stained_glass");
+    }
+    setBlockSafe(dimension, { x: pillar.x, y: center.y + 6, z: pillar.z }, "minecraft:sea_lantern");
+  }
+
+  setBlockSafe(dimension, { x: center.x, y: center.y, z: center.z + 3 }, "minecraft:lodestone");
+  setBlockSafe(dimension, { x: center.x - 2, y: center.y, z: center.z - 3 }, "minecraft:amethyst_block");
+  setBlockSafe(dimension, { x: center.x - 1, y: center.y, z: center.z - 3 }, "minecraft:purple_concrete");
+  setBlockSafe(dimension, { x: center.x, y: center.y, z: center.z - 3 }, "minecraft:sea_lantern");
+  setBlockSafe(dimension, { x: center.x + 1, y: center.y, z: center.z - 3 }, "minecraft:purple_concrete");
+  setBlockSafe(dimension, { x: center.x + 2, y: center.y, z: center.z - 3 }, "minecraft:amethyst_block");
+}
+
 function buildSafePlatform(dimensionId, center, label, force = false) {
   const key = `${dimensionId}:${center.x}:${center.y}:${center.z}`;
   if (!force && builtDestinations.has(key)) {
@@ -137,6 +169,9 @@ function buildSafePlatform(dimensionId, center, label, force = false) {
   }
 
   setBlockSafe(dimension, { x: center.x, y: center.y - 1, z: center.z }, "minecraft:amethyst_block");
+  if (dimensionId === CUSTOM_DIMENSION_ID) {
+    buildApiDimensionIdentity(dimension, center);
+  }
   setBlockSafe(dimension, { x: center.x, y: center.y, z: center.z - 4 }, GUIDE_TRIGGER_BLOCK);
   setBlockSafe(dimension, { x: center.x - 4, y: center.y, z: center.z }, "minecraft:lodestone");
   setBlockSafe(dimension, { x: center.x + 4, y: center.y, z: center.z }, "minecraft:sea_lantern");
@@ -447,7 +482,7 @@ function teleportPlayer(player, destination, message) {
 }
 
 function showEntryNarrative(player) {
-  emitFeedback(player, "Entrar", "Roteiro de 10-15 min: observar, comparar, interagir e concluir.", "portal.travel");
+  emitFeedback(player, "Entrar", "Destino API: portal4d:espaco_4d — visual marcado em roxo/magenta.", "portal.travel");
   sendNarrative(player, "Pense em uma sombra 2D de um cubo 3D. O Portal 4D faz algo parecido: mostra sombras/fatias 3D de uma ideia 4D.");
   sendNarrative(player, "Escolhas no espaco 4D: lectern repete explicacao, lapis_block muda perspectiva, emerald_block avanca W, lodestone/sea_lantern volta. Ala oeste mostra futuras expansoes.");
 }
@@ -473,9 +508,23 @@ function handlePortalWalkthrough() {
   }
 }
 
+function showCustomDimensionStatus(player) {
+  try {
+    player.onScreenDisplay?.setActionBar("§d[Portal4D] Dimensão API ativa: portal4d:espaco_4d | coordenadas locais 0,80,0 | lodestone/sea_lantern = voltar");
+  } catch (error) {
+    log(`Falha ao exibir actionbar da dimensao customizada para ${player.name}: ${error}`);
+  }
+}
+
 function rescueUnsafePortalPlayers() {
   for (const player of world.getPlayers()) {
-    if (player.dimension.id !== CUSTOM_DIMENSION_ID || player.location.y >= CUSTOM_CENTER.y - 8) {
+    if (player.dimension.id !== CUSTOM_DIMENSION_ID) {
+      continue;
+    }
+
+    showCustomDimensionStatus(player);
+
+    if (player.location.y >= CUSTOM_CENTER.y - 8) {
       continue;
     }
 
