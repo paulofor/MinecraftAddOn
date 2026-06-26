@@ -5,8 +5,8 @@ scoreboard players set @s p4d_sprint 6
 
 title @s title §bPortal 4D Espacial
 title @s subtitle §fSprint 6: narrativa, escolhas e recuperacao
-tellraw @s {"rawtext":[{"text":"[Portal4D] Como entrar: caminhe pelo vao roxo/aberto do portal, como em um portal do Nether."}]}
-tellraw @s {"rawtext":[{"text":"[Portal4D] Se nada acontecer, pare no centro do vao por um instante ou use/interaja na sea_lantern do piso; o lectern serve para repetir a explicacao."}]}
+tellraw @s {"rawtext":[{"text":"[Portal4D] Como entrar: caminhe pelo vao roxo/aberto do portal, como em um portal do Nether; nao precisa ficar exatamente no centro."}]}
+tellraw @s {"rawtext":[{"text":"[Portal4D] Se nada acontecer, caminhe pela base roxa entre as colunas ou use/interaja na sea_lantern do piso; o lectern serve para repetir a explicacao."}]}
 tellraw @s {"rawtext":[{"text":"[Portal4D] Escolhas: atravessar o portal entra; sea_lantern do piso tambem entra; lectern repete explicacao; lodestone/sea_lantern da arena volta; lapis/emerald acionam desafios."}]}
 tellraw @s {"rawtext":[{"text":"[Portal4D] O script valida a moldura do portal antes de teleportar, evitando disparos por sea_lanterns comuns fora da estrutura."}]}
 tellraw @s {"rawtext":[{"text":"[Portal4D] API Microsoft: o BP usa @minecraft/server 2.0.0 e tenta registerCustomDimension no system.beforeEvents.startup para criar portal4d:espaco_4d."}]}

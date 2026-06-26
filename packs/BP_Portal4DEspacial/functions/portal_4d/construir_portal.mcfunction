@@ -31,5 +31,5 @@ fill ~-5 ~1 ~-4 ~5 ~1 ~-4 soul_lantern
 setblock ~-1 ~1 ~2 standing_sign
 setblock ~1 ~1 ~2 standing_sign
 
-tellraw @s {"rawtext":[{"text":"[Portal4D] Portal construido. Para entrar, caminhe pelo vao roxo/aberto como em um portal do Nether."}]}
+tellraw @s {"rawtext":[{"text":"[Portal4D] Portal construido. Para entrar, caminhe pelo vao roxo/aberto como em um portal do Nether; nao precisa ficar exatamente no centro."}]}
 tellraw @s {"rawtext":[{"text":"[Portal4D] Dica: se nada acontecer, pare no centro do vao por um instante ou use/interaja na sea_lantern do piso; o lectern apenas repete a explicacao."}]}

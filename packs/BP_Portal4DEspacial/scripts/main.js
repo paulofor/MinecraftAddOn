@@ -11,6 +11,8 @@ const RETURN_TRIGGER_BLOCKS = new Set(["minecraft:lodestone", "minecraft:sea_lan
 const GUIDE_TRIGGER_BLOCK = "minecraft:lectern";
 const TELEPORT_COOLDOWN_TICKS = 80;
 const PORTAL_WALK_CHECK_INTERVAL_TICKS = 10;
+const PORTAL_ENTRY_HALF_WIDTH = 3.25;
+const PORTAL_ENTRY_HALF_DEPTH = 2.25;
 const ROTATION_CONTROL_BLOCK = "minecraft:lapis_block";
 const W_CONTROL_BLOCK = "minecraft:emerald_block";
 const ROTATION_PROGRESS_TAG = "portal4d_rotacao_4d";
@@ -40,8 +42,8 @@ const NARRATIVE_STEPS = [
 ];
 
 const OPERATOR_GUIDE = [
-  "Como entrar: caminhe pelo vao roxo do portal, como em um portal do Nether; a sea_lantern do piso continua sendo atalho por interacao.",
-  "Se nada acontecer, pare no centro do vao por um instante ou use/interaja na sea_lantern do piso; o lectern apenas repete a explicacao.",
+  "Como entrar: caminhe pelo vao roxo do portal, como em um portal do Nether; nao precisa ficar exatamente no centro.",
+  "A zona de entrada e larga: passe pela abertura entre as colunas ou pela base roxa; a sea_lantern do piso continua sendo atalho por interacao.",
   "Escolhas: atravessar o portal = Entrar; sea_lantern do piso = atalho; lectern = Repetir explicacao; lodestone/sea_lantern da arena = Voltar.",
   "Recuperacao: /function portal_4d/montar_completa remonta portal, arena e polimento; /function portal_4d/recuperar leva o operador para a arena fallback.",
   "Conceito-chave: isto e uma simulacao 3D de ideias 4D, nao uma quarta coordenada real do motor Bedrock.",
@@ -297,6 +299,16 @@ function isPortalFrameSeaLantern(block) {
   return Boolean(block && block.typeId === PORTAL_TRIGGER_BLOCK && isPortalFrameCenter(block.dimension, block.location));
 }
 
+function isInsidePortalEntryZone(location, center) {
+  const centerX = center.x + 0.5;
+  const centerZ = center.z + 0.5;
+  const insideX = Math.abs(location.x - centerX) <= PORTAL_ENTRY_HALF_WIDTH;
+  const insideY = location.y >= center.y + 0.8 && location.y <= center.y + 5.2;
+  const insideZ = Math.abs(location.z - centerZ) <= PORTAL_ENTRY_HALF_DEPTH;
+
+  return insideX && insideY && insideZ;
+}
+
 function getPortalCenterFromPlayer(player) {
   const dimension = player.dimension;
   const location = player.location;
@@ -304,18 +316,13 @@ function getPortalCenterFromPlayer(player) {
   const playerY = Math.floor(location.y);
   const playerZ = Math.floor(location.z);
 
-  for (let x = playerX - 2; x <= playerX + 2; x += 1) {
-    for (let z = playerZ - 1; z <= playerZ + 1; z += 1) {
-      const center = { x, y: playerY - 1, z };
-      if (!isPortalFrameCenter(dimension, center)) {
-        continue;
-      }
-
-      const insideX = location.x >= center.x - 2 && location.x <= center.x + 3;
-      const insideY = location.y >= center.y + 1 && location.y <= center.y + 4.8;
-      const insideZ = Math.abs(location.z - (center.z + 0.5)) <= 0.9;
-      if (insideX && insideY && insideZ) {
-        return center;
+  for (let y = playerY - 2; y <= playerY; y += 1) {
+    for (let x = playerX - 3; x <= playerX + 3; x += 1) {
+      for (let z = playerZ - 2; z <= playerZ + 2; z += 1) {
+        const center = { x, y, z };
+        if (isPortalFrameCenter(dimension, center) && isInsidePortalEntryZone(location, center)) {
+          return center;
+        }
       }
     }
   }
