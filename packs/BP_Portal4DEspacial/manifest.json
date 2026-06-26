@@ -2,12 +2,12 @@
   "format_version": 2,
   "header": {
     "name": "BP Portal 4D Espacial",
-    "description": "Behavior Pack educativo do Portal 4D; corrige recuperação para destino customizado único.",
+    "description": "Behavior Pack educativo do Portal 4D; adiciona experiência 4D simulada com tesseracto e fatias W.",
     "uuid": "3d3fab9a-bc52-4bb3-9cd4-d7dff474bfbb",
     "version": [
       0,
       1,
-      19
+      21
     ],
     "min_engine_version": [
       1,
@@ -22,7 +22,7 @@
       "version": [
         0,
         1,
-        19
+        21
       ]
     },
     {
@@ -32,7 +32,7 @@
       "version": [
         0,
         1,
-        19
+        21
       ],
       "entry": "scripts/main.js"
     }
@@ -43,7 +43,7 @@
       "version": [
         0,
         1,
-        19
+        21
       ]
     },
     {

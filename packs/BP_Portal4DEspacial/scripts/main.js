@@ -5,6 +5,9 @@ const CUSTOM_DIMENSION_ID = "portal4d:espaco_4d";
 const CUSTOM_CENTER = { x: 0, y: 80, z: 0 };
 const USE_CUSTOM_DIMENSION_DESTINATION = true;
 const PLATFORM_RADIUS = 7;
+const DIMENSION_IDENTITY_RADIUS = 10;
+const IMMERSION_RADIUS = 18;
+const TESSERACT_CENTER = { x: CUSTOM_CENTER.x, y: CUSTOM_CENTER.y + 6, z: CUSTOM_CENTER.z + 2 };
 const PORTAL_TRIGGER_BLOCK = "minecraft:sea_lantern";
 const RETURN_TRIGGER_BLOCKS = new Set(["minecraft:lodestone", "minecraft:sea_lantern"]);
 const GUIDE_TRIGGER_BLOCK = "minecraft:lectern";
@@ -35,7 +38,7 @@ const playerNarrativeSteps = new Map();
 
 const NARRATIVE_STEPS = [
   "1/4: Imagine uma criatura 2D vendo um cubo 3D. Ela veria cortes e sombras, nao o cubo inteiro.",
-  "2/4: Aqui fazemos o mesmo com 4D: o Minecraft continua 3D, mas mostra projecoes, fatias e estados.",
+  "2/4: Aqui fazemos o mesmo com 4D: o motor continua 3D, entao a experiencia usa projecoes, fatias W, parallax e mudanca de referencia.",
   "3/4: Interaja com o lapis_block para alternar a rotacao 4D simulada; compare as duas projecoes.",
   "4/4: Interaja com o emerald_block para avancar W. Cada W e uma fatia visual do mesmo espaco.",
   "Extra: blocos dourado/diamante/cobre/esmeralda na ala oeste marcam futuras expansoes: matrizes, projecoes, topologia e grafos.",
@@ -116,6 +119,146 @@ function setBlockSafe(dimension, location, blockId) {
   }
 }
 
+function setLineSafe(dimension, start, end, blockId) {
+  const dx = Math.sign(end.x - start.x);
+  const dy = Math.sign(end.y - start.y);
+  const dz = Math.sign(end.z - start.z);
+  const steps = Math.max(Math.abs(end.x - start.x), Math.abs(end.y - start.y), Math.abs(end.z - start.z));
+  for (let step = 0; step <= steps; step += 1) {
+    setBlockSafe(dimension, {
+      x: start.x + dx * Math.min(step, Math.abs(end.x - start.x)),
+      y: start.y + dy * Math.min(step, Math.abs(end.y - start.y)),
+      z: start.z + dz * Math.min(step, Math.abs(end.z - start.z)),
+    }, blockId);
+  }
+}
+
+function setInterpolatedLineSafe(dimension, start, end, blockId) {
+  const steps = Math.max(Math.abs(end.x - start.x), Math.abs(end.y - start.y), Math.abs(end.z - start.z));
+  for (let step = 0; step <= steps; step += 1) {
+    const t = steps === 0 ? 0 : step / steps;
+    setBlockSafe(dimension, {
+      x: Math.round(start.x + (end.x - start.x) * t),
+      y: Math.round(start.y + (end.y - start.y) * t),
+      z: Math.round(start.z + (end.z - start.z) * t),
+    }, blockId);
+  }
+}
+
+function buildCubeProjection(dimension, center, radius, blockId) {
+  const xs = [center.x - radius, center.x + radius];
+  const ys = [center.y - radius, center.y + radius];
+  const zs = [center.z - radius, center.z + radius];
+  for (const y of ys) {
+    for (const z of zs) {
+      setLineSafe(dimension, { x: xs[0], y, z }, { x: xs[1], y, z }, blockId);
+    }
+    for (const x of xs) {
+      setLineSafe(dimension, { x, y, z: zs[0] }, { x, y, z: zs[1] }, blockId);
+    }
+  }
+  for (const x of xs) {
+    for (const z of zs) {
+      setLineSafe(dimension, { x, y: ys[0], z }, { x, y: ys[1], z }, blockId);
+    }
+  }
+}
+
+function buildTesseractProjection(dimension, center) {
+  const outer = { x: center.x, y: center.y, z: center.z };
+  const inner = { x: center.x + 2, y: center.y + 1, z: center.z + 2 };
+  buildCubeProjection(dimension, outer, 6, "minecraft:purple_stained_glass");
+  buildCubeProjection(dimension, inner, 3, "minecraft:cyan_stained_glass");
+
+  for (const sx of [-1, 1]) {
+    for (const sy of [-1, 1]) {
+      for (const sz of [-1, 1]) {
+        setInterpolatedLineSafe(dimension, {
+          x: outer.x + sx * 6,
+          y: outer.y + sy * 6,
+          z: outer.z + sz * 6,
+        }, {
+          x: inner.x + sx * 3,
+          y: inner.y + sy * 3,
+          z: inner.z + sz * 3,
+        }, "minecraft:sea_lantern");
+      }
+    }
+  }
+}
+
+function buildImmersive4DChamber(dimension, center) {
+  for (let x = center.x - IMMERSION_RADIUS; x <= center.x + IMMERSION_RADIUS; x += 1) {
+    for (let z = center.z - IMMERSION_RADIUS; z <= center.z + IMMERSION_RADIUS; z += 1) {
+      const ax = Math.abs(x - center.x);
+      const az = Math.abs(z - center.z);
+      const ring = ax === IMMERSION_RADIUS || az === IMMERSION_RADIUS;
+      const axis = x === center.x || z === center.z;
+      const diagonal = ax === az && ax % 3 === 0;
+      const block = ring ? "minecraft:crying_obsidian" : axis ? "minecraft:amethyst_block" : diagonal ? "minecraft:purple_glazed_terracotta" : "minecraft:blackstone";
+      setBlockSafe(dimension, { x, y: center.y - 1, z }, block);
+      if (ring && (x + z) % 2 === 0) {
+        setBlockSafe(dimension, { x, y: center.y, z }, "minecraft:purple_stained_glass");
+        setBlockSafe(dimension, { x, y: center.y + 1, z }, "minecraft:purple_stained_glass");
+      }
+    }
+  }
+
+  for (let offset = -IMMERSION_RADIUS; offset <= IMMERSION_RADIUS; offset += 3) {
+    setBlockSafe(dimension, { x: center.x + offset, y: center.y + 8, z: center.z - IMMERSION_RADIUS }, "minecraft:sea_lantern");
+    setBlockSafe(dimension, { x: center.x + offset, y: center.y + 8, z: center.z + IMMERSION_RADIUS }, "minecraft:sea_lantern");
+    setBlockSafe(dimension, { x: center.x - IMMERSION_RADIUS, y: center.y + 8, z: center.z + offset }, "minecraft:sea_lantern");
+    setBlockSafe(dimension, { x: center.x + IMMERSION_RADIUS, y: center.y + 8, z: center.z + offset }, "minecraft:sea_lantern");
+  }
+
+  buildTesseractProjection(dimension, TESSERACT_CENTER);
+
+  const sliceBlocks = ["minecraft:redstone_block", "minecraft:gold_block", "minecraft:emerald_block", "minecraft:lapis_block", "minecraft:diamond_block"];
+  for (let index = 0; index < sliceBlocks.length; index += 1) {
+    const z = center.z - 12 + index * 6;
+    setLineSafe(dimension, { x: center.x - 14, y: center.y, z }, { x: center.x + 14, y: center.y, z }, sliceBlocks[index]);
+    setLineSafe(dimension, { x: center.x - 14, y: center.y + 1, z }, { x: center.x + 14, y: center.y + 1, z }, "minecraft:white_stained_glass");
+    setBlockSafe(dimension, { x: center.x - 15, y: center.y, z }, "minecraft:sea_lantern");
+    setBlockSafe(dimension, { x: center.x + 15, y: center.y, z }, "minecraft:sea_lantern");
+  }
+
+  setBlockSafe(dimension, { x: center.x, y: center.y, z: center.z }, "minecraft:air");
+  setBlockSafe(dimension, { x: center.x, y: center.y, z: center.z - 4 }, GUIDE_TRIGGER_BLOCK);
+  setBlockSafe(dimension, { x: center.x + 6, y: center.y, z: center.z }, ROTATION_CONTROL_BLOCK);
+  setBlockSafe(dimension, { x: center.x - 6, y: center.y, z: center.z }, W_CONTROL_BLOCK);
+}
+
+function buildApiDimensionIdentity(dimension, center) {
+  for (let x = center.x - DIMENSION_IDENTITY_RADIUS; x <= center.x + DIMENSION_IDENTITY_RADIUS; x += 1) {
+    for (let z = center.z - DIMENSION_IDENTITY_RADIUS; z <= center.z + DIMENSION_IDENTITY_RADIUS; z += 1) {
+      const isBorder = x === center.x - DIMENSION_IDENTITY_RADIUS || x === center.x + DIMENSION_IDENTITY_RADIUS || z === center.z - DIMENSION_IDENTITY_RADIUS || z === center.z + DIMENSION_IDENTITY_RADIUS;
+      if (isBorder) {
+        setBlockSafe(dimension, { x, y: center.y - 1, z }, "minecraft:magenta_glazed_terracotta");
+      }
+    }
+  }
+
+  const pillars = [
+    { x: center.x - DIMENSION_IDENTITY_RADIUS, z: center.z - DIMENSION_IDENTITY_RADIUS },
+    { x: center.x + DIMENSION_IDENTITY_RADIUS, z: center.z - DIMENSION_IDENTITY_RADIUS },
+    { x: center.x - DIMENSION_IDENTITY_RADIUS, z: center.z + DIMENSION_IDENTITY_RADIUS },
+    { x: center.x + DIMENSION_IDENTITY_RADIUS, z: center.z + DIMENSION_IDENTITY_RADIUS },
+  ];
+  for (const pillar of pillars) {
+    for (let y = center.y; y <= center.y + 5; y += 1) {
+      setBlockSafe(dimension, { x: pillar.x, y, z: pillar.z }, y % 2 === 0 ? "minecraft:crying_obsidian" : "minecraft:purple_stained_glass");
+    }
+    setBlockSafe(dimension, { x: pillar.x, y: center.y + 6, z: pillar.z }, "minecraft:sea_lantern");
+  }
+
+  setBlockSafe(dimension, { x: center.x, y: center.y, z: center.z + 3 }, "minecraft:lodestone");
+  setBlockSafe(dimension, { x: center.x - 2, y: center.y, z: center.z - 3 }, "minecraft:amethyst_block");
+  setBlockSafe(dimension, { x: center.x - 1, y: center.y, z: center.z - 3 }, "minecraft:purple_concrete");
+  setBlockSafe(dimension, { x: center.x, y: center.y, z: center.z - 3 }, "minecraft:sea_lantern");
+  setBlockSafe(dimension, { x: center.x + 1, y: center.y, z: center.z - 3 }, "minecraft:purple_concrete");
+  setBlockSafe(dimension, { x: center.x + 2, y: center.y, z: center.z - 3 }, "minecraft:amethyst_block");
+}
+
 function buildSafePlatform(dimensionId, center, label, force = false) {
   const key = `${dimensionId}:${center.x}:${center.y}:${center.z}`;
   if (!force && builtDestinations.has(key)) {
@@ -137,6 +280,10 @@ function buildSafePlatform(dimensionId, center, label, force = false) {
   }
 
   setBlockSafe(dimension, { x: center.x, y: center.y - 1, z: center.z }, "minecraft:amethyst_block");
+  if (dimensionId === CUSTOM_DIMENSION_ID) {
+    buildApiDimensionIdentity(dimension, center);
+    buildImmersive4DChamber(dimension, center);
+  }
   setBlockSafe(dimension, { x: center.x, y: center.y, z: center.z - 4 }, GUIDE_TRIGGER_BLOCK);
   setBlockSafe(dimension, { x: center.x - 4, y: center.y, z: center.z }, "minecraft:lodestone");
   setBlockSafe(dimension, { x: center.x + 4, y: center.y, z: center.z }, "minecraft:sea_lantern");
@@ -447,9 +594,10 @@ function teleportPlayer(player, destination, message) {
 }
 
 function showEntryNarrative(player) {
-  emitFeedback(player, "Entrar", "Roteiro de 10-15 min: observar, comparar, interagir e concluir.", "portal.travel");
-  sendNarrative(player, "Pense em uma sombra 2D de um cubo 3D. O Portal 4D faz algo parecido: mostra sombras/fatias 3D de uma ideia 4D.");
-  sendNarrative(player, "Escolhas no espaco 4D: lectern repete explicacao, lapis_block muda perspectiva, emerald_block avanca W, lodestone/sea_lantern volta. Ala oeste mostra futuras expansoes.");
+  emitFeedback(player, "Experiencia 4D", "Entre no hipercubo projetado: cubos conectados, fatias W e eixos impossiveis.", "portal.travel");
+  sendNarrative(player, "O Bedrock continua 3D; por isso a experiência 4D é uma simulação navegável: projeção de tesseracto, fatias W e mudança de perspectiva.");
+  sendNarrative(player, "No centro, compare o cubo roxo externo com o cubo ciano interno; as lanternas conectam vertices como uma sombra 3D de um objeto 4D.");
+  sendNarrative(player, "Use lapis_block para alternar perspectiva, emerald_block para avançar W e lectern para receber o roteiro guiado.");
 }
 
 function enterPortal(player, triggerLocation, triggerMode = "interacao") {
@@ -461,7 +609,7 @@ function enterPortal(player, triggerLocation, triggerMode = "interacao") {
   player.sendMessage(`${PREFIX} Portal ativado: atravessando o vao 4D como um portal do Nether.`);
   showEntryNarrative(player);
   log(`Entrada valida de ${player.name} no portal por ${triggerMode} em ${triggerLocation.x} ${triggerLocation.y} ${triggerLocation.z}.`);
-  teleportPlayer(player, getDestination(), "Observe as projecoes, fatias e mudancas de perspectiva na dimensao customizada 4D da API Microsoft.");
+  teleportPlayer(player, getDestination(), "Você está na simulação 4D: caminhe pelo hipercubo projetado, compare fatias W e mude a perspectiva.");
 }
 
 function handlePortalWalkthrough() {
@@ -473,9 +621,23 @@ function handlePortalWalkthrough() {
   }
 }
 
+function showCustomDimensionStatus(player) {
+  try {
+    player.onScreenDisplay?.setActionBar("§d[Portal4D] Experiência 4D: tesseracto projetado + fatias W | lectern=guia | lapis=perspectiva | emerald=W | lodestone/sea_lantern=voltar");
+  } catch (error) {
+    log(`Falha ao exibir actionbar da dimensao customizada para ${player.name}: ${error}`);
+  }
+}
+
 function rescueUnsafePortalPlayers() {
   for (const player of world.getPlayers()) {
-    if (player.dimension.id !== CUSTOM_DIMENSION_ID || player.location.y >= CUSTOM_CENTER.y - 8) {
+    if (player.dimension.id !== CUSTOM_DIMENSION_ID) {
+      continue;
+    }
+
+    showCustomDimensionStatus(player);
+
+    if (player.location.y >= CUSTOM_CENTER.y - 8) {
       continue;
     }
 
