@@ -298,11 +298,16 @@ function findNearbyHubBlock(player) {
           continue;
         }
 
-        const candidate = player.dimension.getBlock({
-          x: baseX + dx,
-          y: baseY + dy,
-          z: baseZ + dz,
-        });
+        let candidate;
+        try {
+          candidate = player.dimension.getBlock({
+            x: baseX + dx,
+            y: baseY + dy,
+            z: baseZ + dz,
+          });
+        } catch {
+          continue;
+        }
 
         if (candidate && (HUB_TRIGGER_BLOCKS.has(candidate.typeId) || getAnswerStation(candidate))) {
           return candidate;
@@ -337,7 +342,7 @@ system.runInterval(() => {
       continue;
     }
 
-    player.onScreenDisplay.setActionBar("§e[IlhaLogica] Use a Lanterna/Lectern para abrir o painel escuro de leitura.");
+    player.onScreenDisplay.setActionBar("§e[IlhaLogica] Mire na Lanterna/Lectern e use/interaja (botão direito, LT ou toque) para abrir o painel.");
   }
 }, PROXIMITY_HINT_INTERVAL_TICKS);
 

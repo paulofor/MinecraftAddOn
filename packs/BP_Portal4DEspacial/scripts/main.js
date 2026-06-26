@@ -5,11 +5,15 @@ const CUSTOM_DIMENSION_ID = "portal4d:espaco_4d";
 const FALLBACK_DIMENSION_ID = "minecraft:overworld";
 const FALLBACK_CENTER = { x: 4096, y: 96, z: 4096 };
 const CUSTOM_CENTER = { x: 0, y: 80, z: 0 };
+const USE_CUSTOM_DIMENSION_DESTINATION = false;
 const PLATFORM_RADIUS = 7;
 const PORTAL_TRIGGER_BLOCK = "minecraft:sea_lantern";
 const RETURN_TRIGGER_BLOCKS = new Set(["minecraft:lodestone", "minecraft:sea_lantern"]);
 const GUIDE_TRIGGER_BLOCK = "minecraft:lectern";
 const TELEPORT_COOLDOWN_TICKS = 80;
+const PORTAL_WALK_CHECK_INTERVAL_TICKS = 10;
+const PORTAL_ENTRY_HALF_WIDTH = 3.25;
+const PORTAL_ENTRY_HALF_DEPTH = 2.25;
 const ROTATION_CONTROL_BLOCK = "minecraft:lapis_block";
 const W_CONTROL_BLOCK = "minecraft:emerald_block";
 const ROTATION_PROGRESS_TAG = "portal4d_rotacao_4d";
@@ -39,8 +43,11 @@ const NARRATIVE_STEPS = [
 ];
 
 const OPERATOR_GUIDE = [
-  "Escolhas: sea_lantern do portal = Entrar; lectern = Repetir explicacao; lodestone/sea_lantern da arena = Voltar.",
+  "Como entrar: caminhe pelo vao roxo do portal, como em um portal do Nether; nao precisa ficar exatamente no centro.",
+  "A zona de entrada e larga: passe pela abertura entre as colunas ou pela base roxa; a sea_lantern do piso continua sendo atalho por interacao.",
+  "Escolhas: atravessar o portal = Entrar; sea_lantern do piso = atalho; lectern = Repetir explicacao; lodestone/sea_lantern da arena = Voltar.",
   "Recuperacao: /function portal_4d/montar_completa remonta portal, arena e polimento; /function portal_4d/recuperar leva o operador para a arena fallback.",
+  "Seguranca: a entrada envia para a arena 4D segura no Overworld; a dimensao customizada fica desativada ate validarmos piso e limites.",
   "Conceito-chave: isto e uma simulacao 3D de ideias 4D, nao uma quarta coordenada real do motor Bedrock.",
   "Tempo sugerido: 10 a 15 minutos para uma oficina curta; use grupos iniciante, intermediario e avancado no playtest.",
 ];
@@ -141,7 +148,14 @@ function buildSafePlatform(dimensionId, center, label) {
 
 function runCommandSafe(dimension, command, context) {
   try {
-    dimension.runCommandAsync(command).catch((error) => log(`Falha no comando ${context}: ${error}`));
+    const runner = dimension.runCommandAsync ?? dimension.runCommand;
+    if (!runner) {
+      log(`Comando ${context} indisponivel nesta dimensao/API.`);
+      return;
+    }
+
+    const result = runner.call(dimension, command);
+    result?.catch?.((error) => log(`Falha no comando ${context}: ${error}`));
   } catch (error) {
     log(`Falha ao iniciar comando ${context}: ${error}`);
   }
@@ -280,19 +294,49 @@ function distanceSquared(a, b) {
   return dx * dx + dy * dy + dz * dz;
 }
 
+function isPortalFrameCenter(dimension, center) {
+  const { x, y, z } = center;
+  const hasFloorTrigger = getBlockTypeId(dimension, { x, y, z }) === PORTAL_TRIGGER_BLOCK;
+  const hasLeftFrame = getBlockTypeId(dimension, { x: x - 3, y: y + 1, z }) === "minecraft:crying_obsidian" && getBlockTypeId(dimension, { x: x - 3, y: y + 5, z }) === "minecraft:crying_obsidian";
+  const hasRightFrame = getBlockTypeId(dimension, { x: x + 3, y: y + 1, z }) === "minecraft:crying_obsidian" && getBlockTypeId(dimension, { x: x + 3, y: y + 5, z }) === "minecraft:crying_obsidian";
+  const hasTopFrame = getBlockTypeId(dimension, { x, y: y + 5, z }) === "minecraft:crying_obsidian";
+
+  return hasFloorTrigger && hasLeftFrame && hasRightFrame && hasTopFrame;
+}
+
 function isPortalFrameSeaLantern(block) {
-  if (!block || block.typeId !== PORTAL_TRIGGER_BLOCK) {
-    return false;
+  return Boolean(block && block.typeId === PORTAL_TRIGGER_BLOCK && isPortalFrameCenter(block.dimension, block.location));
+}
+
+function isInsidePortalEntryZone(location, center) {
+  const centerX = center.x + 0.5;
+  const centerZ = center.z + 0.5;
+  const insideX = Math.abs(location.x - centerX) <= PORTAL_ENTRY_HALF_WIDTH;
+  const insideY = location.y >= center.y + 0.8 && location.y <= center.y + 5.2;
+  const insideZ = Math.abs(location.z - centerZ) <= PORTAL_ENTRY_HALF_DEPTH;
+
+  return insideX && insideY && insideZ;
+}
+
+function getPortalCenterFromPlayer(player) {
+  const dimension = player.dimension;
+  const location = player.location;
+  const playerX = Math.floor(location.x);
+  const playerY = Math.floor(location.y);
+  const playerZ = Math.floor(location.z);
+
+  for (let y = playerY - 2; y <= playerY; y += 1) {
+    for (let x = playerX - 3; x <= playerX + 3; x += 1) {
+      for (let z = playerZ - 2; z <= playerZ + 2; z += 1) {
+        const center = { x, y, z };
+        if (isPortalFrameCenter(dimension, center) && isInsidePortalEntryZone(location, center)) {
+          return center;
+        }
+      }
+    }
   }
 
-  const { dimension, location } = block;
-  const { x, y, z } = location;
-  const hasLodestoneBase = getBlockTypeId(dimension, { x, y: y - 2, z }) === "minecraft:lodestone";
-  const hasGlassInterior = getBlockTypeId(dimension, { x, y: y - 1, z }) === "minecraft:purple_stained_glass";
-  const hasObsidianFrameX = getBlockTypeId(dimension, { x: x - 3, y, z }) === "minecraft:crying_obsidian" && getBlockTypeId(dimension, { x: x + 3, y, z }) === "minecraft:crying_obsidian";
-  const hasObsidianFrameY = getBlockTypeId(dimension, { x: x - 3, y: y + 2, z }) === "minecraft:crying_obsidian" && getBlockTypeId(dimension, { x: x + 3, y: y + 2, z }) === "minecraft:crying_obsidian";
-
-  return hasLodestoneBase && hasGlassInterior && (hasObsidianFrameX || hasObsidianFrameY);
+  return undefined;
 }
 
 function isNearDestinationArena(block, center, dimensionId) {
@@ -316,7 +360,7 @@ function isOnTeleportCooldown(player) {
 }
 
 function getDestination() {
-  if (customDimensionRegistered) {
+  if (USE_CUSTOM_DIMENSION_DESTINATION && customDimensionRegistered) {
     const customDimension = getDimensionSafe(CUSTOM_DIMENSION_ID, false);
     if (customDimension) {
       buildSafePlatform(CUSTOM_DIMENSION_ID, CUSTOM_CENTER, "dimensao customizada 4D");
@@ -327,6 +371,11 @@ function getDestination() {
         label: "dimensao customizada 4D",
       };
     }
+  }
+
+  if (customDimensionRegistered && !USE_CUSTOM_DIMENSION_DESTINATION && !fallbackStatusLogged) {
+    log("Dimensao customizada registrada, mas destino customizado desativado por seguranca; usando arena 4D segura no Overworld.");
+    fallbackStatusLogged = true;
   }
 
   const fallbackDimension = getDimensionSafe(FALLBACK_DIMENSION_ID);
@@ -379,16 +428,40 @@ function showEntryNarrative(player) {
   sendNarrative(player, "Escolhas no espaco 4D: lectern repete explicacao, lapis_block muda perspectiva, emerald_block avanca W, lodestone/sea_lantern volta. Ala oeste mostra futuras expansoes.");
 }
 
-function enterPortal(player, block) {
+function enterPortal(player, triggerLocation, triggerMode = "interacao") {
   if (isOnTeleportCooldown(player)) {
     return;
   }
 
   savePlayerOrigin(player);
-  player.sendMessage(`${PREFIX} Portal ativado: entrando em uma simulacao 3D de ideias 4D.`);
+  player.sendMessage(`${PREFIX} Portal ativado: atravessando o vao 4D como um portal do Nether.`);
   showEntryNarrative(player);
-  log(`Interacao valida de ${player.name} no portal em ${block.location.x} ${block.location.y} ${block.location.z}.`);
-  teleportPlayer(player, getDestination(), "Observe as projecoes, fatias e mudancas de perspectiva. Isto e uma simulacao educativa de 4D.");
+  log(`Entrada valida de ${player.name} no portal por ${triggerMode} em ${triggerLocation.x} ${triggerLocation.y} ${triggerLocation.z}.`);
+  teleportPlayer(player, getDestination(), "Observe as projecoes, fatias e mudancas de perspectiva na arena 4D segura do Overworld.");
+}
+
+function handlePortalWalkthrough() {
+  for (const player of world.getPlayers()) {
+    const portalCenter = getPortalCenterFromPlayer(player);
+    if (portalCenter) {
+      enterPortal(player, portalCenter, "travessia");
+    }
+  }
+}
+
+function rescueUnsafePortalPlayers() {
+  for (const player of world.getPlayers()) {
+    if (player.dimension.id !== CUSTOM_DIMENSION_ID || player.location.y >= CUSTOM_CENTER.y - 8) {
+      continue;
+    }
+
+    player.sendMessage(`${PREFIX} Resgate automatico: a dimensao customizada ficou insegura. Voltando para a arena 4D segura no Overworld.`);
+    teleportPlayer(player, {
+      center: FALLBACK_CENTER,
+      dimension: getDimensionSafe(FALLBACK_DIMENSION_ID),
+      label: "resgate fallback Overworld",
+    }, "Resgate concluido. A experiencia 4D continua na arena segura do Overworld.");
+  }
 }
 
 function returnFromPortal(player) {
@@ -510,7 +583,7 @@ function handlePlayerInteractWithBlock(event) {
   }
 
   if (isPortalFrameSeaLantern(block)) {
-    enterPortal(player, block);
+    enterPortal(player, block.location, "interacao sea_lantern");
     return;
   }
 
@@ -563,3 +636,8 @@ system.run(() => {
 system.runInterval(() => {
   buildAllKnownDestinations();
 }, 200);
+
+system.runInterval(() => {
+  rescueUnsafePortalPlayers();
+  handlePortalWalkthrough();
+}, PORTAL_WALK_CHECK_INTERVAL_TICKS);
