@@ -464,15 +464,6 @@ function rescueUnsafePortalPlayers() {
   }
 }
 
-function handlePortalWalkthrough() {
-  for (const player of world.getPlayers()) {
-    const portalCenter = getPortalCenterFromPlayer(player);
-    if (portalCenter) {
-      enterPortal(player, portalCenter, "travessia");
-    }
-  }
-}
-
 function returnFromPortal(player) {
   if (isOnTeleportCooldown(player)) {
     return;
