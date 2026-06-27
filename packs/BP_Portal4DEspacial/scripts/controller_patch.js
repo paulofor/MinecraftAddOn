@@ -2,74 +2,58 @@ import { system, world } from "@minecraft/server";
 import "./main.js";
 
 const PREFIX = "[Portal4D]";
-const CUSTOM_DIMENSION_ID = "portal4d:espaco_4d";
-const CUSTOM_CENTER = { x: 0, y: 80, z: 0 };
-const HYPERCUBE_ROOM = { halfWidth: 12, halfDepth: 12 };
-const ROTATION_CONTROL_BLOCK = "minecraft:lapis_block";
+const DIMENSION_ID = "portal4d:espaco_4d";
+const CENTER = { x: 0, y: 80, z: 0 };
+const W_BUTTON = { x: 0, y: 80, z: 24 };
+const ROTATION_BUTTON = { x: 24, y: 80, z: 0 };
+const CENTER_W_BUTTON = { x: -6, y: 80, z: 0 };
+const CENTER_ROTATION_BUTTON = { x: 6, y: 80, z: 0 };
 const W_CONTROL_BLOCK = "minecraft:emerald_block";
-const INTERACTION_COOLDOWN_TICKS = 16;
-const BREAK_CONTROL_COOLDOWN_TICKS = 28;
-const SNEAK_CONTROL_COOLDOWN_TICKS = 28;
-const W_SLICE_BLOCKS = [
+const ROTATION_CONTROL_BLOCK = "minecraft:lapis_block";
+const BREAK_COOLDOWN_TICKS = 18;
+const SNEAK_COOLDOWN_TICKS = 36;
+const W_BLOCKS = [
   "minecraft:redstone_block",
   "minecraft:gold_block",
   "minecraft:emerald_block",
   "minecraft:lapis_block",
   "minecraft:diamond_block",
 ];
-const ROTATION_MARKER_BLOCKS = [
+const ROTATION_BLOCKS = [
   "minecraft:purple_stained_glass",
   "minecraft:cyan_stained_glass",
   "minecraft:magenta_stained_glass",
   "minecraft:light_blue_stained_glass",
 ];
 
-const controllerStates = new Map();
-const controllerCooldowns = new Map();
-const activeSneakControls = new Map();
+const stateByArena = new Map();
+const cooldowns = new Map();
 
 function log(message) {
   console.warn(`${PREFIX} ${message}`);
 }
 
-function getPlayerKey(player) {
+function playerKey(player) {
   return player.id ?? player.name;
 }
 
-function getArenaStateKey(dimensionId, center) {
-  return `${dimensionId}:${center.x}:${center.y}:${center.z}`;
+function arenaKey() {
+  return `${DIMENSION_ID}:${CENTER.x}:${CENTER.y}:${CENTER.z}`;
 }
 
-function getControllerState() {
-  const key = getArenaStateKey(CUSTOM_DIMENSION_ID, CUSTOM_CENTER);
-  const state = controllerStates.get(key) ?? { rotation: 0, w: 0, completed: false };
-  controllerStates.set(key, state);
+function getState() {
+  const key = arenaKey();
+  const state = stateByArena.get(key) ?? { w: 0, rotation: 0, completed: false };
+  stateByArena.set(key, state);
   return state;
 }
 
-function isOnControllerCooldown(player, scope, ticks) {
-  const key = `${getPlayerKey(player)}:${scope}`;
-  const now = system.currentTick;
-  const availableAt = controllerCooldowns.get(key) ?? 0;
-  if (now < availableAt) {
-    return true;
+function getDimensionSafe() {
+  try {
+    return world.getDimension(DIMENSION_ID);
+  } catch {
+    return undefined;
   }
-
-  controllerCooldowns.set(key, now + ticks);
-  return false;
-}
-
-function distanceSquared(a, b) {
-  const dx = a.x - b.x;
-  const dy = a.y - b.y;
-  const dz = a.z - b.z;
-  return dx * dx + dy * dy + dz * dz;
-}
-
-function horizontalDistanceSquared(a, b) {
-  const dx = a.x - b.x;
-  const dz = a.z - b.z;
-  return dx * dx + dz * dz;
 }
 
 function setBlockSafe(dimension, location, blockId) {
@@ -77,14 +61,6 @@ function setBlockSafe(dimension, location, blockId) {
     dimension.getBlock(location)?.setType(blockId);
   } catch (error) {
     log(`Falha ao posicionar ${blockId} em ${location.x} ${location.y} ${location.z}: ${error}`);
-  }
-}
-
-function getBlockSafe(dimension, location) {
-  try {
-    return dimension.getBlock(location);
-  } catch {
-    return undefined;
   }
 }
 
@@ -99,14 +75,6 @@ function setLineSafe(dimension, start, end, blockId) {
       y: start.y + dy * Math.min(step, Math.abs(end.y - start.y)),
       z: start.z + dz * Math.min(step, Math.abs(end.z - start.z)),
     }, blockId);
-  }
-}
-
-function fillRoomLayer(dimension, x1, y, z1, x2, z2, blockId) {
-  for (let x = x1; x <= x2; x += 1) {
-    for (let z = z1; z <= z2; z += 1) {
-      setBlockSafe(dimension, { x, y, z }, blockId);
-    }
   }
 }
 
@@ -147,321 +115,265 @@ function setProgressPropertySafe(player, key, value) {
   }
 }
 
-function renderProjectionMarker(dimension, center, rotation) {
-  const positions = [
-    { x: center.x - 4, y: center.y + 4, z: center.z - 4 },
-    { x: center.x + 4, y: center.y + 4, z: center.z - 4 },
-    { x: center.x + 4, y: center.y + 4, z: center.z + 4 },
-    { x: center.x - 4, y: center.y + 4, z: center.z + 4 },
-  ];
-
-  for (let index = 0; index < positions.length; index += 1) {
-    setBlockSafe(dimension, positions[index], index === rotation ? ROTATION_MARKER_BLOCKS[index] : "minecraft:redstone_lamp");
-    setBlockSafe(dimension, { ...positions[index], y: positions[index].y + 1 }, index === rotation ? "minecraft:sea_lantern" : "minecraft:black_stained_glass");
+function onCooldown(player, scope, ticks) {
+  const key = `${playerKey(player)}:${scope}`;
+  const now = system.currentTick;
+  const availableAt = cooldowns.get(key) ?? 0;
+  if (now < availableAt) {
+    return true;
   }
+  cooldowns.set(key, now + ticks);
+  return false;
 }
 
-function renderImpossibleDoor(dimension, center, w) {
-  const doorX = center.x + HYPERCUBE_ROOM.halfWidth;
-  const doorZ = center.z + 8;
+function sameBlock(a, b) {
+  return a.x === b.x && a.y === b.y && a.z === b.z;
+}
+
+function horizontalDistanceSquared(a, b) {
+  const dx = a.x - b.x;
+  const dz = a.z - b.z;
+  return dx * dx + dz * dz;
+}
+
+function renderFixedButtons(dimension) {
+  setBlockSafe(dimension, W_BUTTON, W_CONTROL_BLOCK);
+  setBlockSafe(dimension, CENTER_W_BUTTON, W_CONTROL_BLOCK);
+  setBlockSafe(dimension, ROTATION_BUTTON, ROTATION_CONTROL_BLOCK);
+  setBlockSafe(dimension, CENTER_ROTATION_BUTTON, ROTATION_CONTROL_BLOCK);
+}
+
+function renderWCorridor(dimension, w) {
+  for (let offset = 0; offset <= 16; offset += 1) {
+    const x = W_BUTTON.x + offset;
+    const floorBlock = offset <= w * 4 ? "minecraft:amethyst_block" : "minecraft:polished_andesite";
+    setBlockSafe(dimension, { x, y: W_BUTTON.y - 1, z: W_BUTTON.z }, floorBlock);
+    setBlockSafe(dimension, { x, y: W_BUTTON.y, z: W_BUTTON.z }, "minecraft:air");
+    setBlockSafe(dimension, { x, y: W_BUTTON.y + 1, z: W_BUTTON.z }, "minecraft:air");
+    setBlockSafe(dimension, { x, y: W_BUTTON.y, z: W_BUTTON.z + 2 }, "minecraft:air");
+
+    if (offset % 4 === 0) {
+      const step = offset / 4;
+      setBlockSafe(dimension, { x, y: W_BUTTON.y, z: W_BUTTON.z + 1 }, step <= w ? "minecraft:sea_lantern" : "minecraft:redstone_lamp");
+      if (step === w) {
+        setBlockSafe(dimension, { x, y: W_BUTTON.y, z: W_BUTTON.z + 2 }, W_BLOCKS[w] ?? "minecraft:emerald_block");
+      }
+    }
+  }
+
+  for (let offset = 0; offset <= 16; offset += 4) {
+    setBlockSafe(dimension, { x: W_BUTTON.x + offset, y: W_BUTTON.y, z: W_BUTTON.z - 1 }, "minecraft:sea_lantern");
+    setBlockSafe(dimension, { x: W_BUTTON.x + offset, y: W_BUTTON.y, z: W_BUTTON.z + 1 }, offset / 4 <= w ? "minecraft:sea_lantern" : "minecraft:redstone_lamp");
+  }
+
+  setBlockSafe(dimension, W_BUTTON, W_CONTROL_BLOCK);
+  setBlockSafe(dimension, { x: W_BUTTON.x, y: W_BUTTON.y, z: W_BUTTON.z - 2 }, "minecraft:lectern");
+}
+
+function renderCentralWSlice(dimension, w) {
+  for (let index = 0; index < W_BLOCKS.length; index += 1) {
+    const z = CENTER.z - 12 + index * 6;
+    setLineSafe(dimension, { x: CENTER.x - 10, y: CENTER.y + 2, z }, { x: CENTER.x + 10, y: CENTER.y + 2, z }, "minecraft:air");
+    setLineSafe(dimension, { x: CENTER.x - 10, y: CENTER.y + 3, z }, { x: CENTER.x + 10, y: CENTER.y + 3, z }, "minecraft:air");
+  }
+
+  const z = CENTER.z - 12 + w * 6;
+  setLineSafe(dimension, { x: CENTER.x - 10, y: CENTER.y + 2, z }, { x: CENTER.x + 10, y: CENTER.y + 2, z }, W_BLOCKS[w] ?? W_BLOCKS[0]);
+  setLineSafe(dimension, { x: CENTER.x - 10, y: CENTER.y + 3, z }, { x: CENTER.x + 10, y: CENTER.y + 3, z }, "minecraft:white_stained_glass");
+}
+
+function renderImpossibleDoor(dimension, w) {
+  const doorX = CENTER.x + 12;
+  const doorZ = CENTER.z + 8;
   const doorBlock = w === 2 ? "minecraft:air" : "minecraft:black_stained_glass";
-  for (let y = center.y; y <= center.y + 3; y += 1) {
+  for (let y = CENTER.y; y <= CENTER.y + 3; y += 1) {
     for (let z = doorZ - 1; z <= doorZ + 1; z += 1) {
       setBlockSafe(dimension, { x: doorX, y, z }, doorBlock);
     }
   }
-  setBlockSafe(dimension, { x: doorX - 1, y: center.y, z: doorZ }, w === 2 ? "minecraft:emerald_block" : "minecraft:redstone_lamp");
-  setBlockSafe(dimension, { x: doorX - 1, y: center.y + 1, z: doorZ }, "minecraft:sea_lantern");
+  setBlockSafe(dimension, { x: doorX - 1, y: CENTER.y, z: doorZ }, w === 2 ? "minecraft:emerald_block" : "minecraft:redstone_lamp");
 }
 
-function renderCompletionGate(dimension, center, completed) {
-  const gateX = center.x + 8;
-  const gateZ = center.z + HYPERCUBE_ROOM.halfDepth;
+function renderRotationMarkers(dimension, rotation) {
+  const markers = [
+    { x: CENTER.x - 4, y: CENTER.y + 4, z: CENTER.z - 4 },
+    { x: CENTER.x + 4, y: CENTER.y + 4, z: CENTER.z - 4 },
+    { x: CENTER.x + 4, y: CENTER.y + 4, z: CENTER.z + 4 },
+    { x: CENTER.x - 4, y: CENTER.y + 4, z: CENTER.z + 4 },
+  ];
+
+  for (let index = 0; index < markers.length; index += 1) {
+    setBlockSafe(dimension, markers[index], index === rotation ? ROTATION_BLOCKS[index] : "minecraft:redstone_lamp");
+    setBlockSafe(dimension, { ...markers[index], y: markers[index].y + 1 }, index === rotation ? "minecraft:sea_lantern" : "minecraft:black_stained_glass");
+  }
+}
+
+function renderRotationRoom(dimension, rotation) {
+  for (let x = ROTATION_BUTTON.x - 5; x <= ROTATION_BUTTON.x + 5; x += 1) {
+    for (let z = ROTATION_BUTTON.z - 5; z <= ROTATION_BUTTON.z + 5; z += 1) {
+      setBlockSafe(dimension, { x, y: ROTATION_BUTTON.y - 1, z }, "minecraft:smooth_quartz");
+      setBlockSafe(dimension, { x, y: ROTATION_BUTTON.y, z }, "minecraft:air");
+      setBlockSafe(dimension, { x, y: ROTATION_BUTTON.y + 1, z }, "minecraft:air");
+    }
+  }
+
+  const layouts = [
+    [{ x: -3, z: -3 }, { x: -2, z: -2 }, { x: -1, z: -1 }, { x: 1, z: 1 }, { x: 2, z: 2 }, { x: 3, z: 3 }, { x: -3, z: 3 }, { x: 3, z: -3 }],
+    [{ x: -3, z: 0 }, { x: -2, z: 0 }, { x: -1, z: 0 }, { x: 1, z: 0 }, { x: 2, z: 0 }, { x: 3, z: 0 }, { x: 0, z: -3 }, { x: 0, z: 3 }],
+    [{ x: -2, z: -3 }, { x: -1, z: -2 }, { x: 0, z: -1 }, { x: 1, z: 0 }, { x: 2, z: 1 }, { x: 3, z: 2 }, { x: -3, z: 1 }, { x: 1, z: 3 }],
+    [{ x: -3, z: -1 }, { x: -2, z: 1 }, { x: -1, z: 3 }, { x: 0, z: 0 }, { x: 1, z: -3 }, { x: 2, z: -1 }, { x: 3, z: 1 }, { x: 0, z: -4 }],
+  ];
+
+  for (const point of layouts[rotation]) {
+    setBlockSafe(dimension, { x: ROTATION_BUTTON.x + point.x, y: ROTATION_BUTTON.y, z: ROTATION_BUTTON.z + point.z }, ROTATION_BLOCKS[rotation]);
+  }
+
+  setBlockSafe(dimension, ROTATION_BUTTON, ROTATION_CONTROL_BLOCK);
+  setBlockSafe(dimension, { x: ROTATION_BUTTON.x, y: ROTATION_BUTTON.y, z: ROTATION_BUTTON.z - 4 }, "minecraft:lectern");
+}
+
+function renderCompletionGate(dimension, completed) {
+  const gateX = CENTER.x + 8;
+  const gateZ = CENTER.z + 12;
   const gateBlock = completed ? "minecraft:air" : "minecraft:black_stained_glass";
 
-  for (let y = center.y; y <= center.y + 3; y += 1) {
+  for (let y = CENTER.y; y <= CENTER.y + 3; y += 1) {
     for (let x = gateX - 1; x <= gateX + 1; x += 1) {
       setBlockSafe(dimension, { x, y, z: gateZ }, gateBlock);
     }
   }
-
-  setBlockSafe(dimension, { x: gateX, y: center.y - 1, z: gateZ - 1 }, completed ? "minecraft:diamond_block" : "minecraft:redstone_lamp");
-  setBlockSafe(dimension, { x: gateX, y: center.y, z: gateZ - 1 }, completed ? "minecraft:sea_lantern" : "minecraft:black_stained_glass");
+  setBlockSafe(dimension, { x: gateX, y: CENTER.y - 1, z: gateZ - 1 }, completed ? "minecraft:diamond_block" : "minecraft:redstone_lamp");
 }
 
-function renderCentralWSlice(dimension, center, w) {
-  for (let index = 0; index < W_SLICE_BLOCKS.length; index += 1) {
-    const z = center.z - 12 + index * 6;
-    setLineSafe(dimension, { x: center.x - 10, y: center.y + 2, z }, { x: center.x + 10, y: center.y + 2, z }, "minecraft:air");
-    setLineSafe(dimension, { x: center.x - 10, y: center.y + 3, z }, { x: center.x + 10, y: center.y + 3, z }, "minecraft:air");
-  }
-
-  const z = center.z - 12 + w * 6;
-  const block = W_SLICE_BLOCKS[w] ?? W_SLICE_BLOCKS[0];
-  setLineSafe(dimension, { x: center.x - 10, y: center.y + 2, z }, { x: center.x + 10, y: center.y + 2, z }, block);
-  setLineSafe(dimension, { x: center.x - 10, y: center.y + 3, z }, { x: center.x + 10, y: center.y + 3, z }, "minecraft:white_stained_glass");
-  renderImpossibleDoor(dimension, center, w);
+function syncScene(dimension, state) {
+  renderWCorridor(dimension, state.w);
+  renderCentralWSlice(dimension, state.w);
+  renderImpossibleDoor(dimension, state.w);
+  renderRotationRoom(dimension, state.rotation);
+  renderRotationMarkers(dimension, state.rotation);
+  renderCompletionGate(dimension, state.completed);
+  renderFixedButtons(dimension);
 }
 
-function buildRotationRoom(dimension, center, state) {
-  fillRoomLayer(dimension, center.x - 5, center.y - 1, center.z - 5, center.x + 5, center.z + 5, "minecraft:smooth_quartz");
-  fillRoomLayer(dimension, center.x - 5, center.y, center.z - 5, center.x + 5, center.z + 5, "minecraft:air");
-  fillRoomLayer(dimension, center.x - 5, center.y + 1, center.z - 5, center.x + 5, center.z + 5, "minecraft:air");
-  setBlockSafe(dimension, { x: center.x, y: center.y, z: center.z }, ROTATION_CONTROL_BLOCK);
-  setBlockSafe(dimension, { x: center.x, y: center.y, z: center.z - 4 }, "minecraft:lectern");
-  setBlockSafe(dimension, { x: center.x, y: center.y + 1, z: center.z }, "minecraft:sea_lantern");
-
-  const layouts = [
-    {
-      block: "minecraft:purple_stained_glass",
-      points: [
-        { x: -3, z: -3 }, { x: -2, z: -2 }, { x: -1, z: -1 }, { x: 1, z: 1 },
-        { x: 2, z: 2 }, { x: 3, z: 3 }, { x: -3, z: 3 }, { x: 3, z: -3 },
-      ],
-    },
-    {
-      block: "minecraft:cyan_stained_glass",
-      points: [
-        { x: -3, z: 0 }, { x: -2, z: 0 }, { x: -1, z: 0 }, { x: 1, z: 0 },
-        { x: 2, z: 0 }, { x: 3, z: 0 }, { x: 0, z: -3 }, { x: 0, z: 3 },
-      ],
-    },
-    {
-      block: "minecraft:magenta_stained_glass",
-      points: [
-        { x: -2, z: -3 }, { x: -1, z: -2 }, { x: 0, z: -1 }, { x: 1, z: 0 },
-        { x: 2, z: 1 }, { x: 3, z: 2 }, { x: -3, z: 1 }, { x: 1, z: 3 },
-      ],
-    },
-    {
-      block: "minecraft:light_blue_stained_glass",
-      points: [
-        { x: -3, z: -1 }, { x: -2, z: 1 }, { x: -1, z: 3 }, { x: 0, z: 0 },
-        { x: 1, z: -3 }, { x: 2, z: -1 }, { x: 3, z: 1 }, { x: 0, z: -4 },
-      ],
-    },
-  ];
-
-  const layout = layouts[state % layouts.length];
-  for (const point of layout.points) {
-    setBlockSafe(dimension, { x: center.x + point.x, y: center.y, z: center.z + point.z }, layout.block);
-  }
-}
-
-function buildWCorridor(dimension, start, step) {
-  for (let side = -1; side <= 1; side += 2) {
-    for (let offset = 0; offset <= 16; offset += 4) {
-      setBlockSafe(dimension, { x: start.x + offset, y: start.y, z: start.z + side }, "minecraft:sea_lantern");
-    }
-  }
-
-  for (let offset = 0; offset <= 16; offset += 1) {
-    const x = start.x + offset;
-    const block = offset <= step * 4 ? "minecraft:amethyst_block" : "minecraft:polished_andesite";
-    setBlockSafe(dimension, { x, y: start.y - 1, z: start.z }, block);
-    setBlockSafe(dimension, { x, y: start.y, z: start.z }, "minecraft:air");
-    setBlockSafe(dimension, { x, y: start.y + 1, z: start.z }, "minecraft:air");
-    if (offset % 4 === 0) {
-      setBlockSafe(dimension, { x, y: start.y, z: start.z + 1 }, offset / 4 <= step ? "minecraft:sea_lantern" : "minecraft:redstone_lamp");
-    }
-  }
-  setBlockSafe(dimension, { x: start.x + step * 4, y: start.y, z: start.z }, W_CONTROL_BLOCK);
-  setBlockSafe(dimension, { x: start.x, y: start.y, z: start.z - 2 }, "minecraft:lectern");
-}
-
-function checkRoomCompletion(player, dimension, state) {
+function checkCompletion(player, dimension, state) {
   if (state.completed || state.w !== 4 || state.rotation !== 3) {
-    renderCompletionGate(dimension, CUSTOM_CENTER, Boolean(state.completed));
+    renderCompletionGate(dimension, state.completed);
     return;
   }
 
   state.completed = true;
   addTagSafe(player, "portal4d_hipercubo_alinhado");
   setProgressPropertySafe(player, "portal4d:room_completed", true);
-  renderCompletionGate(dimension, CUSTOM_CENTER, true);
-  emitFeedback(player, "Hipercubo alinhado", "W=4 e Projecao=4 revelaram a passagem final.", "random.levelup");
-  player.sendMessage(`${PREFIX} Sala alinhada: voce combinou a fatia W correta com a quarta projecao. A passagem final apareceu.`);
-}
-
-function syncControllerScene(dimension, state) {
-  buildWCorridor(dimension, { x: CUSTOM_CENTER.x, y: CUSTOM_CENTER.y, z: CUSTOM_CENTER.z + 24 }, state.w);
-  buildRotationRoom(dimension, { x: CUSTOM_CENTER.x + 24, y: CUSTOM_CENTER.y, z: CUSTOM_CENTER.z }, state.rotation);
-  renderCentralWSlice(dimension, CUSTOM_CENTER, state.w);
-  renderProjectionMarker(dimension, CUSTOM_CENTER, state.rotation);
-  renderCompletionGate(dimension, CUSTOM_CENTER, state.completed);
+  syncScene(dimension, state);
+  emitFeedback(player, "Hipercubo alinhado", "W=4 e Projecao=4 abriram a passagem final.", "random.levelup");
+  player.sendMessage(`${PREFIX} Sala alinhada: a passagem final apareceu.`);
 }
 
 function activateW(player, dimension, mode) {
-  if (isOnControllerCooldown(player, `w:${mode}`, mode === "extrair" ? BREAK_CONTROL_COOLDOWN_TICKS : SNEAK_CONTROL_COOLDOWN_TICKS)) {
-    return;
-  }
+  const cooldown = mode === "extrair" ? BREAK_COOLDOWN_TICKS : SNEAK_COOLDOWN_TICKS;
+  if (onCooldown(player, `w:${mode}`, cooldown)) return;
 
-  const state = getControllerState();
+  const state = getState();
   state.w = (state.w + 1) % 5;
-  syncControllerScene(dimension, state);
-  checkRoomCompletion(player, dimension, state);
+  syncScene(dimension, state);
+  checkCompletion(player, dimension, state);
   addTagSafe(player, `portal4d_w_${state.w}`);
   setProgressPropertySafe(player, "portal4d:w_state", state.w);
-  emitFeedback(player, "Coordenada W", `Fatia W=${state.w}/4.`, "random.orb");
-  player.sendMessage(`${PREFIX} Controle por ${mode}: W mudou para ${state.w}/4. Agora use RT no novo emerald ou agache novamente para avancar.`);
-  log(`Controle W por ${mode} acionado por ${player.name}; estado=${state.w}.`);
+  emitFeedback(player, "Coordenada W", `W=${state.w}/4.`, "random.orb");
+  player.sendMessage(`${PREFIX} W=${state.w}/4. O emerald agora fica fixo no inicio do corredor.`);
 }
 
 function activateRotation(player, dimension, mode) {
-  if (isOnControllerCooldown(player, `rotacao:${mode}`, mode === "extrair" ? BREAK_CONTROL_COOLDOWN_TICKS : SNEAK_CONTROL_COOLDOWN_TICKS)) {
-    return;
-  }
+  const cooldown = mode === "extrair" ? BREAK_COOLDOWN_TICKS : SNEAK_COOLDOWN_TICKS;
+  if (onCooldown(player, `rot:${mode}`, cooldown)) return;
 
-  const state = getControllerState();
+  const state = getState();
   state.rotation = (state.rotation + 1) % 4;
-  syncControllerScene(dimension, state);
-  checkRoomCompletion(player, dimension, state);
+  syncScene(dimension, state);
+  checkCompletion(player, dimension, state);
   addTagSafe(player, "portal4d_rotacao_4d");
   setProgressPropertySafe(player, "portal4d:rotation_state", state.rotation);
-  emitFeedback(player, "Rotacao 4D", `Projecao ${state.rotation + 1}/4.`, "random.orb");
-  player.sendMessage(`${PREFIX} Controle por ${mode}: projecao mudou para ${state.rotation + 1}/4.`);
-  log(`Controle de rotacao por ${mode} acionado por ${player.name}; estado=${state.rotation}.`);
+  emitFeedback(player, "Rotacao 4D", `Projecao=${state.rotation + 1}/4.`, "random.orb");
+  player.sendMessage(`${PREFIX} Projecao=${state.rotation + 1}/4.`);
 }
 
-function getControlKindFromBlock(block) {
-  if (!block || block.dimension.id !== CUSTOM_DIMENSION_ID) {
-    return undefined;
-  }
-
-  const location = block.location;
-  if (block.typeId === W_CONTROL_BLOCK) {
-    const centralW = { x: CUSTOM_CENTER.x - 6, y: CUSTOM_CENTER.y, z: CUSTOM_CENTER.z };
-    const corridorZ = CUSTOM_CENTER.z + 24;
-    const inWCorridor = Math.abs(location.y - CUSTOM_CENTER.y) <= 1
-      && Math.abs(location.z - corridorZ) <= 1
-      && location.x >= CUSTOM_CENTER.x - 1
-      && location.x <= CUSTOM_CENTER.x + 17;
-    if (inWCorridor || distanceSquared(location, centralW) <= 9) {
-      return "w";
-    }
-  }
-
-  if (block.typeId === ROTATION_CONTROL_BLOCK) {
-    const centralRotation = { x: CUSTOM_CENTER.x + 6, y: CUSTOM_CENTER.y, z: CUSTOM_CENTER.z };
-    const rotationRoom = { x: CUSTOM_CENTER.x + 24, y: CUSTOM_CENTER.y, z: CUSTOM_CENTER.z };
-    if (distanceSquared(location, rotationRoom) <= 64 || distanceSquared(location, centralRotation) <= 9) {
-      return "rotation";
-    }
-  }
-
+function kindFromBlock(block) {
+  if (!block || block.dimension.id !== DIMENSION_ID) return undefined;
+  if (block.typeId === W_CONTROL_BLOCK && (sameBlock(block.location, W_BUTTON) || sameBlock(block.location, CENTER_W_BUTTON))) return "w";
+  if (block.typeId === ROTATION_CONTROL_BLOCK && (sameBlock(block.location, ROTATION_BUTTON) || sameBlock(block.location, CENTER_ROTATION_BUTTON))) return "rotation";
   return undefined;
 }
 
-function activateControlKind(player, dimension, kind, mode) {
+function activateKind(player, dimension, kind, mode) {
   if (kind === "w") {
     activateW(player, dimension, mode);
-    return true;
+    return;
   }
-
   if (kind === "rotation") {
     activateRotation(player, dimension, mode);
-    return true;
   }
-
-  return false;
 }
 
 const breakBlockEvent = world.beforeEvents?.playerBreakBlock;
 if (breakBlockEvent?.subscribe) {
   breakBlockEvent.subscribe((event) => {
-    const kind = getControlKindFromBlock(event.block);
-    if (!kind) {
-      return;
-    }
-
+    const kind = kindFromBlock(event.block);
+    if (!kind) return;
     event.cancel = true;
     const { player } = event;
     const dimension = event.block.dimension;
-    system.run(() => activateControlKind(player, dimension, kind, "extrair"));
+    system.run(() => activateKind(player, dimension, kind, "extrair"));
   });
-  log("Patch de controle ativo: RT/Extrair em emerald/lapis agora aciona W/projecao sem quebrar o bloco.");
-} else {
-  log("world.beforeEvents.playerBreakBlock indisponivel; patch RT/Extrair nao registrado.");
+  log("Controle fixo ativo: extrair no emerald/lapis aciona sem mover o botao.");
 }
 
 function findSneakControl(player) {
-  if (player.dimension.id !== CUSTOM_DIMENSION_ID) {
-    return undefined;
-  }
-
-  const state = getControllerState();
+  if (player.dimension.id !== DIMENSION_ID) return undefined;
   const controls = [
-    {
-      kind: "w",
-      location: { x: CUSTOM_CENTER.x + state.w * 4 + 0.5, y: CUSTOM_CENTER.y, z: CUSTOM_CENTER.z + 24 + 0.5 },
-      radiusSquared: 6.25,
-    },
-    {
-      kind: "rotation",
-      location: { x: CUSTOM_CENTER.x + 24 + 0.5, y: CUSTOM_CENTER.y, z: CUSTOM_CENTER.z + 0.5 },
-      radiusSquared: 6.25,
-    },
-    {
-      kind: "w",
-      location: { x: CUSTOM_CENTER.x - 6 + 0.5, y: CUSTOM_CENTER.y, z: CUSTOM_CENTER.z + 0.5 },
-      radiusSquared: 2.25,
-    },
-    {
-      kind: "rotation",
-      location: { x: CUSTOM_CENTER.x + 6 + 0.5, y: CUSTOM_CENTER.y, z: CUSTOM_CENTER.z + 0.5 },
-      radiusSquared: 2.25,
-    },
+    { kind: "w", location: { x: W_BUTTON.x + 0.5, y: W_BUTTON.y, z: W_BUTTON.z + 0.5 }, radiusSquared: 9 },
+    { kind: "rotation", location: { x: ROTATION_BUTTON.x + 0.5, y: ROTATION_BUTTON.y, z: ROTATION_BUTTON.z + 0.5 }, radiusSquared: 9 },
+    { kind: "w", location: { x: CENTER_W_BUTTON.x + 0.5, y: CENTER_W_BUTTON.y, z: CENTER_W_BUTTON.z + 0.5 }, radiusSquared: 4 },
+    { kind: "rotation", location: { x: CENTER_ROTATION_BUTTON.x + 0.5, y: CENTER_ROTATION_BUTTON.y, z: CENTER_ROTATION_BUTTON.z + 0.5 }, radiusSquared: 4 },
   ];
 
   for (const control of controls) {
-    if (Math.abs(player.location.y - CUSTOM_CENTER.y) <= 2 && horizontalDistanceSquared(player.location, control.location) <= control.radiusSquared) {
+    if (Math.abs(player.location.y - CENTER.y) <= 2 && horizontalDistanceSquared(player.location, control.location) <= control.radiusSquared) {
       return control;
     }
   }
-
   return undefined;
 }
 
 function handleSneakControls() {
   for (const player of world.getPlayers()) {
-    const playerKey = getPlayerKey(player);
-    if (player.dimension.id !== CUSTOM_DIMENSION_ID || player.isSneaking !== true) {
-      activeSneakControls.delete(playerKey);
-      continue;
-    }
-
+    if (player.dimension.id !== DIMENSION_ID || player.isSneaking !== true) continue;
     const control = findSneakControl(player);
-    if (!control) {
-      activeSneakControls.delete(playerKey);
-      continue;
-    }
-
-    if (activeSneakControls.get(playerKey) === control.kind) {
-      continue;
-    }
-
-    activeSneakControls.set(playerKey, control.kind);
-    activateControlKind(player, player.dimension, control.kind, "agachar");
+    if (!control) continue;
+    activateKind(player, player.dimension, control.kind, "agachar");
   }
 }
 
-function showControllerStatus() {
-  const state = getControllerState();
+function showStatus() {
+  const state = getState();
   for (const player of world.getPlayers()) {
-    if (player.dimension.id !== CUSTOM_DIMENSION_ID) {
-      continue;
-    }
-
+    if (player.dimension.id !== DIMENSION_ID) continue;
     try {
-      const completed = state.completed ? " | alinhado" : "";
-      player.onScreenDisplay?.setActionBar(`§d[Portal4D] W=${state.w}/4 | Projecao=${state.rotation + 1}/4${completed} | RT no emerald/lapis=ativar | agachar perto=tambem ativa | lodestone=voltar`);
+      const done = state.completed ? " | alinhado" : "";
+      player.onScreenDisplay?.setActionBar(`§d[Portal4D] W=${state.w}/4 | Projecao=${state.rotation + 1}/4${done} | botoes fixos | RT ou segure agachar=ativar | lodestone=voltar`);
     } catch (error) {
-      log(`Falha ao exibir actionbar do patch de controle para ${player.name}: ${error}`);
+      log(`Falha ao exibir actionbar do controle fixo para ${player.name}: ${error}`);
     }
   }
 }
+
+system.runTimeout(() => {
+  const dimension = getDimensionSafe();
+  if (!dimension) return;
+  syncScene(dimension, getState());
+  log("Sala do Hipercubo sincronizada com controles fixos.");
+}, 20);
 
 system.runInterval(() => {
   handleSneakControls();
-  showControllerStatus();
+  showStatus();
 }, 4);
