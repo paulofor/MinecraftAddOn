@@ -34,7 +34,7 @@
         1,
         22
       ],
-      "entry": "scripts/main.js"
+      "entry": "scripts/controller_patch.js"
     }
   ],
   "dependencies": [
