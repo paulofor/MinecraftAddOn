@@ -2971,3 +2971,29 @@ Checklist executado no host via MCP readonly/projeto:
 - Causa raiz identificada: a implementação anterior construía uma arena 4D, não uma sala. Como o entorno permanecia aberto e iluminado pelo céu padrão do Bedrock, a leitura do hipercubo competia com nuvens, lanternas externas e estruturas laterais.
 - Correção aplicada: adicionada `buildHypercubeRoom`, que cria uma Sala do Hipercubo escura com piso, teto, paredes de vidro escuro, aberturas controladas, linhas de luz no contorno e ponto de chegada livre; a sala é construída antes do tesseracto para enquadrar o cubo roxo/ciano e reduzir ruído visual. Mensagens de entrada/actionbar passaram a chamar explicitamente “Sala do Hipercubo”. Manifests BP/RP pareados do Portal 4D foram incrementados para `0.1.22`. Nenhum PNG foi criado ou alterado.
 - Próximo passo em servidor: publicar/reiniciar BP/RP `0.1.22`, atravessar o portal e validar se a primeira visão agora parece uma sala fechada do hipercubo, com menos interferência do céu e melhor leitura do tesseracto.
+
+## 2026-06-28 12:30:00 UTC-3 — Verificação dos pacotes Portal 4D no servidor
+- Pergunta obrigatória de causa raiz: por que isso aconteceu?
+- Solicitação/contexto: verificar se os pacotes de 4D estão instalados corretamente no servidor Bedrock remoto `186.202.209.206`.
+- Evidências consultadas antes de concluir:
+  - MCP readonly respondeu `tools/list` com `list_directory`, `read_file` e `run_read_command`, confirmando canal de auditoria disponível.
+  - Diretórios do mundo ativo `/root/MinecraftServer/worlds/Bedrock level/behavior_packs` e `/root/MinecraftServer/worlds/Bedrock level/resource_packs` contêm `BP_Portal4DEspacial` e `RP_Portal4DEspacial`.
+  - `world_behavior_packs.json` referencia o BP `3d3fab9a-bc52-4bb3-9cd4-d7dff474bfbb` na versão `0.1.23`; o manifest instalado do BP no mundo também está em `0.1.23`.
+  - `world_resource_packs.json` referencia o RP `8f20b59f-9163-4197-8f6a-d354d8dd6f3c` na versão `0.1.22`; o manifest instalado do RP no mundo também está em `0.1.22`.
+  - O manifest do BP instalado declara dependência do RP `8f20b59f-9163-4197-8f6a-d354d8dd6f3c` na versão `0.1.22`, portanto a dependência efetivamente carregada bate com o RP instalado.
+  - O diretório global `/root/MinecraftServer/behavior_packs` não contém o Portal 4D, mas isso não impede o carregamento porque o mundo ativo possui cópia própria dos packs e os arquivos `world_*_packs.json` apontam para essas versões.
+  - `bedrock.log` recente mostra o script `[Portal4D]` ativo: houve avisos de reconstrução da âncora e, depois, `Teleporte concluido ... dimensao customizada 4D @ 0.5 80 0.5`, sem erro fatal de manifest/carregamento nos trechos consultados.
+- Causa raiz/estado identificado: os pacotes estão instalados e ativos no mundo, não nos diretórios globais. A aparente dúvida vem de duas fontes: (1) os diretórios globais não listam o Portal 4D, mas o deploy efetivo deste servidor usa `worlds/Bedrock level/...`; (2) o par BP/RP está com versões diferentes (`BP 0.1.23` e `RP 0.1.22`). No Bedrock isso ainda carrega porque o BP depende explicitamente do RP `0.1.22`, mas fica fora da regra interna do projeto que exige bump pareado de BP/RP no mesmo módulo.
+- Conclusão operacional: instalação funcional para o mundo ativo: BP presente, RP presente, ambos referenciados em `world_behavior_packs.json`/`world_resource_packs.json`, e o log confirma execução/teleporte do Portal 4D. Ressalva de qualidade/rastreabilidade: alinhar o RP para `0.1.23` em próxima alteração/deploy para voltar ao padrão interno de versionamento pareado.
+- Próximo passo recomendado: se a intenção for uma auditoria 100% limpa de release, publicar/referenciar também o RP `0.1.23` e reiniciar o Bedrock; se a intenção for apenas saber se está carregando agora, nenhuma correção emergencial é necessária.
+
+## 2026-06-28 12:45:00 UTC-3 — Portal 4D: bump pareado para forçar atualização do cliente
+- Pergunta obrigatória de causa raiz: por que isso aconteceu?
+- Solicitação/contexto: usuário pediu bump das versões para forçar atualização do cliente após a auditoria indicar que os pacotes 4D estavam instalados, porém com BP `0.1.23` e RP `0.1.22`.
+- Evidências consultadas antes da alteração:
+  - `packs/BP_Portal4DEspacial/manifest.json` estava com `header.version` e todos os `modules[].version` em `0.1.23`, mas a dependência do RP ainda apontava para `0.1.22`.
+  - `packs/RP_Portal4DEspacial/manifest.json` estava com `header.version` e `modules[].version` em `0.1.22`, incluindo descrição mencionando `0.1.22`.
+  - O registro anterior de verificação no servidor confirmou que o mundo ativo carregava exatamente esse par, com BP `0.1.23` e RP `0.1.22`.
+- Causa raiz identificada: o cliente pode manter cache/estado do resource pack quando a versão do RP não avança, e o módulo também ficou fora da regra interna de versionamento pareado. O bump apenas do BP não é suficiente para sinalizar atualização do RP ao cliente.
+- Correção aplicada: manifests pareados do Portal 4D incrementados para `0.1.24`; a dependência do BP para o RP também foi atualizada para `0.1.24`, e a descrição do RP passou a declarar `0.1.24`. Nenhum PNG foi criado ou alterado.
+- Próximo passo em servidor: publicar o BP/RP `0.1.24`, atualizar `world_behavior_packs.json` e `world_resource_packs.json` para `0.1.24`, reiniciar o Bedrock e pedir ao cliente para reconectar/baixar o pack atualizado.
