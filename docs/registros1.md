@@ -2997,3 +2997,16 @@ Checklist executado no host via MCP readonly/projeto:
 - Causa raiz identificada: o cliente pode manter cache/estado do resource pack quando a versão do RP não avança, e o módulo também ficou fora da regra interna de versionamento pareado. O bump apenas do BP não é suficiente para sinalizar atualização do RP ao cliente.
 - Correção aplicada: manifests pareados do Portal 4D incrementados para `0.1.24`; a dependência do BP para o RP também foi atualizada para `0.1.24`, e a descrição do RP passou a declarar `0.1.24`. Nenhum PNG foi criado ou alterado.
 - Próximo passo em servidor: publicar o BP/RP `0.1.24`, atualizar `world_behavior_packs.json` e `world_resource_packs.json` para `0.1.24`, reiniciar o Bedrock e pedir ao cliente para reconectar/baixar o pack atualizado.
+
+## 2026-06-29 00:00:00 UTC-3 — Implementação inicial do Add-On Observatório das Estrelas Quebradas
+- Pergunta obrigatória de causa raiz: por que isso aconteceu?
+- Solicitação/contexto: implementar o Add-On descrito em `/docs/observatorio_estrelas_quebradas_plano.md`, que estava registrado apenas como plano por sprints e ainda não possuía BP/RP executável em `packs/`.
+- Evidências consultadas antes da implementação:
+  - `docs/observatorio_estrelas_quebradas_plano.md` descreve 8 sprints, escala aproximada de 180x180 blocos, torre alta, cúpulas, sala de cálculos, planetário subterrâneo e núcleo final.
+  - Estruturas existentes como `packs/BP_AcademiaArcanaMonumental` e `packs/BP_TorreInvertidaAbissal` usam o padrão de Add-On arquitetônico por `.mcfunction`, sem scripts obrigatórios e sem texturas PNG customizadas.
+  - `AGENTS.md` exige registro em `/docs/registros1.md`, investigação explícita de causa raiz, versionamento pareado BP/RP e proibição de commit de PNG.
+- Causa raiz identificada: o observatório ainda não era um Add-On instalável porque existia somente como documentação de planejamento. Faltavam manifests pareados e funções de montagem que transformassem as entregas das sprints em blocos vanilla executáveis no Bedrock.
+- Implementação aplicada: criado o par `BP_ObservatorioEstrelasQuebradas`/`RP_ObservatorioEstrelasQuebradas` na versão `0.1.0`, com dependência BP→RP pareada, função `init`, função `montar_completa` e funções separadas para as Sprints 1 a 8. A montagem cobre platô, caminho do astrônomo, Portão do Zênite, Pátio das Órbitas, Torre do Telescópio Maior, Cúpulas Quebradas, Galeria das Constelações, Sala dos Cálculos Celestes, Planetário Subterrâneo, Arquivo dos Céus Antigos, Núcleo da Estrela Partida e polimento/validação.
+- PNG/texturas: nenhum arquivo `.png` foi criado, alterado ou versionado; a implementação usa apenas blocos vanilla e arquivos texto.
+- Validações locais: `python -m json.tool packs/BP_ObservatorioEstrelasQuebradas/manifest.json`; `python -m json.tool packs/RP_ObservatorioEstrelasQuebradas/manifest.json`; `find packs/BP_ObservatorioEstrelasQuebradas/functions -name '*.mcfunction' -print | sort | xargs -n1 wc -l`.
+- Próximo passo em servidor: publicar o BP/RP no mundo de teste, executar `/function observatorio_estrelas_quebradas/montar_completa` em área livre e validar visualmente navegação, escala, segurança de altura/subsolo e legibilidade dos desafios.
