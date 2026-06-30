@@ -3010,3 +3010,28 @@ Checklist executado no host via MCP readonly/projeto:
 - PNG/texturas: nenhum arquivo `.png` foi criado, alterado ou versionado; a implementação usa apenas blocos vanilla e arquivos texto.
 - Validações locais: `python -m json.tool packs/BP_ObservatorioEstrelasQuebradas/manifest.json`; `python -m json.tool packs/RP_ObservatorioEstrelasQuebradas/manifest.json`; `find packs/BP_ObservatorioEstrelasQuebradas/functions -name '*.mcfunction' -print | sort | xargs -n1 wc -l`.
 - Próximo passo em servidor: publicar o BP/RP no mundo de teste, executar `/function observatorio_estrelas_quebradas/montar_completa` em área livre e validar visualmente navegação, escala, segurança de altura/subsolo e legibilidade dos desafios.
+
+## 2026-06-30 00:00:00 UTC-3 — Trava anti-água para montagem do Observatório das Estrelas Quebradas
+- Pergunta obrigatória de causa raiz: por que isso aconteceu?
+- Solicitação/contexto: avaliar se seria possível impedir a montagem do Observatório quando parte da estrutura ficasse flutuando sobre água, especialmente se o comando fosse executado fora do centro de uma ilha.
+- Evidências consultadas antes da alteração:
+  - `packs/BP_ObservatorioEstrelasQuebradas/functions/observatorio_estrelas_quebradas/sprint1_blocagem.mcfunction` usa `fill` em área ampla, com base aproximada de `~-90` a `~90` nos eixos X/Z.
+  - `packs/BP_ObservatorioEstrelasQuebradas/functions/observatorio_estrelas_quebradas/sprint7_nucleo_final.mcfunction` desce até cerca de `~-46`, confirmando que a altura recomendada precisa considerar subsolo.
+  - `packs/BP_ObservatorioEstrelasQuebradas/functions/observatorio_estrelas_quebradas/sprint3_torre_telescopio.mcfunction` sobe acima de `~100`, confirmando que a montagem em Y alto é intencional.
+  - Consulta via MCP `suggest_arena_location` retornou baixa confiança por falta de coordenadas recentes no log, então a escolha do local ainda depende de validação visual no jogo.
+- Causa raiz identificada: a função original `montar_completa` montava imediatamente todas as sprints e não fazia nenhuma validação ambiental antes de aplicar `fill`; por isso, se o operador executasse o comando parcialmente sobre oceano/lago, a plataforma poderia ficar visualmente flutuando sobre água.
+- Correção aplicada: `montar_completa` passou a executar `precheck_agua` antes da construção e só chama `construir_estrutura` quando o placar `oeq_agua` permanece zero. A prechecagem amostra pontos centrais, cantos e bordas da área prevista em duas camadas relativas: `~-27` para a recomendação operacional de Y=90 versus nível do mar aproximado, e `~-1` para detectar água logo abaixo do plano de construção.
+- Limitação conhecida: a trava é uma amostragem preventiva, não uma varredura completa de todos os 180x180 blocos. Ela reduz o risco de montagem sobre água, mas ainda recomenda validação visual e escolha do centro de uma ilha grande ou área seca.
+- Versionamento: manifests pareados `BP_ObservatorioEstrelasQuebradas` e `RP_ObservatorioEstrelasQuebradas` incrementados para `0.1.1`; dependência BP→RP atualizada para `0.1.1`. Nenhum PNG foi criado, alterado ou versionado.
+- Próximo passo em servidor: publicar BP/RP `0.1.1`, atualizar os arquivos `world_behavior_packs.json`/`world_resource_packs.json` para `0.1.1`, reiniciar o Bedrock e testar `/function observatorio_estrelas_quebradas/montar_completa` em área seca e em ponto com água para confirmar bloqueio.
+
+## 2026-06-30 00:00:00 UTC-3 — Generalização da regra de trava ambiental para construções
+- Pergunta obrigatória de causa raiz: por que isso aconteceu?
+- Solicitação/contexto: após a trava anti-água do Observatório, foi solicitado que a regra fosse registrada em `AGENTS.md` para ser usada em qualquer construção futura do projeto.
+- Evidências consultadas antes da alteração:
+  - `AGENTS.md` já concentrava diretrizes operacionais gerais do projeto, incluindo causa raiz, planos por sprint, MCP, PNG e versionamento.
+  - O registro anterior do Observatório mostrou que a ausência de validação ambiental antes de `fill` pode permitir montagem mal posicionada, flutuando sobre água ou colidindo com áreas indesejadas.
+- Causa raiz identificada: a proteção tinha sido criada como solução local do Observatório, mas ainda não estava documentada como padrão obrigatório; isso poderia causar repetição do mesmo risco em futuras megaconstruções ou funções arquitetônicas.
+- Correção aplicada: adicionada em `AGENTS.md` uma diretriz obrigatória para funções de construção no mundo, exigindo avaliação de risco, área afetada, prechecagem/trava quando houver risco ambiental, separação entre função pública de montagem e função interna de construção quando viável, registro de limitações e evidências em `/docs/registros1.md`.
+- Versionamento: nenhum manifest foi alterado, pois a mudança foi apenas de documentação operacional e não modifica packs, scripts executáveis, entidades, blocos, itens ou definições de Add-On.
+- Próximo passo: aplicar essa regra em qualquer nova construção ou alteração de construção existente, especialmente rotinas com `fill`, `setblock`, sprints arquitetônicas ou grande área de impacto.

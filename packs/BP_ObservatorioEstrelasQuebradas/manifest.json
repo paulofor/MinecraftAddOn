@@ -4,24 +4,42 @@
     "name": "BP Observatorio Estrelas Quebradas",
     "description": "Behavior Pack educativo para montar o Observatorio das Estrelas Quebradas por sprints com blocos vanilla.",
     "uuid": "32e485e7-0ce3-46ba-8725-05641cc6e77e",
-    "version": [0, 1, 0],
-    "min_engine_version": [1, 20, 0]
+    "version": [
+      0,
+      1,
+      1
+    ],
+    "min_engine_version": [
+      1,
+      20,
+      0
+    ]
   },
   "modules": [
     {
       "type": "data",
       "uuid": "7c36031c-8567-43f1-9d79-aa208dc9397f",
-      "version": [0, 1, 0]
+      "version": [
+        0,
+        1,
+        1
+      ]
     }
   ],
   "dependencies": [
     {
       "uuid": "07c7d49d-c732-461a-9cca-6d7e927aebf0",
-      "version": [0, 1, 0]
+      "version": [
+        0,
+        1,
+        1
+      ]
     }
   ],
   "metadata": {
-    "authors": ["MinecraftAddOn"],
+    "authors": [
+      "MinecraftAddOn"
+    ],
     "license": "MIT"
   }
 }
