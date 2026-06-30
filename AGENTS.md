@@ -96,6 +96,28 @@ Além disso, cada sprint deve conter obrigatoriamente um espaço de **registro p
 - o que ficou faltando;
 - impedimentos/bloqueios (se houver).
 
+## Diretriz obrigatória para funções de construção no mundo
+Sempre que criar ou alterar uma função de construção/megaconstrução que use `fill`, `setblock`, estruturas por sprint ou qualquer rotina capaz de modificar uma área grande do mundo, incluir uma etapa de segurança antes da montagem efetiva.
+
+A etapa deve, no mínimo:
+- perguntar explicitamente: **"por que essa construção poderia danificar ou ficar mal posicionada no mundo?"**;
+- estimar e documentar a área afetada nos eixos X/Y/Z, incluindo subsolo e altura máxima;
+- validar se o local recomendado tem margem suficiente para a construção inteira;
+- quando houver risco de plataforma flutuando, construção sobre água/lava, colisão com terreno/obras existentes ou execução fora do centro de uma ilha, criar uma trava/prechecagem antes da função de montagem;
+- separar, sempre que viável, a função pública de montagem da função interna que realmente constrói, permitindo que a função pública rode validações e só então chame a construção;
+- se a trava for por amostragem e não por varredura completa, registrar claramente essa limitação e manter recomendação de validação visual no jogo;
+- registrar a causa raiz, evidências, limitação conhecida e próximo passo de validação em `/docs/registros1.md`.
+
+Exemplo de padrão recomendado para Add-Ons arquitetônicos:
+
+```text
+montar_completa.mcfunction        -> função pública com prechecks/travas
+precheck_ambiente.mcfunction      -> valida água/lava/colisão/altura conforme o caso
+construir_estrutura.mcfunction    -> chama init e sprints somente após aprovação
+```
+
+Essa regra vale para qualquer construção nova ou alteração em construção existente, não apenas para o Observatório das Estrelas Quebradas.
+
 ## MCP Server oficial da Microsoft (Minecraft)
 Para consultas de documentação e materiais oficiais de Minecraft, utilizar também o MCP Server da Microsoft Learn:
 

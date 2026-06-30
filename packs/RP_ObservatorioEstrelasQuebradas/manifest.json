@@ -4,18 +4,32 @@
     "name": "RP Observatorio Estrelas Quebradas",
     "description": "Resource Pack pareado do Observatorio das Estrelas Quebradas; sem texturas PNG customizadas.",
     "uuid": "07c7d49d-c732-461a-9cca-6d7e927aebf0",
-    "version": [0, 1, 0],
-    "min_engine_version": [1, 20, 0]
+    "version": [
+      0,
+      1,
+      1
+    ],
+    "min_engine_version": [
+      1,
+      20,
+      0
+    ]
   },
   "modules": [
     {
       "type": "resources",
       "uuid": "6774e18f-37a3-49e2-8bc0-fec35805553b",
-      "version": [0, 1, 0]
+      "version": [
+        0,
+        1,
+        1
+      ]
     }
   ],
   "metadata": {
-    "authors": ["MinecraftAddOn"],
+    "authors": [
+      "MinecraftAddOn"
+    ],
     "license": "MIT"
   }
 }
