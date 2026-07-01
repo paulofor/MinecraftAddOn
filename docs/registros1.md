@@ -3035,3 +3035,61 @@ Checklist executado no host via MCP readonly/projeto:
 - Correção aplicada: adicionada em `AGENTS.md` uma diretriz obrigatória para funções de construção no mundo, exigindo avaliação de risco, área afetada, prechecagem/trava quando houver risco ambiental, separação entre função pública de montagem e função interna de construção quando viável, registro de limitações e evidências em `/docs/registros1.md`.
 - Versionamento: nenhum manifest foi alterado, pois a mudança foi apenas de documentação operacional e não modifica packs, scripts executáveis, entidades, blocos, itens ou definições de Add-On.
 - Próximo passo: aplicar essa regra em qualquer nova construção ou alteração de construção existente, especialmente rotinas com `fill`, `setblock`, sprints arquitetônicas ou grande área de impacto.
+
+## 2026-07-01 17:01:45 UTC-3
+- Atendimento à pergunta sobre viabilidade de criar uma pirâmide gigantesca inspirada na pirâmide do Egito como Add-On/megaconstrução no Minecraft Bedrock.
+- Investigação inicial: consulta às diretrizes do projeto em `AGENTS.md`, aos registros existentes em `docs/registros1.md` e a exemplos de megaconstrução já existentes, especialmente `packs/BP_ObservatorioEstrelasQuebradas/functions/observatorio_estrelas_quebradas/montar_completa.mcfunction`.
+- Pergunta obrigatória de segurança registrada: por que essa construção poderia danificar ou ficar mal posicionada no mundo?
+- Causa/risco identificado: uma pirâmide gigante exigiria muitos comandos `fill`/`setblock` e grande área livre; sem precheck, poderia soterrar terreno, destruir construções existentes, atravessar água/lava, gerar plataforma flutuante ou exceder limites seguros de altura/subsolo.
+- Evidências usadas: regra de megaconstruções do `AGENTS.md`, padrão existente de função pública com precheck antes de construir e histórico de registros append-only.
+- Hipótese técnica: é viável implementar a pirâmide por sprints, usando função pública `montar_completa.mcfunction`, precheck de ambiente e função interna de construção; a etapa seguinte é definir escala, coordenada/centro recomendado e materiais antes de codificar.
+- Nenhum arquivo de pack foi criado ou alterado nesta etapa; apenas registro de análise/viabilidade foi adicionado.
+
+## 2026-07-01 17:13:09 UTC-3
+- Implementação inicial do módulo `Piramide Egito Gigante` após feedback de que superfícies naturais são cheias de altos e baixos e que a construção deve limpar/preparar o terreno automaticamente, além de verificar se não está sobre água.
+- Pergunta obrigatória de causa raiz: por que isso aconteceu?
+- Causa raiz identificada: a análise anterior validava a viabilidade da pirâmide, mas ainda deixava a preparação do terreno como decisão manual; em mundos Minecraft reais, o relevo irregular pode criar bases tortas, partes soterradas, vãos sob a fundação ou colisões com blocos naturais, e a ausência de trava anti-água poderia permitir montagem sobre rios/oceanos.
+- Evidências consultadas: diretriz de megaconstruções em `AGENTS.md`, registro anterior de viabilidade, padrão de `montar_completa.mcfunction` com precheck no Observatório e arquivos impactados do novo módulo.
+- Correção aplicada: criado BP/RP pareado `PiramideEgitoGigante`; a função pública `piramide_egito_gigante/montar_completa` executa `precheck_ambiente`, bloqueia se houver água em pontos de amostragem, prepara automaticamente o terreno com limpeza de volume, preenchimento de subsolo e nivelamento da base, e só então chama a construção por sprints.
+- Área documentada: X/Z aproximado de -64 a 64 no volume de segurança, base construída de cerca de 121x121, subsolo preparado até Y-2, altura construída até Y+59 e volume limpo até Y+70.
+- Limitação conhecida: a trava de água é por amostragem, não varredura completa; ainda é necessário validar visualmente se não há construções importantes, cavernas críticas, lava ou água não amostrada dentro da área.
+- Validação local: manifests BP/RP validados como JSON, ausência de PNG no módulo confirmada, e todos os comandos `fill` relativos do módulo foram checados para ficarem abaixo de 32768 blocos por comando.
+- Próximo passo: testar em servidor/mundo Bedrock em uma área desértica seca, reproduzir a montagem e verificar logs/resultado visual antes de ampliar detalhes internos.
+
+## 2026-07-01 17:18:41 UTC-3
+- Ajuste solicitado: executar a Sprint 1 da `Piramide Egito Gigante` de forma isolada.
+- Pergunta obrigatória de causa raiz: por que isso aconteceu?
+- Causa raiz identificada: a implementação anterior permitia executar a construção completa com segurança, mas não oferecia uma entrada pública segura para rodar somente a Sprint 1; executar diretamente `sprint1_base_fundacao.mcfunction` contornaria o precheck anti-água e a preparação de terreno.
+- Evidências consultadas: `montar_completa.mcfunction` já encadeava precheck, preparação e construção completa; `sprint1_base_fundacao.mcfunction` montava apenas a base, mas sem validação quando chamada diretamente; regra do projeto exige travas antes de megaconstruções com `fill`.
+- Correção aplicada: criada a função pública `piramide_egito_gigante/executar_sprint1`, que executa `precheck_ambiente`, `preparar_terreno`, `init` e somente então `sprint1_base_fundacao`; se água for detectada, a execução é bloqueada.
+- Versionamento: BP e RP pareados `PiramideEgitoGigante` incrementados de `0.1.0` para `0.1.1` em `header.version` e `modules[].version`, com dependência do BP atualizada para o RP `0.1.1`.
+- Limitação conhecida: a execução local no servidor Bedrock não foi disparada por este registro; o MCP disponível é readonly para comandos de mundo e não oferece tool para invocar `/function` no jogo. Próximo passo é publicar o pack e executar `/function piramide_egito_gigante/executar_sprint1` dentro do mundo.
+
+## 2026-07-01 17:32:58 UTC-3
+- Execução do próximo passo operacional solicitado para a `Piramide Egito Gigante`.
+- Pergunta obrigatória de causa raiz: por que isso aconteceu?
+- Causa raiz identificada: a etapa anterior deixou como próximo passo publicar o BP/RP no mundo ativo e executar `/function piramide_egito_gigante/executar_sprint1`, mas o ambiente atual não possui credenciais SSH/GitHub CLI para disparar o workflow e o MCP exposto para este agente não oferece tool de escrita de arquivos texto nem execução de comandos de jogo.
+- Evidências consultadas: `tools/list` do MCP remoto confirmou tools disponíveis (`list_directory`, `read_file`, `write_png_base64`, `restart_bedrock`, `run_read_command`, `get_block`, `get_block_region`, `suggest_arena_location`) sem tool para executar `/function`; diretórios do mundo ativo foram consultados e ainda não contêm `BP_PiramideEgitoGigante` nem `RP_PiramideEgitoGigante`; `world_behavior_packs.json` e `world_resource_packs.json` não contêm os UUIDs da Pirâmide; o workflow `.github/workflows/publish-server.yml` é o caminho oficial de publicação por `workflow_dispatch`/`push`.
+- Ação executada: validação remota via MCP do estado atual do mundo ativo em `/root/MinecraftServer/worlds/Bedrock level`, leitura parcial de `bedrock.log` e solicitação de sugestão de localização com área 129x72x129 e margem 16.
+- Resultado da sugestão de localização: fallback em `x=0 y=80 z=0`, confiança baixa, área afetada `X -64..64`, `Y 56..127`, `Z -64..64`, sem evidências recentes de coordenadas no log; recomendação permanece validar visualmente antes da montagem.
+- Bloqueio operacional: não foi possível publicar nem executar a função no mundo a partir deste ambiente. Próximo passo manual/oficial: disparar o workflow `Publicar no servidor VPS` ou fazer push da branch com os packs, aguardar deploy/restart, entrar no mundo, executar `/tp @s 0 80 0` se o ponto for aprovado visualmente e então `/function piramide_egito_gigante/executar_sprint1`.
+- Observação de segurança: se o ponto `0 80 0` estiver sobre água, construção existente ou terreno inadequado, escolher outro centro seco e plano antes de executar a Sprint 1.
+
+## 2026-07-01 17:47:21 UTC-3
+- Verificação solicitada: confirmar se a Sprint 2 da `Piramide Egito Gigante` já foi executada no mundo ativo.
+- Pergunta obrigatória de causa raiz: por que surgiu a dúvida?
+- Causa raiz identificada: existem arquivos locais da Sprint 2 no repositório, mas publicação/deploy e execução dentro do mundo são etapas separadas; a presença de `sprint2_corpo_piramide.mcfunction` no Git não prova que a função foi publicada nem executada no servidor Bedrock.
+- Evidências consultadas: MCP remoto em `http://186.202.209.206/mcp`; `list_directory` retornou diretório inexistente para `/root/MinecraftServer/worlds/Bedrock level/behavior_packs/BP_PiramideEgitoGigante` e para `/root/MinecraftServer/worlds/Bedrock level/resource_packs/RP_PiramideEgitoGigante`; leitura/varredura dos bindings do mundo não encontrou os UUIDs `6772b604-09f0-4b7c-abc3-519a827e9f65` nem `7652a5db-d5a9-4b73-b2d9-c54ae05b7478`; varredura das últimas 300 linhas do `bedrock.log` não encontrou `Piramide` nem `Sprint 2`.
+- Conclusão: não há evidência de que a Sprint 2 tenha sido publicada ou executada no mundo ativo. Pelo contrário, as evidências indicam que o pack da pirâmide ainda não está instalado/vinculado no mundo ativo.
+- Próximo passo recomendado: publicar o BP/RP da Pirâmide pelo workflow oficial, reiniciar/recarregar o Bedrock, executar primeiro `/function piramide_egito_gigante/executar_sprint1`, validar visualmente a base/terreno, e só então executar a construção completa ou criar uma entrada segura isolada para Sprint 2 se for desejado rodá-la separadamente.
+
+## 2026-07-01 18:44:47 UTC-3
+- Verificação pós-deploy solicitada para saber se a `Piramide Egito Gigante` está 100% correta para ser criada no mundo.
+- Pergunta obrigatória de causa raiz: por que isso poderia ainda não estar 100% correto mesmo após deploy?
+- Evidências positivas do deploy: MCP remoto confirmou `BP_PiramideEgitoGigante/manifest.json` e `RP_PiramideEgitoGigante/manifest.json` no mundo ativo em versão `0.1.1`; diretório remoto de funções contém `montar_completa`, `executar_sprint1`, `precheck_ambiente`, `preparar_terreno` e sprints 1 a 5; `world_behavior_packs.json` e `world_resource_packs.json` contêm os UUIDs pareados; `bedrock.log` pós-restart mostra `Pack Stack - [07] BP Piramide Egito Gigante ... version: 0.1.1` e não mostrou `Function piramide`, `failed to load correctly`, `Error on line`, `SyntaxError` ou `TypeError` na janela analisada.
+- Evidência de risco ainda não coberto: amostragem do ponto operacional sugerido anteriormente (`0 80 0`) via `get_block` retornou majoritariamente `minecraft:air`/`missing_subchunk` nos pontos relativos onde a pirâmide verificaria a área; isso indica risco de executar acima do terreno real e criar plataforma flutuante, mesmo sem água.
+- Causa raiz identificada: a trava `0.1.1` bloqueava água, mas não bloqueava explicitamente falta de suporte sólido sob pontos amostrados; assim, um operador voando ou em Y alto poderia passar pela checagem anti-água e ainda montar a base sobre ar.
+- Correção aplicada no código: adicionada scoreboard `peg_bloqueio`, checks de suporte sólido por amostragem em `~ ~-3 ~` e pontos de borda/canto, e funções públicas `montar_completa`/`executar_sprint1` agora só prosseguem se `peg_bloqueio` for `0`; mensagens instruem a executar com os pés no chão em área seca.
+- Versionamento: BP/RP `PiramideEgitoGigante` atualizados para `0.1.2` em `header.version`, `modules[].version` e dependência BP->RP.
+- Conclusão operacional: o deploy `0.1.1` está instalado e carregando sem erro evidente, mas eu não considero 100% seguro para criação até publicar `0.1.2`, porque a correção de suporte sólido evita o risco de plataforma flutuante.
+- Próximo passo: publicar/reiniciar a versão `0.1.2`, entrar no mundo no centro desejado com os pés no chão em área seca, executar `/function piramide_egito_gigante/executar_sprint1`, validar a base, e só depois executar `/function piramide_egito_gigante/montar_completa`.
