@@ -3093,3 +3093,12 @@ Checklist executado no host via MCP readonly/projeto:
 - Versionamento: BP/RP `PiramideEgitoGigante` atualizados para `0.1.2` em `header.version`, `modules[].version` e dependência BP->RP.
 - Conclusão operacional: o deploy `0.1.1` está instalado e carregando sem erro evidente, mas eu não considero 100% seguro para criação até publicar `0.1.2`, porque a correção de suporte sólido evita o risco de plataforma flutuante.
 - Próximo passo: publicar/reiniciar a versão `0.1.2`, entrar no mundo no centro desejado com os pés no chão em área seca, executar `/function piramide_egito_gigante/executar_sprint1`, validar a base, e só depois executar `/function piramide_egito_gigante/montar_completa`.
+
+## 2026-07-01 19:18:48 UTC-3
+- Verificação pós-deploy da versão `0.1.2` da `Piramide Egito Gigante` solicitada para confirmar se ficou 100% correta no mundo.
+- Pergunta obrigatória de causa raiz: por que ainda era necessário verificar após o novo deploy?
+- Causa raiz investigada: a versão `0.1.1` carregava, mas podia deixar passar execução sobre ar por checar água sem exigir suporte sólido; a versão `0.1.2` precisava ser confirmada no mundo ativo, nos bindings e no log pós-restart.
+- Evidências confirmadas via MCP remoto: manifest BP no mundo ativo está em `0.1.2`; manifest RP no mundo ativo está em `0.1.2`; `world_behavior_packs.json` contém `6772b604-09f0-4b7c-abc3-519a827e9f65` versão `[0,1,2]`; `world_resource_packs.json` contém `7652a5db-d5a9-4b73-b2d9-c54ae05b7478` versão `[0,1,2]`; `precheck_ambiente.mcfunction` remoto contém `peg_bloqueio` e checks de `air`/suporte; `bedrock.log` pós-restart mostra `Pack Stack - [07] BP Piramide Egito Gigante ... version: 0.1.2`.
+- Verificação de erros: na janela analisada do `bedrock.log` não apareceram `Function piramide`, `failed to load correctly`, `Error on line`, `SyntaxError` ou `TypeError` relacionados à Pirâmide.
+- Conclusão: para fins de deploy/carregamento/arquivos/bindings/precheck, a versão `0.1.2` está correta para ser criada no mundo. A validação final de construção física ainda exige executar no jogo em um centro seco, com os pés no chão, e observar se o precheck aprova ou bloqueia corretamente.
+- Próximo passo operacional: no mundo, posicionar o jogador no centro desejado sobre terreno sólido e seco, executar `/function piramide_egito_gigante/executar_sprint1`, validar a base criada, e depois executar `/function piramide_egito_gigante/montar_completa` se a Sprint 1 estiver correta.
