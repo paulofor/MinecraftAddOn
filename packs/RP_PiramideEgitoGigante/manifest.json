@@ -1,0 +1,35 @@
+{
+  "format_version": 2,
+  "header": {
+    "name": "RP Piramide Egito Gigante",
+    "description": "Resource Pack pareado da Piramide Egito Gigante; sem texturas PNG customizadas.",
+    "uuid": "7652a5db-d5a9-4b73-b2d9-c54ae05b7478",
+    "version": [
+      0,
+      1,
+      1
+    ],
+    "min_engine_version": [
+      1,
+      20,
+      0
+    ]
+  },
+  "modules": [
+    {
+      "type": "resources",
+      "uuid": "2a31d152-f0e5-481c-a094-16f9387baaa8",
+      "version": [
+        0,
+        1,
+        1
+      ]
+    }
+  ],
+  "metadata": {
+    "authors": [
+      "MinecraftAddOn"
+    ],
+    "license": "MIT"
+  }
+}

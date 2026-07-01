@@ -1,0 +1,45 @@
+{
+  "format_version": 2,
+  "header": {
+    "name": "BP Piramide Egito Gigante",
+    "description": "Behavior Pack educativo para montar uma piramide gigante inspirada no Egito, com limpeza automatica de terreno e trava anti-agua.",
+    "uuid": "6772b604-09f0-4b7c-abc3-519a827e9f65",
+    "version": [
+      0,
+      1,
+      1
+    ],
+    "min_engine_version": [
+      1,
+      20,
+      0
+    ]
+  },
+  "modules": [
+    {
+      "type": "data",
+      "uuid": "0883b6bf-baa1-4260-b599-4b2bd0694479",
+      "version": [
+        0,
+        1,
+        1
+      ]
+    }
+  ],
+  "dependencies": [
+    {
+      "uuid": "7652a5db-d5a9-4b73-b2d9-c54ae05b7478",
+      "version": [
+        0,
+        1,
+        1
+      ]
+    }
+  ],
+  "metadata": {
+    "authors": [
+      "MinecraftAddOn"
+    ],
+    "license": "MIT"
+  }
+}
