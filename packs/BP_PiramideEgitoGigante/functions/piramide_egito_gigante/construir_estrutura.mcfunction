@@ -1,0 +1,7 @@
+# Construção interna chamada somente depois do precheck e da preparacao do terreno.
+function piramide_egito_gigante/init
+function piramide_egito_gigante/sprint1_base_fundacao
+function piramide_egito_gigante/sprint2_corpo_piramide
+function piramide_egito_gigante/sprint3_entrada_corredor
+function piramide_egito_gigante/sprint4_camaras_educativas
+function piramide_egito_gigante/sprint5_polimento_validacao
