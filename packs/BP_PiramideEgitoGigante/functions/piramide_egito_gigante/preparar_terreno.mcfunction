@@ -1,5 +1,5 @@
 # Limpeza e preparacao automatica do terreno para reduzir altos e baixos da superficie.
-# A base fica nivelada em ~; o subsolo imediato recebe arenito para evitar buracos e desniveis.
+# A base fica nivelada em ~; o subsolo ate Y-8 recebe arenito para evitar buracos e desniveis.
 # Os comandos fill foram segmentados para manter cada volume abaixo do limite pratico do Bedrock.
 tellraw @s {"rawtext":[{"text":"[Piramide] Limpando volume de seguranca e nivelando base 121x121 antes da construcao."}]}
 fill ~-64 ~1 ~-64 ~-33 ~16 ~-33 air
@@ -82,22 +82,22 @@ fill ~32 ~65 ~-64 ~64 ~70 ~-33 air
 fill ~32 ~65 ~-32 ~64 ~70 ~-1 air
 fill ~32 ~65 ~0 ~64 ~70 ~31 air
 fill ~32 ~65 ~32 ~64 ~70 ~64 air
-fill ~-64 ~-2 ~-64 ~-33 ~-1 ~-33 sandstone
-fill ~-64 ~-2 ~-32 ~-33 ~-1 ~-1 sandstone
-fill ~-64 ~-2 ~0 ~-33 ~-1 ~31 sandstone
-fill ~-64 ~-2 ~32 ~-33 ~-1 ~64 sandstone
-fill ~-32 ~-2 ~-64 ~-1 ~-1 ~-33 sandstone
-fill ~-32 ~-2 ~-32 ~-1 ~-1 ~-1 sandstone
-fill ~-32 ~-2 ~0 ~-1 ~-1 ~31 sandstone
-fill ~-32 ~-2 ~32 ~-1 ~-1 ~64 sandstone
-fill ~0 ~-2 ~-64 ~31 ~-1 ~-33 sandstone
-fill ~0 ~-2 ~-32 ~31 ~-1 ~-1 sandstone
-fill ~0 ~-2 ~0 ~31 ~-1 ~31 sandstone
-fill ~0 ~-2 ~32 ~31 ~-1 ~64 sandstone
-fill ~32 ~-2 ~-64 ~64 ~-1 ~-33 sandstone
-fill ~32 ~-2 ~-32 ~64 ~-1 ~-1 sandstone
-fill ~32 ~-2 ~0 ~64 ~-1 ~31 sandstone
-fill ~32 ~-2 ~32 ~64 ~-1 ~64 sandstone
+fill ~-64 ~-8 ~-64 ~-33 ~-1 ~-33 sandstone
+fill ~-64 ~-8 ~-32 ~-33 ~-1 ~-1 sandstone
+fill ~-64 ~-8 ~0 ~-33 ~-1 ~31 sandstone
+fill ~-64 ~-8 ~32 ~-33 ~-1 ~64 sandstone
+fill ~-32 ~-8 ~-64 ~-1 ~-1 ~-33 sandstone
+fill ~-32 ~-8 ~-32 ~-1 ~-1 ~-1 sandstone
+fill ~-32 ~-8 ~0 ~-1 ~-1 ~31 sandstone
+fill ~-32 ~-8 ~32 ~-1 ~-1 ~64 sandstone
+fill ~0 ~-8 ~-64 ~31 ~-1 ~-33 sandstone
+fill ~0 ~-8 ~-32 ~31 ~-1 ~-1 sandstone
+fill ~0 ~-8 ~0 ~31 ~-1 ~31 sandstone
+fill ~0 ~-8 ~32 ~31 ~-1 ~64 sandstone
+fill ~32 ~-8 ~-64 ~64 ~-1 ~-33 sandstone
+fill ~32 ~-8 ~-32 ~64 ~-1 ~-1 sandstone
+fill ~32 ~-8 ~0 ~64 ~-1 ~31 sandstone
+fill ~32 ~-8 ~32 ~64 ~-1 ~64 sandstone
 fill ~-64 ~0 ~-64 ~-33 ~0 ~-33 smooth_sandstone
 fill ~-64 ~0 ~-32 ~-33 ~0 ~-1 smooth_sandstone
 fill ~-64 ~0 ~0 ~-33 ~0 ~31 smooth_sandstone

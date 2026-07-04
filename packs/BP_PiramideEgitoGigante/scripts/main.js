@@ -24,8 +24,10 @@ const SAMPLE_POINTS = [
   { dx: 45, dz: 45, label: "subsolo sudeste" },
 ];
 const CLEARANCE_OFFSETS = [2, 16, 32, 58, 70];
+const FIT_SCAN_TOP = 2;
+const FIT_SCAN_BOTTOM = -8;
 const LIQUID_BLOCKS = new Set(["minecraft:water", "minecraft:flowing_water", "minecraft:lava", "minecraft:flowing_lava"]);
-const UNSAFE_SUPPORT_BLOCKS = new Set(["minecraft:air", "minecraft:water", "minecraft:flowing_water", "minecraft:lava", "minecraft:flowing_lava"]);
+const UNSAFE_CENTER_BLOCKS = new Set(["minecraft:air", "minecraft:water", "minecraft:flowing_water", "minecraft:lava", "minecraft:flowing_lava"]);
 
 function log(message) {
   console.warn(`${PREFIX} ${message}`);
@@ -46,8 +48,25 @@ function isLiquid(typeId) {
   return LIQUID_BLOCKS.has(typeId);
 }
 
-function isUnsafeSupport(typeId) {
-  return UNSAFE_SUPPORT_BLOCKS.has(typeId);
+function isUnsafeCenter(typeId) {
+  return UNSAFE_CENTER_BLOCKS.has(typeId);
+}
+
+function isTerrainSupport(typeId) {
+  return typeId !== "minecraft:air" && !isLiquid(typeId) && !typeId.endsWith("_leaves") && !typeId.endsWith("_log");
+}
+
+function findTerrainOffset(dimension, center, point) {
+  const x = center.x + point.dx;
+  const z = center.z + point.dz;
+  for (let dy = FIT_SCAN_TOP; dy >= FIT_SCAN_BOTTOM; dy -= 1) {
+    const y = center.y + dy;
+    const typeId = blockType(dimension, x, y, z);
+    if (isTerrainSupport(typeId)) {
+      return { dy, x, y, z, typeId, label: point.label };
+    }
+  }
+  return null;
 }
 
 function summarize(items, limit = 6) {
@@ -67,8 +86,11 @@ function diagnoseLocation(player) {
   };
 
   const liquids = [];
-  const supportProblems = [];
-  const clearanceProblems = [];
+  const supportWarnings = [];
+  const clearanceWarnings = [];
+  const centerProblems = [];
+  const fitProblems = [];
+  const fitWarnings = [];
   const readProblems = [];
 
   for (const point of SAMPLE_POINTS) {
@@ -97,8 +119,22 @@ function diagnoseLocation(player) {
       readProblems.push(`${point.label} suporte ${x} ${supportY} ${z}: ${error}`);
       continue;
     }
-    if (isUnsafeSupport(supportType)) {
-      supportProblems.push(`${point.label} ${x} ${supportY} ${z}: ${supportType}`);
+    if (isUnsafeCenter(supportType)) {
+      supportWarnings.push(`${point.label} ${x} ${supportY} ${z}: ${supportType}`);
+    }
+
+    try {
+      const terrain = findTerrainOffset(dimension, center, point);
+      if (!terrain) {
+        fitProblems.push(`${point.label} sem terreno entre Y${FIT_SCAN_BOTTOM} e Y+${FIT_SCAN_TOP}`);
+      } else if (terrain.dy < -3) {
+        fitWarnings.push(`${terrain.label} ${terrain.x} ${terrain.y} ${terrain.z}: ${terrain.typeId} em Y${terrain.dy}`);
+      } else if (terrain.dy > 1) {
+        fitWarnings.push(`${terrain.label} ${terrain.x} ${terrain.y} ${terrain.z}: terreno alto ${terrain.typeId} em Y+${terrain.dy}`);
+      }
+    } catch (error) {
+      readProblems.push(`${point.label} ajuste vertical: ${error}`);
+      continue;
     }
 
     for (const dy of CLEARANCE_OFFSETS) {
@@ -111,27 +147,43 @@ function diagnoseLocation(player) {
         continue;
       }
       if (typeId !== "minecraft:air") {
-        clearanceProblems.push(`${point.label} ${x} ${y} ${z}: ${typeId}`);
+        clearanceWarnings.push(`${point.label} ${x} ${y} ${z}: ${typeId}`);
       }
     }
   }
 
-  const blocked = liquids.length > 0 || supportProblems.length > 0 || readProblems.length > 0 || clearanceProblems.length > 0;
-  const affected = `X ${center.x - RADIUS}..${center.x + RADIUS}, Y ${center.y - 2}..${center.y + 70}, Z ${center.z - RADIUS}..${center.z + RADIUS}`;
+  const centerBelowY = center.y - 1;
+  try {
+    const centerBelowType = blockType(dimension, center.x, centerBelowY, center.z);
+    if (isUnsafeCenter(centerBelowType)) {
+      centerProblems.push(`centro ${center.x} ${centerBelowY} ${center.z}: ${centerBelowType}`);
+    }
+  } catch (error) {
+    readProblems.push(`centro suporte ${center.x} ${centerBelowY} ${center.z}: ${error}`);
+  }
+
+  const blocked = liquids.length > 0 || centerProblems.length > 0 || fitProblems.length > 0 || readProblems.length > 0;
+  const affected = `X ${center.x - RADIUS}..${center.x + RADIUS}, Y ${center.y - 8}..${center.y + 70}, Z ${center.z - RADIUS}..${center.z + RADIUS}`;
   const structure = `base util aprox. X/Z ${center.x - STRUCTURE_RADIUS}..${center.x + STRUCTURE_RADIUS} / ${center.z - STRUCTURE_RADIUS}..${center.z + STRUCTURE_RADIUS}`;
 
   if (blocked) {
-    log(`BLOQUEADO centro=${center.x} ${center.y} ${center.z}; area=${affected}; ${structure}; liquidos=${liquids.length}; suporte=${supportProblems.length}; ocupacao_altura=${clearanceProblems.length}; leitura=${readProblems.length}.`);
+    log(`BLOQUEADO centro=${center.x} ${center.y} ${center.z}; area=${affected}; ${structure}; liquidos=${liquids.length}; centro=${centerProblems.length}; ajuste=${fitProblems.length}; avisos_ajuste=${fitWarnings.length}; avisos_suporte=${supportWarnings.length}; avisos_ocupacao=${clearanceWarnings.length}; leitura=${readProblems.length}.`);
     if (liquids.length > 0) log(`Liquidos: ${summarize(liquids)}`);
-    if (supportProblems.length > 0) log(`Suporte insuficiente: ${summarize(supportProblems)}`);
-    if (clearanceProblems.length > 0) log(`Volume acima nao livre: ${summarize(clearanceProblems)}`);
+    if (centerProblems.length > 0) log(`Centro sem suporte seguro: ${summarize(centerProblems)}`);
+    if (fitProblems.length > 0) log(`Ajuste vertical insuficiente: ${summarize(fitProblems)}`);
+    if (fitWarnings.length > 0) log(`Aviso ajuste vertical dentro do limite Y-8..Y+2: ${summarize(fitWarnings)}`);
+    if (supportWarnings.length > 0) log(`Aviso suporte periferico sera preenchido ate Y-8: ${summarize(supportWarnings)}`);
+    if (clearanceWarnings.length > 0) log(`Aviso volume acima sera limpo; valide visualmente se nao ha construcao: ${summarize(clearanceWarnings)}`);
     if (readProblems.length > 0) log(`Falhas de leitura: ${summarize(readProblems)}`);
     send(player, `BLOQUEADO em ${center.x} ${center.y} ${center.z}. Veja bedrock.log por ${PREFIX}. Nao rode montar_completa aqui.`);
     return;
   }
 
-  log(`APROVADO centro=${center.x} ${center.y} ${center.z}; area=${affected}; ${structure}; amostras=${SAMPLE_POINTS.length}; clearance_y=+${CLEARANCE_OFFSETS.join('/+')}. Pode executar /function piramide_egito_gigante/executar_sprint1 antes da montagem completa.`);
-  send(player, `APROVADO centro ${center.x} ${center.y} ${center.z}. Rode primeiro /function piramide_egito_gigante/executar_sprint1; detalhes no bedrock.log.`);
+  log(`APROVADO centro=${center.x} ${center.y} ${center.z}; area=${affected}; ${structure}; amostras=${SAMPLE_POINTS.length}; avisos_ajuste=${fitWarnings.length}; avisos_suporte=${supportWarnings.length}; avisos_ocupacao=${clearanceWarnings.length}; subsolo_preenchido=Y-8..Y-1. Rode /function piramide_egito_gigante/executar_sprint1 antes da montagem completa.`);
+  if (fitWarnings.length > 0) log(`Aviso ajuste vertical dentro do limite Y-8..Y+2: ${summarize(fitWarnings)}`);
+  if (supportWarnings.length > 0) log(`Aviso suporte periferico sera preenchido ate Y-8: ${summarize(supportWarnings)}`);
+  if (clearanceWarnings.length > 0) log(`Aviso volume acima sera limpo; valide visualmente se nao ha construcao: ${summarize(clearanceWarnings)}`);
+  send(player, `APROVADO centro ${center.x} ${center.y} ${center.z}. Relevo natural sera preparado ate Y-8; rode primeiro /function piramide_egito_gigante/executar_sprint1.`);
 }
 
 const scriptEventReceive = system.afterEvents?.scriptEventReceive;
