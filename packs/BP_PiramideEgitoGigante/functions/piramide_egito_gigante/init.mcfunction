@@ -7,3 +7,4 @@ tellraw @s {"rawtext":[{"text":"[Piramide] Execute /function piramide_egito_giga
 tellraw @s {"rawtext":[{"text":"[Piramide] Por que essa construcao poderia danificar ou ficar mal posicionada no mundo? Porque o terreno natural e irregular, pode haver agua/lava, construcoes existentes ou desniveis sob a base."}]}
 tellraw @s {"rawtext":[{"text":"[Piramide] A funcao publica roda precheck anti-agua antes da limpeza automatica e so depois chama a construcao interna."}]}
 tellraw @s {"rawtext":[{"text":"[Piramide] Para executar somente a Sprint 1 com seguranca, use /function piramide_egito_gigante/executar_sprint1."}]}
+tellraw @s {"rawtext":[{"text":"[Piramide] Para escolher coordenada olhando o mundo pelo proprio jogo, fique no centro desejado e use /function piramide_egito_gigante/diagnosticar_local; o resultado APROVADO/BLOQUEADO sai no bedrock.log."}]}
