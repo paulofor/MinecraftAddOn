@@ -104,10 +104,11 @@ jobs:
           from pathlib import Path
 
           path = Path(sys.argv[1])
-          patterns = [
-              re.compile(r"(?:^|\b)Version\s*:?\s*([0-9]+(?:\.[0-9]+){1,3})", re.IGNORECASE),
-              re.compile(r"Bedrock Dedicated Server[^\n]*?([0-9]+(?:\.[0-9]+){1,3})", re.IGNORECASE),
+          startup_patterns = [
+              re.compile(r"^\s*(?:\[[^\]]+\]\s*)?(?:Version|Server\s+Version)\s*:?\s*([0-9]+(?:\.[0-9]+){2,3})\b", re.IGNORECASE),
+              re.compile(r"Bedrock\s+Dedicated\s+Server(?:\s+version)?[^0-9\n]*([0-9]+(?:\.[0-9]+){2,3})\b", re.IGNORECASE),
           ]
+          ignored_context = re.compile(r"\b(?:Pack\s+Stack|BP\s+|RP\s+|manifest|module|addon|add-on)\b", re.IGNORECASE)
 
           try:
               text = path.read_text(encoding="utf-8", errors="ignore")
@@ -116,7 +117,9 @@ jobs:
 
           matches: list[str] = []
           for line in text.splitlines():
-              for pattern in patterns:
+              if ignored_context.search(line):
+                  continue
+              for pattern in startup_patterns:
                   match = pattern.search(line)
                   if match:
                       matches.append(match.group(1))
@@ -124,6 +127,28 @@ jobs:
           if matches:
               print(matches[-1])
           PY
+          }
+
+          extract_version_from_binary() {
+            local binary='/root/MinecraftServer/bedrock_server'
+            if [ ! -f "$binary" ] || ! command -v strings >/dev/null 2>&1; then
+              return 0
+            fi
+            strings "$binary" 2>/dev/null | python3 -c '
+          import re
+          import sys
+
+          version_re = re.compile(r"\b([1-9][0-9]*\.[0-9]+\.[0-9]+(?:\.[0-9]+)?)\b")
+          matches: list[str] = []
+          for line in sys.stdin:
+              for match in version_re.finditer(line):
+                  version = match.group(1)
+                  if version.startswith(("0.", "10.")):
+                      continue
+                  matches.append(version)
+          if matches:
+              print(matches[-1])
+          '
           }
 
           server_version="$(extract_version_from_file "$LOG_FILE" | tail -n 1 | tr -d '\r')"
@@ -143,7 +168,12 @@ jobs:
           fi
 
           if [ -z "$server_version" ]; then
-            echo '[warn] Não foi possível detectar a versão do Bedrock Dedicated Server nos logs disponíveis.' >&2
+            echo '[warn] Versão não encontrada nos logs; tentando extrair do binário /root/MinecraftServer/bedrock_server.' >&2
+            server_version="$(extract_version_from_binary | tail -n 1 | tr -d '\r')"
+          fi
+
+          if [ -z "$server_version" ]; then
+            echo '[warn] Não foi possível detectar a versão do Bedrock Dedicated Server nos logs disponíveis nem no binário.' >&2
             echo '[warn] Prosseguindo sem bloquear o deploy porque o bedrock.log atual pode ter sido exportado/truncado sem a linha de startup.' >&2
             echo '[warn] Valide a versão após o próximo restart; se clientes falharem com InitialConnection-34, atualize /root/MinecraftServer/bedrock_server.' >&2
             exit 0
