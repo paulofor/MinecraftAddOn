@@ -274,3 +274,9 @@ Regra operacional:
 4. Após upload, validar presença/tamanho do arquivo e manter versionamento dos manifests/definições impactadas.
 
 Sinal de erro típico: textura preto/roxo mesmo com mapeamento correto no `item_texture.json`.
+
+## Ponto de início do operador no mundo ativo
+- Coordenada informada por captura de tela do usuário em 2026-07-04: `5 75 148`.
+- Interpretação: este é o ponto de início/referência atual do jogador no mundo ativo, exibido na tela como `Posição: 5, 75, 148`.
+- Uso recomendado: considerar essa coordenada como referência inicial de navegação/teleporte para diagnósticos e validações no mundo, não como local automaticamente aprovado para megaconstruções.
+- Para construções grandes, ainda é obrigatório executar as prechecagens/diagnósticos específicos do módulo antes de montar qualquer estrutura.
