@@ -3201,3 +3201,11 @@ Checklist executado no host via MCP readonly/projeto:
 - Evidência usada: captura de tela enviada pelo usuário exibindo no HUD `Posição: 5, 75, 148`.
 - Alteração aplicada: `AGENTS.md` passou a documentar `5 75 148` como ponto de início/referência atual do jogador no mundo ativo, com ressalva de que não é coordenada automaticamente aprovada para megaconstruções.
 - Próximo passo: usar `5 75 148` como referência de navegação/teleporte para pesquisar locais próximos, mas continuar exigindo `/function piramide_egito_gigante/diagnosticar_local` e validação visual antes de construir.
+
+## 2026-07-04 20:08:00 UTC-3
+- Correção da falha de deploy reportada na etapa `Validar versão mínima do servidor Bedrock`, em que o workflow detectou incorretamente `0.1.8` como versão do Bedrock Dedicated Server e bloqueou o deploy contra mínimo `1.26.30`.
+- Pergunta obrigatória de causa raiz: por que isso aconteceu? Porque a extração adicionada para tolerar logs sem `Version:` estava ampla demais e aceitava qualquer linha com a palavra `version`, incluindo linhas de `Pack Stack`/packs do mundo que registram versões de add-ons como `0.1.8`; isso não representa a versão do binário `/root/MinecraftServer/bedrock_server`.
+- Evidências usadas: erro enviado pelo usuário (`Versão Bedrock Dedicated Server detectada: 0.1.8`), inspeção de `.github/workflows/publish-server.yml` e histórico de `docs/registros1.md` mostrando logs de Pack Stack com versões de módulos `0.1.x`.
+- Causa raiz identificada: falso positivo de parsing; a validação confundiu versão de pack/add-on com versão do servidor por não filtrar contexto de `Pack Stack`, `BP`, `RP`, `manifest`, `module` e por aceitar versões com apenas duas casas depois do primeiro ponto.
+- Correção aplicada: o parser de logs agora só aceita padrões de startup do servidor com versões `X.Y.Z`/`X.Y.Z.W`, ignora contextos de packs/add-ons e, se os logs não contiverem a versão do servidor, tenta extrair a versão diretamente do binário `/root/MinecraftServer/bedrock_server` com `strings`, descartando candidatos `0.x`.
+- Próximo passo de validação: executar novamente o workflow; a etapa não deve mais reportar `0.1.x` como versão do Bedrock Dedicated Server. Se detectar versão real abaixo de `1.26.30`, o bloqueio continua correto e exige atualização do binário antes do deploy.
