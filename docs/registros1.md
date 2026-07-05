@@ -3287,3 +3287,37 @@ Checklist executado no host via MCP readonly/projeto:
 - Evidências usadas: leitura MCP do manifest remoto em `/root/MinecraftServer/worlds/Bedrock level/behavior_packs/BP_PiramideEgitoGigante/manifest.json` retornando `0.1.6`; captura do operador com morte por sufocamento após Sprint 1; workflow `.github/workflows/publish-server.yml` existe com `workflow_dispatch`, publica `packs/` no VPS e reinicia o Bedrock.
 - Orientação entregue: 1) se preso, executar `/tp @s 5 80 147` ou `/tp @s ~ ~20 ~`; 2) disparar o workflow GitHub Actions `Publicar no servidor VPS` na branch com o commit `0.1.8`; 3) aguardar o restart; 4) confirmar no jogo/log que as mensagens falam `Y-32`/`0.1.8`; 5) só então voltar para área aberta, rodar diagnóstico, Sprint 1 e montagem completa.
 - Trava operacional: se o chat ainda mostrar `Y-8`, interromper o teste porque o deploy ainda não atualizou o mundo ativo.
+
+## 2026-07-05 — Comando para continuar a Pirâmide a partir do centro já usado
+
+- Atendimento à pergunta do operador: a estrutura básica/fundação já foi criada e o objetivo agora é continuar a pirâmide no mesmo centro correto.
+- Pergunta obrigatória de causa raiz: por que não basta teleportar o jogador para cima ou para dentro da fundação e rodar a função? Porque as funções de construção usam coordenadas relativas ao executor/contexto; se o operador mudar de Y/X/Z antes de executar, a pirâmide será deslocada, e se ficar com os pés no centro antigo pode sufocar em versões sem teleporte de segurança.
+- Evidências usadas: captura anterior do chat mostrando diagnóstico `APROVADO centro=-194 69 111` e execução da Sprint 1; histórico de sufocamento ao executar de dentro do centro; funcionamento dos comandos `execute positioned ... run function ...` para manter o contexto relativo no centro desejado sem exigir que o jogador esteja fisicamente dentro da base.
+- Orientação entregue: para continuar no mesmo centro, usar `/execute positioned -194 69 111 run function piramide_egito_gigante/montar_completa`; esse comando executa a montagem relativa ao centro original da fundação. Alternativa de menor escopo, caso o operador tenha certeza de que a preparação/base já estão corretas: `/execute positioned -194 69 111 run function piramide_egito_gigante/construir_estrutura`.
+- Observação de segurança: preferir `montar_completa` porque ela roda o precheck e revalida o local; não executar comandos relativos depois de teleportar para outra altura, pois isso desloca a obra.
+
+
+## 2026-07-05 — Correção de teleporte alto e dano de queda após montagem completa da Pirâmide
+
+- Relato/evidência visual do operador: a montagem completa executou todas as sprints com êxito no centro `-194 69 111`, teleportou o jogador para `-193.50 159.00 111.50` e em seguida o chat registrou `Buck9523 caiu de um lugar alto`; o operador relatou que não viu a estrutura.
+- Pergunta obrigatória de causa raiz: por que isso aconteceu? Porque a correção de segurança anterior teleportava o operador cerca de 90 blocos acima do contexto de montagem para evitar sufocamento, mas não aplicava queda lenta nem reduzia a altura de observação; após a queda, o jogador morreu antes de conseguir validar visualmente a pirâmide.
+- Evidências usadas: captura do chat mostrando `Entradas da função 302 executadas com êxito`, teleporte para Y=159 e morte por queda; arquivos `montar_completa.mcfunction` e `executar_sprint1.mcfunction` continham teleporte vertical alto sem efeito de `slow_falling`.
+- Correção aplicada: `montar_completa.mcfunction` agora aplica `effect @s slow_falling 40 1 true` e teleporta para `~ ~65 ~`; `executar_sprint1.mcfunction` aplica `slow_falling` e teleporta apenas `~ ~8 ~`, suficiente para sair da fundação sem cair de altura extrema.
+- Versionamento: BP/RP `PiramideEgitoGigante` incrementados para `0.1.9`.
+- Orientação imediata: a pirâmide provavelmente foi criada em `-194 69 111`; para visualizar sem cair, usar `/effect @s slow_falling 30 1 true` e depois `/tp @s -194 120 111` ou teleportar para fora da borda com `/tp @s -194 90 190`.
+
+## 2026-07-05 — Diagnóstico operacional quando a Pirâmide não aparece visualmente
+
+- Relato do operador: após a montagem completa reportar sucesso, a pirâmide não apareceu visualmente.
+- Pergunta obrigatória de causa raiz: por que isso pode acontecer? Há três hipóteses prováveis nesta ordem: 1) o jogador foi teleportado alto/fora do ângulo correto e morreu antes de olhar a estrutura; 2) a estrutura foi criada no centro `-194 69 111`, mas a validação visual foi feita do lado errado/noite/renderização; 3) o contexto `execute positioned` ou a dimensão ativa não correspondeu ao local esperado, então os comandos reportaram sucesso sem criar blocos visíveis no ponto observado.
+- Evidências usadas: captura anterior com `Entradas da função 302 executadas com êxito`, teleporte para `-193.50 159.00 111.50` e morte por queda; consulta MCP posterior mostrou pack remoto `BP Piramide Egito Gigante` ainda em `0.1.8`; leituras LevelDB em pontos esperados da pirâmide retornaram `minecraft:air`/`missing_subchunk`, o que é indício, mas não prova definitiva, pois a leitura pode não refletir chunks vivos/salvos imediatamente.
+- Orientação entregue: primeiro validar visualmente com `/effect @s night_vision 999 1 true` e `/tp @s -194 90 190`; se não aparecer, criar um marcador temporário no centro esperado com `/execute positioned -194 69 111 run setblock ~ ~70 ~ beacon` e teleportar para `/tp @s -194 145 111` para confirmar se o contexto/centro está correto.
+- Próximo passo se o marcador aparecer mas a pirâmide não: repetir a montagem no centro com `/execute positioned -194 69 111 run function piramide_egito_gigante/montar_completa` após publicar a versão mais recente; se o marcador não aparecer, o problema é dimensão/contexto ou comando não aplicado no mundo observado.
+
+## 2026-07-05 — Orientação visual após aparecer apenas a base/plataforma da Pirâmide
+
+- Relato/evidência visual do operador: a área da pirâmide mostra uma grande base/plataforma de arenito, mas o operador relata que a pirâmide não aparece.
+- Pergunta obrigatória de causa raiz: por que pode parecer que não apareceu? Pela captura, o jogador está baixo e próximo da borda (`-168 76 187`), olhando quase no nível das camadas inferiores; como a pirâmide é muito larga e escalonada, a primeira camada/platô pode ocultar visualmente as camadas superiores desse ângulo, especialmente com árvores/fog/renderização. Ainda há hipótese alternativa de as camadas superiores não terem sido salvas/renderizadas, mas o chat anterior indicou execução das sprints 2 a 5 com sucesso.
+- Evidências usadas: captura mostrando a base de arenito no local esperado, chat anterior com `Sprint 2`, `Sprint 3`, `Sprint 4`, `Sprint 5` e `Entradas da função 302 executadas com êxito`, e centro operacional `-194 69 111`.
+- Orientação entregue: validar por um mirante alto e lateral em vez de olhar da borda baixa: executar `/effect @s slow_falling 60 1 true` e `/tp @s -194 135 190`; olhar para norte/centro. Alternativa para visão superior: `/tp @s -194 145 111`.
+- Próximo passo se do mirante alto ainda só houver base plana: criar marcador no topo esperado com `/execute positioned -194 69 111 run setblock ~ ~59 ~ beacon`; se o marcador aparecer sem corpo escalonado, reexecutar especificamente `/execute positioned -194 69 111 run function piramide_egito_gigante/sprint2_corpo_piramide` e depois validar visualmente.
