@@ -3227,3 +3227,63 @@ Checklist executado no host via MCP readonly/projeto:
 - Correção aplicada: o diagnóstico agora bloqueia somente por líquido, centro sem suporte seguro ou falha de leitura; terreno baixo/ausente nas bordas vira aviso porque será preenchido. A prechecagem em `.mcfunction` também deixou de bloquear `air` periférico em `~-8`, mantendo bloqueio para água/lava amostrada e jogador sem bloco sob os pés.
 - Versionamento: BP/RP `PiramideEgitoGigante` incrementados de `0.1.5` para `0.1.6` em `header.version`, `modules[].version` e dependência BP->RP.
 - Próximo passo de validação: publicar a versão `0.1.6`, reiniciar o Bedrock, testar novamente em um centro seco com os pés no chão; se o diagnóstico aprovar, executar `/function piramide_egito_gigante/executar_sprint1`, validar visualmente a fundação e só então `/function piramide_egito_gigante/montar_completa`.
+
+
+## 2026-07-05 — Correção visual da Pirâmide flutuando após montagem em encosta
+
+- Relato/evidência visual do operador: a pirâmide foi criada com aparência de plataforma flutuante, com grande vão sob a base em área de encosta próxima de `169 86 850`.
+- Pergunta obrigatória de causa raiz: por que isso aconteceu? Porque a correção anterior deixou de bloquear bordas/cantos baixos para permitir mais locais, mas `preparar_terreno` só preenchia o subsolo até Y-8 relativo ao executor. Em encostas com queda maior que 8 blocos dentro da área 121x121, a base era nivelada no alto e ficava sem ancoragem visual suficiente até o terreno natural.
+- Evidências usadas: captura de tela enviada pelo operador mostrando vão sob a plataforma; `bedrock.log` da versão `0.1.6` registrou `APROVADO centro=185 77 761` com `terreno_baixo_preenchido=12` e `avisos_suporte=13`, indicando muitas amostras periféricas abaixo do nível da base; inspeção de `preparar_terreno.mcfunction` confirmou preenchimento apenas de `~-8..~-1`.
+- Correção aplicada: `preparar_terreno.mcfunction` agora cria fundação profunda segmentada de `~-32..~-9` antes do preenchimento superior `~-8..~-1`, reduzindo a chance de plataforma flutuante em encostas. O diagnóstico Script API voltou a bloquear locais sem ancoragem encontrada entre Y+2 e Y-32, e as mensagens foram atualizadas para explicar a fundação profunda.
+- Versionamento: BP/RP `PiramideEgitoGigante` incrementados de `0.1.6` para `0.1.7` em `header.version`, `modules[].version` e dependência BP->RP.
+- Próximo passo de validação: publicar/reiniciar `0.1.7`, remover ou abandonar a montagem flutuante anterior, escolher um centro seco com os pés no chão, executar `/function piramide_egito_gigante/diagnosticar_local`, depois `/function piramide_egito_gigante/executar_sprint1` e validar se a fundação encosta no terreno antes da montagem completa.
+
+## 2026-07-05 — Orientação de coordenada candidata para nova Pirâmide após fundação profunda
+
+- Atendimento à pergunta do operador: onde criar uma nova `Piramide Egito Gigante` após a montagem anterior ficar flutuando.
+- Pergunta obrigatória de causa raiz: por que não recomendar simplesmente repetir no mesmo ponto? Porque a captura mostrou encosta com grande vão sob a base, e os registros anteriores indicam que o centro usado estava perto de área com muitos avisos de suporte/terreno baixo; repetir ali antes de validar a versão `0.1.7` pode recriar o problema visual.
+- Evidências usadas: captura enviada pelo operador, registro anterior da causa da plataforma flutuante, e consulta MCP readonly `suggest_arena_location` em 2026-07-05 para uma área 129x103x129 com margem 80, que sugeriu centro candidato `-62 80 695` com confiança média e área afetada `X -126..2`, `Y 46..148`, `Z 631..759`.
+- Orientação entregue: tratar `-62 80 695` como candidato, não garantia; após publicar/reiniciar `0.1.7`, teleportar para `/tp @s -62 80 695`, descer/ajustar para ficar com os pés no chão se necessário, executar `/function piramide_egito_gigante/diagnosticar_local`, depois `/function piramide_egito_gigante/executar_sprint1` se aprovado, validar visualmente a fundação e só então `/function piramide_egito_gigante/montar_completa`.
+- Limitação conhecida: a ferramenta `suggest_arena_location` usa logs e heurística, não varredura visual/bloco-a-bloco; se o diagnóstico bloquear, escolher outro ponto seco/plano e repetir antes da montagem completa.
+
+## 2026-07-05 — Correção de orientação após candidato da Pirâmide cair em parede
+
+- Relato do operador: o centro candidato `-62 80 695` indicado anteriormente caiu em uma parede/encosta, portanto não é adequado como local direto para criar a nova `Piramide Egito Gigante`.
+- Pergunta obrigatória de causa raiz: por que isso aconteceu? Porque a recomendação veio da ferramenta `suggest_arena_location`, que usa logs recentes e heurística de afastamento, mas não faz leitura confiável bloco-a-bloco/heightmap do relevo; assim, ela pode sugerir um ponto horizontalmente afastado que verticalmente fica dentro de parede, montanha ou encosta.
+- Evidências usadas: feedback do operador informando que o ponto é uma parede; limitação conhecida registrada no atendimento anterior; tentativas de leitura direta via MCP `get_block`/`get_block_region` continuaram retornando erro `NBT raiz não é compound: 0`, impedindo confirmar altura/superfície por LevelDB nesta rodada.
+- Correção de orientação: não usar mais `-62 80 695` como destino de montagem. O fluxo seguro passa a ser escolher visualmente uma área seca e plana no jogo, preferencialmente deserto/planície/praia ampla, descer até ficar com os pés no chão no centro, executar `/function piramide_egito_gigante/diagnosticar_local`, depois `/function piramide_egito_gigante/executar_sprint1` se aprovado, validar a fundação e só então `/function piramide_egito_gigante/montar_completa`.
+- Comandos auxiliares recomendados: usar `/locate biome desert` ou `/locate biome plains` no jogo, teleportar para perto do resultado, procurar uma área aberta de pelo menos 130x130 blocos, e nunca montar se o teleporte cair em parede, água, beira de penhasco ou construção existente.
+
+## 2026-07-05 — Correção de sintaxe do `/locate biome` no Bedrock
+
+- Relato/evidência visual do operador: o jogo retornou `Erro de sintaxe: "desert" inesperado em "ate biome >>desert<<"` ao tentar localizar deserto para criar a `Piramide Egito Gigante`.
+- Pergunta obrigatória de causa raiz: por que isso aconteceu? Porque a orientação anterior usou o nome curto do bioma (`desert`) e a versão/configuração do Bedrock em uso exige ou pode exigir identificador de bioma namespaced, como `minecraft:desert`; além disso, algumas versões/ambientes podem não oferecer o subcomando `biome`, mantendo apenas localização de estruturas.
+- Evidências usadas: captura de tela enviada pelo operador; documentação Microsoft Learn do comando `/locate`, que lista a sintaxe `/locate biome <biome name>` e exemplos com identificadores; histórico do projeto sobre limitação de coordenadas heurísticas.
+- Correção de orientação: tentar primeiro `/locate biome minecraft:desert` e `/locate biome minecraft:plains`; se ainda houver erro de sintaxe, usar fallback `/locate structure village` para encontrar uma região habitável e, a partir dela, procurar manualmente uma planície/deserto/praia ampla antes de rodar o diagnóstico da pirâmide.
+- Fluxo seguro mantido: nunca montar direto após o `/locate`; teleportar para perto, sair de paredes/casas/água, ficar com os pés no chão numa área aberta, executar `/function piramide_egito_gigante/diagnosticar_local`, depois `/function piramide_egito_gigante/executar_sprint1`, validar visualmente e só então `/function piramide_egito_gigante/montar_completa`.
+
+## 2026-07-05 — Orientação para usar planície próxima em vez de deserto distante
+
+- Relato/evidência visual do operador: o deserto fica longe; o comando de localização encontrou `minecraft:plains` no bloco `-99, 6, 114`, a cerca de 101 blocos de distância do ponto atual `5 75 146`.
+- Pergunta obrigatória de causa raiz: por que o deserto não é a melhor opção agora? Porque a prioridade operacional é encontrar uma área plana e próxima para testar a fundação da pirâmide; insistir em deserto distante aumenta tempo de deslocamento sem garantir superfície adequada. Além disso, o resultado `Y=6` do `/locate biome` não deve ser usado como altura de teleporte direto, pois pode colocar o jogador em subsolo/parede.
+- Evidências usadas: captura de tela do operador com resultado do `/locate biome minecraft:plains`; histórico de falhas em pontos de parede/encosta; regra de megaconstruções exigindo validação visual e diagnóstico antes da montagem.
+- Correção de orientação: usar a planície próxima como candidato, teleportando para X/Z com Y alto seguro (`/tp @s -99 100 114`), descer até a superfície aberta, afastar-se de casas/árvores/água e só então executar o diagnóstico da pirâmide.
+- Fluxo recomendado: `/tp @s -99 100 114`, descer até chão plano, andar/fly até uma clareira de pelo menos 130x130 blocos, executar `/function piramide_egito_gigante/diagnosticar_local`, se aprovado executar `/function piramide_egito_gigante/executar_sprint1`, validar visualmente e só então `/function piramide_egito_gigante/montar_completa`.
+
+
+## 2026-07-05 — Correção de sufocamento do operador durante Sprint 1 da Pirâmide
+
+- Relato/evidência visual do operador: após executar o fluxo da pirâmide na planície próxima, o chat registrou `Entradas da função 185 executadas com êxito` e em seguida `Buck9523 sufocou-se em uma parede`.
+- Pergunta obrigatória de causa raiz: por que isso aconteceu? Porque as funções da pirâmide constroem relativamente ao jogador; a Sprint 1 coloca blocos de fundação/base em camadas `~1` e `~2`, que podem ocupar a altura da cabeça/corpo do operador quando ele está com os pés no chão no centro. Além disso, o servidor remoto ainda estava com `BP_PiramideEgitoGigante` versão `0.1.6`, comprovando que a fundação profunda `0.1.7` ainda não estava publicada no mundo ativo.
+- Evidências usadas: captura do chat mostrando aprovação no centro `-194 69 111`, execução da Sprint 1 e morte por sufocamento; leitura MCP de `/root/MinecraftServer/worlds/Bedrock level/behavior_packs/BP_PiramideEgitoGigante/manifest.json`, que retornou versão `0.1.6`; mensagens in-game ainda citando preenchimento até `Y-8`, incompatíveis com a versão local `0.1.7`.
+- Correção aplicada: as funções públicas `executar_sprint1.mcfunction` e `montar_completa.mcfunction` agora teleportam o operador para cima da construção após execução aprovada, reduzindo risco de permanecer preso nos blocos recém-gerados e facilitando validação visual.
+- Versionamento: BP/RP `PiramideEgitoGigante` incrementados para `0.1.8` em `header.version`, `modules[].version` e dependência BP->RP.
+- Próximo passo operacional imediato: se o jogador estiver preso/sufocando, executar `/tp @s 5 80 147` ou `/tp @s ~ ~20 ~` para sair. Antes de novos testes, publicar/reiniciar a versão `0.1.8`; se o chat ainda mencionar `Y-8`, o servidor continua desatualizado.
+
+## 2026-07-05 — Orientação para continuar após sufocamento e servidor desatualizado
+
+- Atendimento à pergunta do operador: o próximo passo não é executar novamente a pirâmide, e sim sair do bloco, publicar a versão corrigida e validar que o mundo ativo carregou `PiramideEgitoGigante` `0.1.8`.
+- Pergunta obrigatória de causa raiz: por que não continuar imediatamente? Porque a evidência anterior mostrou que o mundo ativo ainda estava em `0.1.6` e as mensagens no jogo ainda citavam `Y-8`; isso significa que as correções de fundação profunda/teleporte de segurança ainda não estavam disponíveis no servidor em que o operador testou.
+- Evidências usadas: leitura MCP do manifest remoto em `/root/MinecraftServer/worlds/Bedrock level/behavior_packs/BP_PiramideEgitoGigante/manifest.json` retornando `0.1.6`; captura do operador com morte por sufocamento após Sprint 1; workflow `.github/workflows/publish-server.yml` existe com `workflow_dispatch`, publica `packs/` no VPS e reinicia o Bedrock.
+- Orientação entregue: 1) se preso, executar `/tp @s 5 80 147` ou `/tp @s ~ ~20 ~`; 2) disparar o workflow GitHub Actions `Publicar no servidor VPS` na branch com o commit `0.1.8`; 3) aguardar o restart; 4) confirmar no jogo/log que as mensagens falam `Y-32`/`0.1.8`; 5) só então voltar para área aberta, rodar diagnóstico, Sprint 1 e montagem completa.
+- Trava operacional: se o chat ainda mostrar `Y-8`, interromper o teste porque o deploy ainda não atualizou o mundo ativo.
