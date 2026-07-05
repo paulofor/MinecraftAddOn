@@ -82,6 +82,23 @@ fill ~32 ~65 ~-64 ~64 ~70 ~-33 air
 fill ~32 ~65 ~-32 ~64 ~70 ~-1 air
 fill ~32 ~65 ~0 ~64 ~70 ~31 air
 fill ~32 ~65 ~32 ~64 ~70 ~64 air
+# Fundacao profunda anti-plataforma flutuante: ancora a plataforma ate ~-32 antes do subsolo superior.
+fill ~-64 ~-32 ~-64 ~-33 ~-9 ~-33 sandstone
+fill ~-64 ~-32 ~-32 ~-33 ~-9 ~-1 sandstone
+fill ~-64 ~-32 ~0 ~-33 ~-9 ~31 sandstone
+fill ~-64 ~-32 ~32 ~-33 ~-9 ~64 sandstone
+fill ~-32 ~-32 ~-64 ~-1 ~-9 ~-33 sandstone
+fill ~-32 ~-32 ~-32 ~-1 ~-9 ~-1 sandstone
+fill ~-32 ~-32 ~0 ~-1 ~-9 ~31 sandstone
+fill ~-32 ~-32 ~32 ~-1 ~-9 ~64 sandstone
+fill ~0 ~-32 ~-64 ~31 ~-9 ~-33 sandstone
+fill ~0 ~-32 ~-32 ~31 ~-9 ~-1 sandstone
+fill ~0 ~-32 ~0 ~31 ~-9 ~31 sandstone
+fill ~0 ~-32 ~32 ~31 ~-9 ~64 sandstone
+fill ~32 ~-32 ~-64 ~64 ~-9 ~-33 sandstone
+fill ~32 ~-32 ~-32 ~64 ~-9 ~-1 sandstone
+fill ~32 ~-32 ~0 ~64 ~-9 ~31 sandstone
+fill ~32 ~-32 ~32 ~64 ~-9 ~64 sandstone
 fill ~-64 ~-8 ~-64 ~-33 ~-1 ~-33 sandstone
 fill ~-64 ~-8 ~-32 ~-33 ~-1 ~-1 sandstone
 fill ~-64 ~-8 ~0 ~-33 ~-1 ~31 sandstone
