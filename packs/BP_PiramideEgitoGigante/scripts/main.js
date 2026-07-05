@@ -162,7 +162,7 @@ function diagnoseLocation(player) {
     readProblems.push(`centro suporte ${center.x} ${centerBelowY} ${center.z}: ${error}`);
   }
 
-  const blocked = liquids.length > 0 || centerProblems.length > 0 || fitProblems.length > 0 || readProblems.length > 0;
+  const blocked = liquids.length > 0 || centerProblems.length > 0 || readProblems.length > 0;
   const affected = `X ${center.x - RADIUS}..${center.x + RADIUS}, Y ${center.y - 8}..${center.y + 70}, Z ${center.z - RADIUS}..${center.z + RADIUS}`;
   const structure = `base util aprox. X/Z ${center.x - STRUCTURE_RADIUS}..${center.x + STRUCTURE_RADIUS} / ${center.z - STRUCTURE_RADIUS}..${center.z + STRUCTURE_RADIUS}`;
 
@@ -170,16 +170,17 @@ function diagnoseLocation(player) {
     log(`BLOQUEADO centro=${center.x} ${center.y} ${center.z}; area=${affected}; ${structure}; liquidos=${liquids.length}; centro=${centerProblems.length}; ajuste=${fitProblems.length}; avisos_ajuste=${fitWarnings.length}; avisos_suporte=${supportWarnings.length}; avisos_ocupacao=${clearanceWarnings.length}; leitura=${readProblems.length}.`);
     if (liquids.length > 0) log(`Liquidos: ${summarize(liquids)}`);
     if (centerProblems.length > 0) log(`Centro sem suporte seguro: ${summarize(centerProblems)}`);
-    if (fitProblems.length > 0) log(`Ajuste vertical insuficiente: ${summarize(fitProblems)}`);
+    if (fitProblems.length > 0) log(`Aviso terreno baixo/ausente que sera preenchido pela preparacao: ${summarize(fitProblems)}`);
     if (fitWarnings.length > 0) log(`Aviso ajuste vertical dentro do limite Y-8..Y+2: ${summarize(fitWarnings)}`);
     if (supportWarnings.length > 0) log(`Aviso suporte periferico sera preenchido ate Y-8: ${summarize(supportWarnings)}`);
     if (clearanceWarnings.length > 0) log(`Aviso volume acima sera limpo; valide visualmente se nao ha construcao: ${summarize(clearanceWarnings)}`);
     if (readProblems.length > 0) log(`Falhas de leitura: ${summarize(readProblems)}`);
-    send(player, `BLOQUEADO em ${center.x} ${center.y} ${center.z}. Veja bedrock.log por ${PREFIX}. Nao rode montar_completa aqui.`);
+    send(player, `BLOQUEADO em ${center.x} ${center.y} ${center.z}. Motivo critico: liquido no volume, centro sem suporte ou falha de leitura. Veja bedrock.log por ${PREFIX}.`);
     return;
   }
 
-  log(`APROVADO centro=${center.x} ${center.y} ${center.z}; area=${affected}; ${structure}; amostras=${SAMPLE_POINTS.length}; avisos_ajuste=${fitWarnings.length}; avisos_suporte=${supportWarnings.length}; avisos_ocupacao=${clearanceWarnings.length}; subsolo_preenchido=Y-8..Y-1. Rode /function piramide_egito_gigante/executar_sprint1 antes da montagem completa.`);
+  log(`APROVADO centro=${center.x} ${center.y} ${center.z}; area=${affected}; ${structure}; amostras=${SAMPLE_POINTS.length}; terreno_baixo_preenchido=${fitProblems.length}; avisos_ajuste=${fitWarnings.length}; avisos_suporte=${supportWarnings.length}; avisos_ocupacao=${clearanceWarnings.length}; subsolo_preenchido=Y-8..Y-1. Rode /function piramide_egito_gigante/executar_sprint1 antes da montagem completa.`);
+  if (fitProblems.length > 0) log(`Aviso terreno baixo/ausente que sera preenchido pela preparacao: ${summarize(fitProblems)}`);
   if (fitWarnings.length > 0) log(`Aviso ajuste vertical dentro do limite Y-8..Y+2: ${summarize(fitWarnings)}`);
   if (supportWarnings.length > 0) log(`Aviso suporte periferico sera preenchido ate Y-8: ${summarize(supportWarnings)}`);
   if (clearanceWarnings.length > 0) log(`Aviso volume acima sera limpo; valide visualmente se nao ha construcao: ${summarize(clearanceWarnings)}`);
