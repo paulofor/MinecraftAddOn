@@ -3209,3 +3209,21 @@ Checklist executado no host via MCP readonly/projeto:
 - Causa raiz identificada: falso positivo de parsing; a validação confundiu versão de pack/add-on com versão do servidor por não filtrar contexto de `Pack Stack`, `BP`, `RP`, `manifest`, `module` e por aceitar versões com apenas duas casas depois do primeiro ponto.
 - Correção aplicada: o parser de logs agora só aceita padrões de startup do servidor com versões `X.Y.Z`/`X.Y.Z.W`, ignora contextos de packs/add-ons e, se os logs não contiverem a versão do servidor, tenta extrair a versão diretamente do binário `/root/MinecraftServer/bedrock_server` com `strings`, descartando candidatos `0.x`.
 - Próximo passo de validação: executar novamente o workflow; a etapa não deve mais reportar `0.1.x` como versão do Bedrock Dedicated Server. Se detectar versão real abaixo de `1.26.30`, o bloqueio continua correto e exige atualização do binário antes do deploy.
+
+## 2026-07-05 — Orientação operacional para testar local e gerar Pirâmide Egito Gigante
+
+- Atendimento à pergunta do operador: como testar o local e depois gerar a `Piramide Egito Gigante` no mundo ativo.
+- Pergunta obrigatória de causa raiz: por que não se deve executar diretamente a montagem completa? Porque a pirâmide é uma megaconstrução relativa ao jogador, ocupa cerca de 121x121 blocos em X/Z e prepara volume vertical amplo; se o centro estiver sobre água/lava, ar, terreno sem suporte ou perto de construções, a função pode limpar/alterar uma área grande ou ficar mal posicionada.
+- Evidências usadas: `init.mcfunction` informa área aproximada, riscos e fluxo seguro; `diagnosticar_local.mcfunction` dispara o diagnóstico no centro atual; `montar_completa.mcfunction` roda precheck antes de preparar/construir; `executar_sprint1.mcfunction` permite validar primeiro a base/fundação com a mesma trava.
+- Orientação entregue: posicionar-se com os pés no chão no centro candidato, rodar `/function piramide_egito_gigante/diagnosticar_local`, aguardar resultado no chat/log, executar primeiro `/function piramide_egito_gigante/executar_sprint1` se aprovado, validar visualmente a base e só então rodar `/function piramide_egito_gigante/montar_completa`.
+- Limitação conhecida: o diagnóstico/precheck é por amostragem, não varredura completa bloco-a-bloco; mesmo com aprovação, a validação visual após a Sprint 1 continua obrigatória antes da montagem completa.
+
+
+## 2026-07-05 — Correção do bloqueio excessivo no diagnóstico/precheck da Pirâmide
+
+- Relato do operador: tentou vários lugares e não conseguiu aprovar local para gerar a `Piramide Egito Gigante`.
+- Pergunta obrigatória de causa raiz: por que isso aconteceu? Porque a versão anterior tratava ausência de terreno nas bordas/cantos até Y-8 como bloqueio crítico, embora a própria função `preparar_terreno` já preencha o subsolo e nivele a base antes da construção. Em biomas naturais grandes, é comum que cantos a 60 blocos do centro fiquem sobre declives, ravinas, encostas ou chunks ainda sem suporte no mesmo Y; isso gerava bloqueios mesmo em locais que poderiam ser preparados com segurança.
+- Evidências usadas: `bedrock.log` mostrou diagnósticos `BLOQUEADO` em vários centros, com `liquidos=0` em um candidato e muitos avisos de suporte/ajuste; `precheck_ambiente.mcfunction` bloqueava `air` em `~-8` nos cantos/bordas; `preparar_terreno.mcfunction` já documenta e executa preenchimento do subsolo até Y-8.
+- Correção aplicada: o diagnóstico agora bloqueia somente por líquido, centro sem suporte seguro ou falha de leitura; terreno baixo/ausente nas bordas vira aviso porque será preenchido. A prechecagem em `.mcfunction` também deixou de bloquear `air` periférico em `~-8`, mantendo bloqueio para água/lava amostrada e jogador sem bloco sob os pés.
+- Versionamento: BP/RP `PiramideEgitoGigante` incrementados de `0.1.5` para `0.1.6` em `header.version`, `modules[].version` e dependência BP->RP.
+- Próximo passo de validação: publicar a versão `0.1.6`, reiniciar o Bedrock, testar novamente em um centro seco com os pés no chão; se o diagnóstico aprovar, executar `/function piramide_egito_gigante/executar_sprint1`, validar visualmente a fundação e só então `/function piramide_egito_gigante/montar_completa`.
