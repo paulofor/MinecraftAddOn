@@ -4,7 +4,7 @@ RUN apt-get update && \
     apt-get install -y --no-install-recommends g++ zlib1g-dev && \
     rm -rf /var/lib/apt/lists/*
 
-RUN pip wheel --no-cache-dir --wheel-dir /wheels amulet-leveldb==1.0.6
+RUN pip wheel --no-cache-dir --wheel-dir /wheels amulet-leveldb==1.0.7
 
 FROM python:3.12-slim
 
