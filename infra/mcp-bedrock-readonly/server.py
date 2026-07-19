@@ -18,7 +18,7 @@ from pathlib import Path
 from typing import Any
 
 SERVER_NAME = "bedrock-readonly"
-SERVER_VERSION = "0.5.1"
+SERVER_VERSION = "0.5.2"
 PROTOCOL_VERSION = "2024-11-05"
 
 DEFAULT_ALLOWED_ROOTS = (
