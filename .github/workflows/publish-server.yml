@@ -396,22 +396,51 @@ jobs:
 
       - name: Reiniciar servidor Bedrock no host remoto
         run: |
-          ssh -i ~/.ssh/id_ed25519 -p "$VPS_PORT" "$VPS_USER@$VPS_HOST" \
-            "set -euo pipefail && \
-             LOG_FILE='/root/MinecraftServer/logging/bedrock.log' && \
-             if [ -f \"\$LOG_FILE\" ]; then \
-               wc -l < \"\$LOG_FILE\" > /tmp/bedrock_log_pre_restart_line; \
-             else \
-               echo 0 > /tmp/bedrock_log_pre_restart_line; \
-             fi && \
-             echo \"[info] Linha inicial para validação pós-restart: \$(cat /tmp/bedrock_log_pre_restart_line)\" && \
-             command -v systemctl >/dev/null 2>&1 && \
-             echo '[info] Reiniciando bedrock.service via systemd wrapper com FIFO' && \
-             systemctl restart bedrock.service && \
-             systemctl is-active --quiet bedrock.service && \
-             test -p /run/minecraft/bedrock-console.in && \
-             stat -c '[ok] FIFO %n %F %a' /run/minecraft/bedrock-console.in && \
-             tail -n 50 /root/MinecraftServer/logging/bedrock.log"
+          ssh -i ~/.ssh/id_ed25519 -p "$VPS_PORT" "$VPS_USER@$VPS_HOST" "bash -s" <<'REMOTE'
+          set -euo pipefail
+
+          LOG_FILE='/root/MinecraftServer/logging/bedrock.log'
+          if [ -f "$LOG_FILE" ]; then
+            wc -l < "$LOG_FILE" > /tmp/bedrock_log_pre_restart_line
+          else
+            echo 0 > /tmp/bedrock_log_pre_restart_line
+          fi
+          echo "[info] Linha inicial para validação pós-restart: $(cat /tmp/bedrock_log_pre_restart_line)"
+
+          if ! command -v systemctl >/dev/null 2>&1; then
+            echo '[erro] systemctl não disponível; o bridge FIFO depende do bedrock.service versionado.' >&2
+            exit 1
+          fi
+
+          echo '[info] Reiniciando bedrock.service via systemd wrapper com FIFO'
+          if ! systemctl restart bedrock.service; then
+            echo '[erro] systemctl restart bedrock.service falhou; coletando diagnóstico.' >&2
+            systemctl --no-pager --full status bedrock.service || true
+            journalctl -u bedrock.service -n 120 --no-pager || true
+            tail -n 120 /root/MinecraftServer/logging/bedrock.log || true
+            exit 1
+          fi
+
+          for attempt in $(seq 1 30); do
+            if systemctl is-active --quiet bedrock.service && test -p /run/minecraft/bedrock-console.in; then
+              if awk 'NR >= start' start="$(cat /tmp/bedrock_log_pre_restart_line)" /root/MinecraftServer/logging/bedrock.log | grep -q 'Server started\|IPv4 supported'; then
+                break
+              fi
+            fi
+            sleep 1
+          done
+
+          if ! systemctl is-active --quiet bedrock.service; then
+            echo '[erro] bedrock.service não ficou active após restart.' >&2
+            systemctl --no-pager --full status bedrock.service || true
+            journalctl -u bedrock.service -n 120 --no-pager || true
+            exit 1
+          fi
+
+          test -p /run/minecraft/bedrock-console.in
+          stat -c '[ok] FIFO %n %F %a' /run/minecraft/bedrock-console.in
+          tail -n 50 /root/MinecraftServer/logging/bedrock.log
+          REMOTE
 
       - name: Validar comando inofensivo no bridge Bedrock
         run: |

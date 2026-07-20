@@ -45,7 +45,8 @@ Environment=BEDROCK_BINARY=${BEDROCK_ROOT}/bedrock_server
 Environment=BEDROCK_FIFO=${BEDROCK_FIFO}
 Environment=BEDROCK_LOG_FILE=${BEDROCK_LOG_FILE}
 Environment=BEDROCK_COMMAND_LOG=${BEDROCK_COMMAND_LOG}
-ExecStartPre=-/bin/bash -lc 'pkill -f ${BEDROCK_ROOT}/bedrock_server || true'
+Environment=LD_LIBRARY_PATH=${BEDROCK_ROOT}
+ExecStartPre=-/bin/bash -lc 'pkill -TERM -x bedrock_server || true; for i in {1..20}; do pgrep -x bedrock_server >/dev/null || exit 0; sleep 0.5; done; pkill -KILL -x bedrock_server || true'
 ExecStart=/usr/local/bin/bedrock_console_wrapper.sh
 Restart=always
 RestartSec=5

@@ -6,6 +6,7 @@ BEDROCK_BINARY="${BEDROCK_BINARY:-${BEDROCK_ROOT}/bedrock_server}"
 BEDROCK_FIFO="${BEDROCK_FIFO:-/run/minecraft/bedrock-console.in}"
 BEDROCK_LOG_FILE="${BEDROCK_LOG_FILE:-${BEDROCK_ROOT}/logging/bedrock.log}"
 BEDROCK_COMMAND_LOG="${BEDROCK_COMMAND_LOG:-${BEDROCK_ROOT}/logging/bedrock-console-commands.log}"
+export LD_LIBRARY_PATH="${LD_LIBRARY_PATH:-${BEDROCK_ROOT}}"
 
 if [[ ! -x "${BEDROCK_BINARY}" ]]; then
   echo "[erro] bedrock_server não executável em ${BEDROCK_BINARY}" >&2
@@ -29,8 +30,8 @@ touch "${BEDROCK_LOG_FILE}" "${BEDROCK_COMMAND_LOG}"
 chmod 0640 "${BEDROCK_LOG_FILE}" "${BEDROCK_COMMAND_LOG}"
 
 {
-  printf '[%s] [bridge] iniciando bedrock_server com FIFO=%s LOG=%s\n' \
-    "$(date -Is)" "${BEDROCK_FIFO}" "${BEDROCK_LOG_FILE}"
+  printf '[%s] [bridge] iniciando bedrock_server com FIFO=%s LOG=%s LD_LIBRARY_PATH=%s\n' \
+    "$(date -Is)" "${BEDROCK_FIFO}" "${BEDROCK_LOG_FILE}" "${LD_LIBRARY_PATH}"
 } >>"${BEDROCK_COMMAND_LOG}"
 
 cd "${BEDROCK_ROOT}"
