@@ -333,10 +333,13 @@ jobs:
              export BEDROCK_ROOT='/root/MinecraftServer' && \
              export HOST_LOG_DIR='/root/MinecraftServer/logging' && \
              export HOST_REPO_DIR='$REMOTE_DIR' && \
+             export BEDROCK_RUN_DIR='/run/minecraft' && \
+             export BEDROCK_CONSOLE_FIFO='/run/minecraft/bedrock-console.in' && \
+             export BEDROCK_COMMAND_LOG='/root/MinecraftServer/logging/bedrock-console-commands.log' && \
              if command -v systemctl >/dev/null 2>&1; then \
                systemctl disable --now bedrock-log-viewer.service >/dev/null 2>&1 || true; \
              fi && \
-             mkdir -p \"\$HOST_LOG_DIR\" && \
+             mkdir -p \"\$HOST_LOG_DIR\" \"\$BEDROCK_RUN_DIR\" && \
              if [ -d \"\$BEDROCK_LOG_PATH\" ]; then \
                BEDROCK_LOG_FILE=\"\${BEDROCK_LOG_PATH%/}/bedrock.log\"; \
              else \
@@ -377,6 +380,13 @@ jobs:
              test -s /tmp/mcp_initialize.json && \
              echo '[ok] MCP respondeu ao initialize.'"
 
+      - name: Instalar bridge FIFO do console Bedrock
+        run: |
+          ssh -i ~/.ssh/id_ed25519 -p "$VPS_PORT" "$VPS_USER@$VPS_HOST" \
+            "set -euo pipefail && \
+             cd '$REMOTE_DIR' && \
+             bash tools/install_bedrock_console_bridge.sh '$REMOTE_DIR' /root/MinecraftServer /run/minecraft/bedrock-console.in /root/MinecraftServer/logging/bedrock.log /root/MinecraftServer/logging/bedrock-console-commands.log"
+
       - name: Coletar diagnóstico pré-restart do Bedrock
         run: |
           ssh -i ~/.ssh/id_ed25519 -p "$VPS_PORT" "$VPS_USER@$VPS_HOST" \
@@ -386,61 +396,84 @@ jobs:
 
       - name: Reiniciar servidor Bedrock no host remoto
         run: |
+          ssh -i ~/.ssh/id_ed25519 -p "$VPS_PORT" "$VPS_USER@$VPS_HOST" "bash -s" <<'REMOTE'
+          set -euo pipefail
+
+          LOG_FILE='/root/MinecraftServer/logging/bedrock.log'
+          if [ -f "$LOG_FILE" ]; then
+            wc -l < "$LOG_FILE" > /tmp/bedrock_log_pre_restart_line
+          else
+            echo 0 > /tmp/bedrock_log_pre_restart_line
+          fi
+          echo "[info] Linha inicial para validação pós-restart: $(cat /tmp/bedrock_log_pre_restart_line)"
+
+          if ! command -v systemctl >/dev/null 2>&1; then
+            echo '[erro] systemctl não disponível; o bridge FIFO depende do bedrock.service versionado.' >&2
+            exit 1
+          fi
+
+          echo '[info] Reiniciando bedrock.service via systemd wrapper com FIFO'
+          if ! systemctl restart bedrock.service; then
+            echo '[erro] systemctl restart bedrock.service falhou; coletando diagnóstico.' >&2
+            systemctl --no-pager --full status bedrock.service || true
+            journalctl -u bedrock.service -n 120 --no-pager || true
+            tail -n 120 /root/MinecraftServer/logging/bedrock.log || true
+            exit 1
+          fi
+
+          for attempt in $(seq 1 30); do
+            if systemctl is-active --quiet bedrock.service && test -p /run/minecraft/bedrock-console.in; then
+              if awk 'NR >= start' start="$(cat /tmp/bedrock_log_pre_restart_line)" /root/MinecraftServer/logging/bedrock.log | grep -q 'Server started\|IPv4 supported'; then
+                break
+              fi
+            fi
+            sleep 1
+          done
+
+          if ! systemctl is-active --quiet bedrock.service; then
+            echo '[erro] bedrock.service não ficou active após restart.' >&2
+            systemctl --no-pager --full status bedrock.service || true
+            journalctl -u bedrock.service -n 120 --no-pager || true
+            exit 1
+          fi
+
+          test -p /run/minecraft/bedrock-console.in
+          stat -c '[ok] FIFO %n %F %a' /run/minecraft/bedrock-console.in
+          tail -n 50 /root/MinecraftServer/logging/bedrock.log
+          REMOTE
+
+      - name: Validar comando inofensivo no bridge Bedrock
+        run: |
           ssh -i ~/.ssh/id_ed25519 -p "$VPS_PORT" "$VPS_USER@$VPS_HOST" \
             "set -euo pipefail && \
-             LOG_FILE='/root/MinecraftServer/logging/bedrock.log' && \
-             if [ -f \"\$LOG_FILE\" ]; then \
-               wc -l < \"\$LOG_FILE\" > /tmp/bedrock_log_pre_restart_line; \
-             else \
-               echo 0 > /tmp/bedrock_log_pre_restart_line; \
-             fi && \
-             echo \"[info] Linha inicial para validação pós-restart: \$(cat /tmp/bedrock_log_pre_restart_line)\" && \
-             if command -v systemctl >/dev/null 2>&1; then \
-               echo '[info] Reiniciando bedrock.service via systemd'; \
-               if (command -v sudo >/dev/null 2>&1 && sudo -n systemctl restart bedrock.service && sudo -n systemctl is-active --quiet bedrock.service) || \
-                  (systemctl restart bedrock.service && systemctl is-active --quiet bedrock.service); then \
-                 restarted=1; \
-               fi; \
-             fi; \
-             if [ \"\${restarted:-0}\" -ne 1 ] && command -v docker >/dev/null 2>&1; then \
-               container_name=\$(docker ps -a --format '{{.Names}}' | grep -E '^bedrock$|bedrock-server|minecraft.*bedrock' | head -n 1 || true); \
-               if [ -n \"\$container_name\" ]; then \
-                 echo \"[info] Reiniciando container \$container_name via docker\"; \
-                 docker restart \"\$container_name\" >/dev/null; \
-                 restarted=1; \
-               fi; \
-             fi; \
-             if [ \"\${restarted:-0}\" -ne 1 ]; then \
-               bedrock_root=''; \
-               for candidate in /root/MinecraftServer; do \
-                 if [ -x \"\$candidate/bedrock_server\" ]; then \
-                   bedrock_root=\"\$candidate\"; \
-                   break; \
-                 fi; \
-               done; \
-               if [ -n \"\$bedrock_root\" ]; then \
-                 echo \"[info] Reiniciando binário bedrock_server manualmente em \$bedrock_root\"; \
-                 pkill -f '/root/MinecraftServer/bedrock_server' || true; \
-                 cd \"\$bedrock_root\" && \
-                 mkdir -p logging && \
-                 nohup ./bedrock_server > logging/bedrock.log 2>&1 < /dev/null & \
-                 sleep 2; \
-                 restarted=1; \
-               fi; \
-             fi; \
-             if [ \"\${restarted:-0}\" -ne 1 ]; then \
-               echo '[info] Diagnóstico: serviços systemd candidatos'; \
-               systemctl list-unit-files --type=service --all | grep -Ei 'bedrock|minecraft' || true; \
-               echo '[info] Diagnóstico: containers docker candidatos'; \
-               docker ps -a --format '{{.Names}}' | grep -Ei 'bedrock|minecraft' || true; \
-               echo '[erro] Não foi possível identificar como reiniciar o Bedrock.' >&2; \
-               exit 1; \
-             fi && \
-             if [ -f /root/MinecraftServer/logging/bedrock.log ]; then \
-               tail -n 50 /root/MinecraftServer/logging/bedrock.log; \
-             else \
-               echo '[warn] Log bedrock.log não encontrado em /root/MinecraftServer/logging'; \
-             fi"
+             /usr/local/bin/send_bedrock_console_command.sh 'say [MinecraftAddOn] bridge FIFO operacional' && \
+             sleep 2 && \
+             tail -n 40 /root/MinecraftServer/logging/bedrock-console-commands.log && \
+             tail -n 80 /root/MinecraftServer/logging/bedrock.log"
+
+      - name: Validar tool MCP administrativa do console Bedrock
+        run: |
+          ssh -i ~/.ssh/id_ed25519 -p "$VPS_PORT" "$VPS_USER@$VPS_HOST" \
+            "set -euo pipefail && \
+             curl -fsS -X POST 'http://127.0.0.1:80/mcp' \
+               -H 'Content-Type: application/json' \
+               --data '{\"jsonrpc\":\"2.0\",\"id\":31,\"method\":\"tools/call\",\"params\":{\"name\":\"run_bedrock_command\",\"arguments\":{\"command\":\"say [MinecraftAddOn] MCP run_bedrock_command operacional\",\"executor\":\"github-actions\"}}}' >/tmp/mcp_run_bedrock_allowed.json && \
+             curl -fsS -X POST 'http://127.0.0.1:80/mcp' \
+               -H 'Content-Type: application/json' \
+               --data '{\"jsonrpc\":\"2.0\",\"id\":32,\"method\":\"tools/call\",\"params\":{\"name\":\"run_bedrock_command\",\"arguments\":{\"command\":\"fill 0 0 0 1 1 1 air\",\"executor\":\"github-actions-rejection-test\"}}}' >/tmp/mcp_run_bedrock_rejected.json || true && \
+             grep -q '\"status\": \"sent\"' /tmp/mcp_run_bedrock_allowed.json && \
+             grep -q 'fora da allowlist\|destrutivos diretos' /tmp/mcp_run_bedrock_rejected.json && \
+             curl -fsS -X POST 'http://127.0.0.1:80/mcp' \
+               -H 'Content-Type: application/json' \
+               --data '{\"jsonrpc\":\"2.0\",\"id\":33,\"method\":\"tools/call\",\"params\":{\"name\":\"plan_build_location\",\"arguments\":{\"build_key\":\"piramide_egito_gigante\",\"approval_confirmed\":false}}}' >/tmp/mcp_plan_build_location.json && \
+             grep -q 'approval_required' /tmp/mcp_plan_build_location.json && \
+             curl -fsS -X POST 'http://127.0.0.1:80/mcp' \
+               -H 'Content-Type: application/json' \
+               --data '{\"jsonrpc\":\"2.0\",\"id\":34,\"method\":\"tools/call\",\"params\":{\"name\":\"execute_planned_build\",\"arguments\":{\"build_key\":\"piramide_egito_gigante\",\"approval_confirmed\":false,\"execute\":false,\"executor\":\"github-actions-dry-run\"}}}' >/tmp/mcp_execute_planned_build_dry_run.json && \
+             grep -q 'blocked_by_precheck_or_missing_approval' /tmp/mcp_execute_planned_build_dry_run.json && \
+             sleep 2 && \
+             tail -n 60 /root/MinecraftServer/logging/bedrock-console-commands.log && \
+             tail -n 100 /root/MinecraftServer/logging/bedrock.log"
 
       - name: Coletar diagnóstico pós-restart do Bedrock
         run: |
