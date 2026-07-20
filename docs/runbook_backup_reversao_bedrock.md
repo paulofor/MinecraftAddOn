@@ -20,9 +20,19 @@ Antes de chamar `execute_planned_build` com `execute=true`, inclusive para a pri
 
 ## Comando recomendado de backup no host
 
+Via MCP administrativo, quando a versão com `backup_world` estiver publicada:
+
+```bash
+curl -fsS -X POST 'http://127.0.0.1:80/mcp' \
+  -H 'Content-Type: application/json' \
+  --data '{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"backup_world","arguments":{"world_path":"/root/MinecraftServer/worlds/Bedrock level","output_dir":"/root/Uploads","label":"pre-megaconstrucao"}}}'
+```
+
+Diretamente no host:
+
 ```bash
 cd /root/MinecraftAddOn
-bash tools/backup_world_data.sh /root/MinecraftServer/worlds "pre-megaconstrucao-$(date +%Y%m%d-%H%M%S)"
+BACKUP_DIR=/root/Uploads bash tools/backup_world_data.sh /root/MinecraftServer/worlds "pre-megaconstrucao-$(date +%Y%m%d-%H%M%S)"
 ```
 
 Se o script acima não estiver disponível no host, criar um arquivo compactado do mundo ativo antes da execução:

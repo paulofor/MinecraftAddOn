@@ -202,6 +202,33 @@ class BedrockCommandAllowlistTest(unittest.TestCase):
     self.assertEqual(result["status"], "sent")
     run_command.assert_called_once_with(command, executor="unit-test")
 
+  def test_backup_world_creates_tarball_with_hash(self) -> None:
+    with tempfile.TemporaryDirectory() as tmpdir:
+      tmp = Path(tmpdir)
+      world = tmp / "worlds" / "Bedrock level"
+      db = world / "db"
+      db.mkdir(parents=True)
+      (db / "CURRENT").write_text("MANIFEST-000001\n", encoding="utf-8")
+      output = tmp / "uploads"
+
+      original_roots = server.ALLOWED_ROOTS
+      server.ALLOWED_ROOTS = [tmp.resolve()]
+      try:
+        result = server._backup_world(str(world), str(output), label="pre piramide")
+      finally:
+        server.ALLOWED_ROOTS = original_roots
+
+      archive = Path(result["archive_path"])
+      self.assertEqual(result["status"], "created")
+      self.assertTrue(archive.exists())
+      self.assertGreater(result["bytes"], 0)
+      self.assertRegex(result["sha256"], r"^[0-9a-f]{64}$")
+      self.assertIn("pre-piramide", archive.name)
+
+  def test_tools_list_exposes_backup_world(self) -> None:
+    tools = {tool["name"] for tool in server._tools_list_result()["tools"]}
+    self.assertIn("backup_world", tools)
+
 
 if __name__ == "__main__":
   unittest.main()

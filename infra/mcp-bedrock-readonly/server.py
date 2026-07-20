@@ -6,6 +6,7 @@ from __future__ import annotations
 import base64
 import datetime as dt
 import errno
+import hashlib
 import json
 import math
 import os
@@ -15,12 +16,13 @@ import struct
 import subprocess
 import tempfile
 import sys
+import tarfile
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from typing import Any
 
 SERVER_NAME = "bedrock-readonly"
-SERVER_VERSION = "0.9.0"
+SERVER_VERSION = "0.10.0"
 PROTOCOL_VERSION = "2024-11-05"
 
 DEFAULT_ALLOWED_ROOTS = (
@@ -106,6 +108,58 @@ def _read_file(path: str, max_bytes: int | None = None) -> dict[str, Any]:
     "bytes_returned": len(raw),
     "truncated": resolved.stat().st_size > len(raw),
     "content": text,
+  }
+
+
+def _safe_backup_label(label: str | None) -> str:
+  raw = (label or f"manual-{dt.datetime.now(dt.UTC).strftime('%Y%m%d-%H%M%S')}").strip()
+  safe = re.sub(r"[^A-Za-z0-9_.-]+", "-", raw).strip(".-_")
+  if not safe:
+    safe = f"manual-{dt.datetime.now(dt.UTC).strftime('%Y%m%d-%H%M%S')}"
+  return safe[:80]
+
+
+def _backup_world(
+  world_path: str = "/root/MinecraftServer/worlds/Bedrock level",
+  output_dir: str = "/root/Uploads",
+  label: str | None = None,
+) -> dict[str, Any]:
+  ok_world, resolved_world = _is_path_allowed(world_path)
+  if not ok_world:
+    raise ValueError(f"world_path fora do escopo permitido: {resolved_world}")
+  if not resolved_world.is_dir():
+    raise FileNotFoundError(f"world_path não é diretório: {resolved_world}")
+
+  ok_output, resolved_output = _is_path_allowed(output_dir)
+  if not ok_output:
+    raise ValueError(f"output_dir fora do escopo permitido: {resolved_output}")
+  resolved_output.mkdir(parents=True, exist_ok=True)
+
+  backup_label = _safe_backup_label(label)
+  world_slug = re.sub(r"[^A-Za-z0-9_.-]+", "-", resolved_world.name).strip(".-_") or "world"
+  archive_path = (resolved_output / f"{world_slug}-{backup_label}.tar.gz").resolve()
+  ok_archive, resolved_archive = _is_path_allowed(str(archive_path))
+  if not ok_archive:
+    raise ValueError(f"archive_path fora do escopo permitido: {resolved_archive}")
+  if resolved_archive.exists():
+    raise FileExistsError(f"backup já existe: {resolved_archive}")
+
+  with tarfile.open(resolved_archive, "w:gz") as archive:
+    archive.add(resolved_world, arcname=resolved_world.name, recursive=True)
+
+  digest = hashlib.sha256()
+  with resolved_archive.open("rb") as handle:
+    for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+      digest.update(chunk)
+
+  return {
+    "status": "created",
+    "world_path": str(resolved_world),
+    "archive_path": str(resolved_archive),
+    "bytes": resolved_archive.stat().st_size,
+    "sha256": digest.hexdigest(),
+    "created_at": dt.datetime.now(dt.UTC).isoformat(),
+    "warning": "Backup criado com o servidor possivelmente ativo; para restauração crítica, prefira parar o Bedrock ou validar integridade visualmente após restore.",
   }
 
 
@@ -1106,6 +1160,18 @@ def _tools_list_result() -> dict[str, Any]:
         },
       },
       {
+        "name": "backup_world",
+        "description": "Cria um backup tar.gz do mundo Bedrock em /root/Uploads com hash SHA-256.",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "world_path": {"type": "string"},
+            "output_dir": {"type": "string"},
+            "label": {"type": "string"},
+          },
+        },
+      },
+      {
         "name": "run_bedrock_command",
         "description": "Envia comando administrativo allowlisted ao console Bedrock via FIFO seguro.",
         "inputSchema": {
@@ -1278,6 +1344,12 @@ def _handle_rpc(message: dict[str, Any]) -> dict[str, Any] | None:
         )
       elif name == "restart_bedrock":
         payload = _restart_bedrock()
+      elif name == "backup_world":
+        payload = _backup_world(
+          world_path=arguments.get("world_path", "/root/MinecraftServer/worlds/Bedrock level"),
+          output_dir=arguments.get("output_dir", "/root/Uploads"),
+          label=arguments.get("label"),
+        )
       elif name == "run_bedrock_command":
         payload = _run_bedrock_command(
           command=arguments["command"],
