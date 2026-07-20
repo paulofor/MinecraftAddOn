@@ -22,7 +22,7 @@ from pathlib import Path
 from typing import Any
 
 SERVER_NAME = "bedrock-readonly"
-SERVER_VERSION = "0.12.0"
+SERVER_VERSION = "0.13.0"
 PROTOCOL_VERSION = "2024-11-05"
 
 DEFAULT_ALLOWED_ROOTS = (
@@ -44,6 +44,7 @@ MAX_BLOCK_REGION_VOLUME = int(os.getenv("MAX_BLOCK_REGION_VOLUME", "4096"))
 BEDROCK_RESTART_CMD = [part for part in os.getenv("BEDROCK_RESTART_CMD", "").split() if part]
 BEDROCK_CONSOLE_FIFO = Path(os.getenv("BEDROCK_CONSOLE_FIFO", "/run/minecraft/bedrock-console.in"))
 BEDROCK_COMMAND_LOG = Path(os.getenv("BEDROCK_COMMAND_LOG", "/root/MinecraftServer/logging/bedrock-console-commands.log"))
+BEDROCK_SERVER_PROPERTIES = Path(os.getenv("BEDROCK_SERVER_PROPERTIES", "/root/MinecraftServer/server.properties"))
 
 SAFE_COMMANDS = {
   "cat",
@@ -1040,6 +1041,28 @@ def _validate_bedrock_command(command: str) -> str:
   return normalized
 
 
+def _bedrock_allows_cheats() -> tuple[bool | None, str]:
+  try:
+    content = BEDROCK_SERVER_PROPERTIES.read_text(encoding="utf-8")
+  except FileNotFoundError:
+    return None, f"server.properties ausente: {BEDROCK_SERVER_PROPERTIES}"
+  except OSError as exc:
+    return None, f"falha ao ler server.properties: {exc}"
+
+  for raw_line in content.splitlines():
+    line = raw_line.strip()
+    if not line or line.startswith("#") or "=" not in line:
+      continue
+    key, value = line.split("=", 1)
+    if key.strip() == "allow-cheats":
+      return value.strip().lower() == "true", f"allow-cheats={value.strip().lower()}"
+  return None, "allow-cheats ausente em server.properties"
+
+
+def _requires_cheats_enabled(command: str) -> bool:
+  return not command.startswith("say ")
+
+
 def _append_bedrock_command_audit(status: str, executor: str, command: str, detail: str = "") -> None:
   BEDROCK_COMMAND_LOG.parent.mkdir(parents=True, exist_ok=True)
   payload = {
@@ -1061,6 +1084,15 @@ def _run_bedrock_command(command: str, executor: str = "mcp") -> dict[str, Any]:
     safe_command = str(command).strip().replace("\n", " ").replace("\r", " ")[:240]
     _append_bedrock_command_audit("rejected", executor, safe_command, str(exc))
     raise
+
+  if _requires_cheats_enabled(normalized):
+    cheats_enabled, detail = _bedrock_allows_cheats()
+    if cheats_enabled is False:
+      message = f"Comando Bedrock bloqueado: server.properties está com {detail}; comandos de bloco/função exigem allow-cheats=true e restart do Bedrock"
+      _append_bedrock_command_audit("blocked", executor, normalized, message)
+      raise RuntimeError(message)
+    if cheats_enabled is None:
+      _append_bedrock_command_audit("warning", executor, normalized, detail)
 
   if not BEDROCK_CONSOLE_FIFO.exists() or not BEDROCK_CONSOLE_FIFO.is_fifo():
     _append_bedrock_command_audit("failed", executor, normalized, f"FIFO ausente: {BEDROCK_CONSOLE_FIFO}")

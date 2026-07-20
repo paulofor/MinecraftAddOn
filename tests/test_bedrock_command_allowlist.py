@@ -231,6 +231,42 @@ class BedrockCommandAllowlistTest(unittest.TestCase):
     tools = {tool["name"] for tool in server._tools_list_result()["tools"]}
     self.assertIn("backup_world", tools)
 
+  def test_blocks_function_commands_when_allow_cheats_false(self) -> None:
+    with tempfile.TemporaryDirectory() as tmpdir:
+      props = Path(tmpdir) / "server.properties"
+      props.write_text("allow-cheats=false\n", encoding="utf-8")
+      with mock.patch.object(server, "BEDROCK_SERVER_PROPERTIES", props), \
+        mock.patch.object(server, "BEDROCK_CONSOLE_FIFO", Path(tmpdir) / "missing.fifo"), \
+        mock.patch.object(server, "BEDROCK_COMMAND_LOG", Path(tmpdir) / "commands.log"):
+        with self.assertRaisesRegex(RuntimeError, "allow-cheats=true"):
+          server._run_bedrock_command("function piramide_egito_gigante/diagnostico_marcador_operador")
+
+        audit = (Path(tmpdir) / "commands.log").read_text(encoding="utf-8")
+        self.assertIn('"status": "blocked"', audit)
+
+  def test_allows_say_when_allow_cheats_false(self) -> None:
+    with tempfile.TemporaryDirectory() as tmpdir:
+      props = Path(tmpdir) / "server.properties"
+      props.write_text("allow-cheats=false\n", encoding="utf-8")
+      fifo = Path(tmpdir) / "console.in"
+      os.mkfifo(fifo)
+      received: list[str] = []
+
+      def reader() -> None:
+        with fifo.open("r", encoding="utf-8") as handle:
+          received.append(handle.readline().strip())
+
+      thread = threading.Thread(target=reader)
+      thread.start()
+      with mock.patch.object(server, "BEDROCK_SERVER_PROPERTIES", props), \
+        mock.patch.object(server, "BEDROCK_CONSOLE_FIFO", fifo), \
+        mock.patch.object(server, "BEDROCK_COMMAND_LOG", Path(tmpdir) / "commands.log"):
+        result = server._run_bedrock_command("say [MinecraftAddOn] MCP run_bedrock_command operacional")
+
+      thread.join(timeout=2)
+      self.assertEqual(result["status"], "sent")
+      self.assertEqual(received, ["say [MinecraftAddOn] MCP run_bedrock_command operacional"])
+
 
 if __name__ == "__main__":
   unittest.main()

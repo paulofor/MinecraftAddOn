@@ -380,6 +380,29 @@ jobs:
              test -s /tmp/mcp_initialize.json && \
              echo '[ok] MCP respondeu ao initialize.'"
 
+      - name: Garantir comandos administrativos do Bedrock habilitados
+        run: |
+          ssh -i ~/.ssh/id_ed25519 -p "$VPS_PORT" "$VPS_USER@$VPS_HOST" "bash -s" <<'REMOTE'
+          set -euo pipefail
+          PROPS='/root/MinecraftServer/server.properties'
+          if [ ! -f "$PROPS" ]; then
+            echo '[erro] server.properties não encontrado em /root/MinecraftServer.' >&2
+            exit 1
+          fi
+          before=$(sed -n 's/^allow-cheats=//p' "$PROPS" | head -n 1 || true)
+          if [ "$before" = 'true' ]; then
+            echo '[ok] allow-cheats=true já configurado.'
+            exit 0
+          fi
+          cp "$PROPS" "$PROPS.pre-allow-cheats.$(date +%Y%m%d-%H%M%S).bak"
+          if grep -q '^allow-cheats=' "$PROPS"; then
+            sed -i 's/^allow-cheats=.*/allow-cheats=true/' "$PROPS"
+          else
+            printf '\nallow-cheats=true\n' >> "$PROPS"
+          fi
+          echo "[info] allow-cheats alterado de '${before:-ausente}' para 'true'. Reinício do bedrock.service aplicará a configuração."
+          REMOTE
+
       - name: Instalar bridge FIFO do console Bedrock
         run: |
           ssh -i ~/.ssh/id_ed25519 -p "$VPS_PORT" "$VPS_USER@$VPS_HOST" \
