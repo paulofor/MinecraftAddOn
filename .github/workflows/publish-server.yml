@@ -453,27 +453,91 @@ jobs:
 
       - name: Validar tool MCP administrativa do console Bedrock
         run: |
-          ssh -i ~/.ssh/id_ed25519 -p "$VPS_PORT" "$VPS_USER@$VPS_HOST" \
-            "set -euo pipefail && \
-             curl -fsS -X POST 'http://127.0.0.1:80/mcp' \
-               -H 'Content-Type: application/json' \
-               --data '{\"jsonrpc\":\"2.0\",\"id\":31,\"method\":\"tools/call\",\"params\":{\"name\":\"run_bedrock_command\",\"arguments\":{\"command\":\"say [MinecraftAddOn] MCP run_bedrock_command operacional\",\"executor\":\"github-actions\"}}}' >/tmp/mcp_run_bedrock_allowed.json && \
-             curl -fsS -X POST 'http://127.0.0.1:80/mcp' \
-               -H 'Content-Type: application/json' \
-               --data '{\"jsonrpc\":\"2.0\",\"id\":32,\"method\":\"tools/call\",\"params\":{\"name\":\"run_bedrock_command\",\"arguments\":{\"command\":\"fill 0 0 0 1 1 1 air\",\"executor\":\"github-actions-rejection-test\"}}}' >/tmp/mcp_run_bedrock_rejected.json || true && \
-             grep -q '\"status\": \"sent\"' /tmp/mcp_run_bedrock_allowed.json && \
-             grep -q 'fora da allowlist\|destrutivos diretos' /tmp/mcp_run_bedrock_rejected.json && \
-             curl -fsS -X POST 'http://127.0.0.1:80/mcp' \
-               -H 'Content-Type: application/json' \
-               --data '{\"jsonrpc\":\"2.0\",\"id\":33,\"method\":\"tools/call\",\"params\":{\"name\":\"plan_build_location\",\"arguments\":{\"build_key\":\"piramide_egito_gigante\",\"approval_confirmed\":false}}}' >/tmp/mcp_plan_build_location.json && \
-             grep -q 'approval_required' /tmp/mcp_plan_build_location.json && \
-             curl -fsS -X POST 'http://127.0.0.1:80/mcp' \
-               -H 'Content-Type: application/json' \
-               --data '{\"jsonrpc\":\"2.0\",\"id\":34,\"method\":\"tools/call\",\"params\":{\"name\":\"execute_planned_build\",\"arguments\":{\"build_key\":\"piramide_egito_gigante\",\"approval_confirmed\":false,\"execute\":false,\"executor\":\"github-actions-dry-run\"}}}' >/tmp/mcp_execute_planned_build_dry_run.json && \
-             grep -q 'blocked_by_precheck_or_missing_approval' /tmp/mcp_execute_planned_build_dry_run.json && \
-             sleep 2 && \
-             tail -n 60 /root/MinecraftServer/logging/bedrock-console-commands.log && \
-             tail -n 100 /root/MinecraftServer/logging/bedrock.log"
+          ssh -i ~/.ssh/id_ed25519 -p "$VPS_PORT" "$VPS_USER@$VPS_HOST" "bash -s" <<'REMOTE'
+          set -euo pipefail
+
+          call_mcp() {
+            local output_file="$1"
+            local payload="$2"
+            curl -fsS -X POST 'http://127.0.0.1:80/mcp' \
+              -H 'Content-Type: application/json' \
+              --data "$payload" >"$output_file"
+          }
+
+          parse_mcp_text_json() {
+            python3 - "$1" <<'PY_REMOTE_PARSE'
+          import json
+          import sys
+
+          with open(sys.argv[1], encoding="utf-8") as handle:
+              outer = json.load(handle)
+          if "error" in outer:
+              raise SystemExit(f"MCP retornou erro inesperado: {outer['error']}")
+          print(json.dumps(json.loads(outer["result"]["content"][0]["text"]), ensure_ascii=False))
+          PY_REMOTE_PARSE
+          }
+
+          assert_mcp_error_contains() {
+            python3 - "$1" "$2" <<'PY_REMOTE_ERROR'
+          import json
+          import sys
+
+          with open(sys.argv[1], encoding="utf-8") as handle:
+              outer = json.load(handle)
+          if "error" not in outer:
+              raise SystemExit("MCP deveria ter recusado o comando, mas retornou sucesso")
+          needle = sys.argv[2]
+          serialized = json.dumps(outer["error"], ensure_ascii=False)
+          if needle not in serialized:
+              raise SystemExit(f"Erro MCP não contém {needle!r}: {serialized}")
+          PY_REMOTE_ERROR
+          }
+
+          assert_payload_field() {
+            python3 - "$1" "$2" "$3" <<'PY_REMOTE_ASSERT_FIELD'
+          import json
+          import sys
+
+          payload = json.loads(sys.argv[1])
+          field = sys.argv[2]
+          expected = sys.argv[3]
+          actual = payload.get(field)
+          if str(actual) != expected:
+              raise SystemExit(f"Campo {field!r} esperado={expected!r} atual={actual!r} payload={payload}")
+          PY_REMOTE_ASSERT_FIELD
+          }
+
+          assert_payload_has_key() {
+            python3 - "$1" "$2" <<'PY_REMOTE_ASSERT_KEY'
+          import json
+          import sys
+
+          payload = json.loads(sys.argv[1])
+          key = sys.argv[2]
+          if key not in payload:
+              raise SystemExit(f"Payload sem chave {key!r}: {payload}")
+          PY_REMOTE_ASSERT_KEY
+          }
+
+          call_mcp /tmp/mcp_run_bedrock_allowed.json '{"jsonrpc":"2.0","id":31,"method":"tools/call","params":{"name":"run_bedrock_command","arguments":{"command":"say [MinecraftAddOn] MCP run_bedrock_command operacional","executor":"github-actions"}}}'
+          allowed_payload="$(parse_mcp_text_json /tmp/mcp_run_bedrock_allowed.json)"
+          assert_payload_field "$allowed_payload" status sent
+
+          call_mcp /tmp/mcp_run_bedrock_rejected.json '{"jsonrpc":"2.0","id":32,"method":"tools/call","params":{"name":"run_bedrock_command","arguments":{"command":"fill 0 0 0 1 1 1 air","executor":"github-actions-rejection-test"}}}'
+          assert_mcp_error_contains /tmp/mcp_run_bedrock_rejected.json 'destrutivos diretos'
+
+          call_mcp /tmp/mcp_plan_build_location.json '{"jsonrpc":"2.0","id":33,"method":"tools/call","params":{"name":"plan_build_location","arguments":{"build_key":"piramide_egito_gigante","approval_confirmed":false}}}'
+          plan_payload="$(parse_mcp_text_json /tmp/mcp_plan_build_location.json)"
+          assert_payload_has_key "$plan_payload" approval_required
+
+          call_mcp /tmp/mcp_execute_planned_build_dry_run.json '{"jsonrpc":"2.0","id":34,"method":"tools/call","params":{"name":"execute_planned_build","arguments":{"build_key":"piramide_egito_gigante","approval_confirmed":false,"execute":false,"executor":"github-actions-dry-run"}}}'
+          dry_run_payload="$(parse_mcp_text_json /tmp/mcp_execute_planned_build_dry_run.json)"
+          assert_payload_field "$dry_run_payload" status blocked_by_precheck_or_missing_approval
+
+          sleep 2
+          tail -n 60 /root/MinecraftServer/logging/bedrock-console-commands.log
+          tail -n 100 /root/MinecraftServer/logging/bedrock.log
+          REMOTE
 
       - name: Coletar diagnóstico pós-restart do Bedrock
         run: |
