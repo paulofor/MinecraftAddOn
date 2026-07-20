@@ -1,6 +1,6 @@
 # Inicializacao da Piramide Egito Gigante.
 scoreboard objectives add peg_agua dummy
-scoreboard players set @s peg_agua 0
+scoreboard players set peg_state peg_agua 0
 title @s title §6Piramide Egito Gigante
 title @s subtitle §fMegaconstrucao educativa com terreno preparado
 tellraw @s {"rawtext":[{"text":"[Piramide] Execute /function piramide_egito_gigante/montar_completa em area seca, livre, e com os pes no chao no centro desejado. A obra ocupa X/Z ~121x121, ancora a fundacao de Y-32 a Y+58 e limpa ate Y+70."}]}

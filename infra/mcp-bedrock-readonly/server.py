@@ -4,6 +4,9 @@
 from __future__ import annotations
 
 import base64
+import datetime as dt
+import errno
+import hashlib
 import json
 import math
 import os
@@ -13,12 +16,13 @@ import struct
 import subprocess
 import tempfile
 import sys
+import tarfile
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from typing import Any
 
 SERVER_NAME = "bedrock-readonly"
-SERVER_VERSION = "0.5.2"
+SERVER_VERSION = "0.12.0"
 PROTOCOL_VERSION = "2024-11-05"
 
 DEFAULT_ALLOWED_ROOTS = (
@@ -38,6 +42,8 @@ HTTP_PORT = int(os.getenv("MCP_HTTP_PORT", "8765"))
 MAX_BLOCK_REGION_VOLUME = int(os.getenv("MAX_BLOCK_REGION_VOLUME", "4096"))
 
 BEDROCK_RESTART_CMD = [part for part in os.getenv("BEDROCK_RESTART_CMD", "").split() if part]
+BEDROCK_CONSOLE_FIFO = Path(os.getenv("BEDROCK_CONSOLE_FIFO", "/run/minecraft/bedrock-console.in"))
+BEDROCK_COMMAND_LOG = Path(os.getenv("BEDROCK_COMMAND_LOG", "/root/MinecraftServer/logging/bedrock-console-commands.log"))
 
 SAFE_COMMANDS = {
   "cat",
@@ -102,6 +108,58 @@ def _read_file(path: str, max_bytes: int | None = None) -> dict[str, Any]:
     "bytes_returned": len(raw),
     "truncated": resolved.stat().st_size > len(raw),
     "content": text,
+  }
+
+
+def _safe_backup_label(label: str | None) -> str:
+  raw = (label or f"manual-{dt.datetime.now(dt.UTC).strftime('%Y%m%d-%H%M%S')}").strip()
+  safe = re.sub(r"[^A-Za-z0-9_.-]+", "-", raw).strip(".-_")
+  if not safe:
+    safe = f"manual-{dt.datetime.now(dt.UTC).strftime('%Y%m%d-%H%M%S')}"
+  return safe[:80]
+
+
+def _backup_world(
+  world_path: str = "/root/MinecraftServer/worlds/Bedrock level",
+  output_dir: str = "/root/Uploads",
+  label: str | None = None,
+) -> dict[str, Any]:
+  ok_world, resolved_world = _is_path_allowed(world_path)
+  if not ok_world:
+    raise ValueError(f"world_path fora do escopo permitido: {resolved_world}")
+  if not resolved_world.is_dir():
+    raise FileNotFoundError(f"world_path não é diretório: {resolved_world}")
+
+  ok_output, resolved_output = _is_path_allowed(output_dir)
+  if not ok_output:
+    raise ValueError(f"output_dir fora do escopo permitido: {resolved_output}")
+  resolved_output.mkdir(parents=True, exist_ok=True)
+
+  backup_label = _safe_backup_label(label)
+  world_slug = re.sub(r"[^A-Za-z0-9_.-]+", "-", resolved_world.name).strip(".-_") or "world"
+  archive_path = (resolved_output / f"{world_slug}-{backup_label}.tar.gz").resolve()
+  ok_archive, resolved_archive = _is_path_allowed(str(archive_path))
+  if not ok_archive:
+    raise ValueError(f"archive_path fora do escopo permitido: {resolved_archive}")
+  if resolved_archive.exists():
+    raise FileExistsError(f"backup já existe: {resolved_archive}")
+
+  with tarfile.open(resolved_archive, "w:gz") as archive:
+    archive.add(resolved_world, arcname=resolved_world.name, recursive=True)
+
+  digest = hashlib.sha256()
+  with resolved_archive.open("rb") as handle:
+    for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+      digest.update(chunk)
+
+  return {
+    "status": "created",
+    "world_path": str(resolved_world),
+    "archive_path": str(resolved_archive),
+    "bytes": resolved_archive.stat().st_size,
+    "sha256": digest.hexdigest(),
+    "created_at": dt.datetime.now(dt.UTC).isoformat(),
+    "warning": "Backup criado com o servidor possivelmente ativo; para restauração crítica, prefira parar o Bedrock ou validar integridade visualmente após restore.",
   }
 
 
@@ -695,6 +753,343 @@ def _write_png_base64(path: str, png_base64: str, overwrite: bool = False) -> di
     "overwrote": existed_before,
   }
 
+
+
+BUILD_PROFILES: dict[str, dict[str, Any]] = {
+  "piramide_egito_gigante": {
+    "function_path": "piramide_egito_gigante/montar_completa",
+    "size_x": 129,
+    "size_y": 68,
+    "size_z": 129,
+    "preferred_y": 69,
+    "margin": 65,
+    "risk_notes": [
+      "Megaconstrução larga; exige centro bem afastado de água, lava, árvores, bases e obras existentes.",
+      "O precheck usa amostragem e não substitui validação visual no jogo.",
+    ],
+  },
+}
+
+
+def _validate_function_path(function_path: str) -> str:
+  normalized = function_path.strip().removeprefix("/")
+  if not re.fullmatch(r"[a-z0-9_./-]+", normalized):
+    raise ValueError("function_path contém caracteres não permitidos")
+  if ".." in normalized or normalized.startswith("/"):
+    raise ValueError("function_path inválido")
+  return normalized
+
+
+def _build_sampling_points(center: dict[str, int], affected_area: dict[str, list[int]]) -> list[dict[str, int]]:
+  min_x, max_x = affected_area["x"]
+  min_y, max_y = affected_area["y"]
+  min_z, max_z = affected_area["z"]
+  base_y = center["y"]
+  y_values = sorted({max(min_y, base_y - 1), base_y, max_y})
+  xz_points = [
+    (center["x"], center["z"]),
+    (min_x, min_z),
+    (min_x, max_z),
+    (max_x, min_z),
+    (max_x, max_z),
+  ]
+  points = []
+  for y in y_values:
+    for x, z in xz_points:
+      points.append({"x": x, "y": y, "z": z})
+  return points
+
+
+def _sample_build_blocks(world_path: str, points: list[dict[str, int]], dimension: int) -> dict[str, Any]:
+  samples = []
+  errors = []
+  risky_blocks = []
+  try:
+    db, resolved_world, cleanup_path = _open_leveldb(world_path, use_snapshot=True)
+  except Exception as exc:  # noqa: BLE001
+    return {
+      "samples": samples,
+      "errors": [{"point": point, "error": str(exc)} for point in points],
+      "risky_blocks": risky_blocks,
+    }
+
+  try:
+    for point in points:
+      try:
+        sample = _get_block_from_db(db, point["x"], point["y"], point["z"], dimension)
+        sample["world_path"] = str(resolved_world)
+        sample["snapshot_used"] = True
+        samples.append(sample)
+        block = str(sample.get("block", ""))
+        if block.endswith(":water") or block.endswith(":lava") or block in {"minecraft:water", "minecraft:lava"}:
+          risky_blocks.append(sample)
+      except Exception as exc:  # noqa: BLE001
+        errors.append({"point": point, "error": str(exc)})
+  finally:
+    db.close()
+    if cleanup_path is not None:
+      shutil.rmtree(cleanup_path, ignore_errors=True)
+  return {"samples": samples, "errors": errors, "risky_blocks": risky_blocks}
+
+
+def _plan_build_location(
+  build_key: str = "piramide_egito_gigante",
+  world_path: str = "/root/MinecraftServer/worlds/Bedrock level",
+  log_path: str = "/root/MinecraftServer/logging/bedrock.log",
+  function_path: str | None = None,
+  size_x: int | None = None,
+  size_y: int | None = None,
+  size_z: int | None = None,
+  preferred_y: int | None = None,
+  margin: int | None = None,
+  approval_confirmed: bool = False,
+  dimension: int = OVERWORLD_DIMENSION_ID,
+) -> dict[str, Any]:
+  profile = BUILD_PROFILES.get(build_key, {})
+  resolved_function = _validate_function_path(function_path or str(profile.get("function_path", "")))
+  resolved_size_x = int(size_x or profile.get("size_x", 19))
+  resolved_size_y = int(size_y or profile.get("size_y", 10))
+  resolved_size_z = int(size_z or profile.get("size_z", 19))
+  resolved_preferred_y = int(preferred_y if preferred_y is not None else profile.get("preferred_y", 64))
+  resolved_margin = int(margin if margin is not None else profile.get("margin", 48))
+
+  suggestion = _suggest_arena_location(
+    world_path=world_path,
+    log_path=log_path,
+    size_x=resolved_size_x,
+    size_y=resolved_size_y,
+    size_z=resolved_size_z,
+    preferred_y=resolved_preferred_y,
+    margin=resolved_margin,
+  )
+  center = {key: int(value) for key, value in suggestion["recommended_center"].items()}
+  affected_area = suggestion["affected_area"]
+  sampling_points = _build_sampling_points(center, affected_area)
+  precheck = _sample_build_blocks(world_path, sampling_points, dimension)
+
+  warnings = list(suggestion.get("warnings", []))
+  warnings.extend(profile.get("risk_notes", []))
+  if precheck["errors"]:
+    warnings.append("Amostragem LevelDB falhou em pelo menos um ponto; exigir validação visual antes de montar.")
+  if precheck["risky_blocks"]:
+    warnings.append("Amostragem encontrou água/lava; não executar montagem sem escolher outro local ou preparar terreno.")
+
+  requires_visual_validation = bool(precheck["errors"] or precheck["risky_blocks"] or suggestion.get("confidence") == "low")
+  approval_required = requires_visual_validation or not approval_confirmed
+  command = None
+  if approval_confirmed and not requires_visual_validation:
+    command = f"execute positioned {center['x']} {center['y']} {center['z']} run function {resolved_function}"
+
+  return {
+    "build_key": build_key,
+    "function_path": resolved_function,
+    "recommended_center": center,
+    "affected_area": affected_area,
+    "size": {"x": resolved_size_x, "y": resolved_size_y, "z": resolved_size_z},
+    "margin": resolved_margin,
+    "confidence": suggestion.get("confidence"),
+    "reasons": suggestion.get("reasons", []),
+    "warnings": warnings,
+    "precheck": {
+      "strategy": "sampled_center_and_corners",
+      "limitation": "Amostragem de centro/cantos em Y de base/topo; não é varredura completa da área.",
+      "points_checked": len(sampling_points),
+      "samples_returned": len(precheck["samples"]),
+      "errors": precheck["errors"],
+      "risky_blocks": precheck["risky_blocks"],
+    },
+    "approval_required": approval_required,
+    "requires_visual_validation": requires_visual_validation,
+    "command_after_approval": command,
+    "next_step": (
+      "Validar visualmente no jogo e repetir com approval_confirmed=true após aprovação formal."
+      if approval_required else
+      "Comando final gerado; enviar via run_bedrock_command somente se a Sprint 5 autorizar execução."
+    ),
+    "reusable_structure_note": "Perfil inicial é Pirâmide, mas build_key/function_path/size/margin permitem reutilizar o fluxo para outros Add-Ons.",
+  }
+
+
+
+def _read_optional_tail(path: Path, max_bytes: int = 4000) -> dict[str, Any]:
+  if not path.exists() or not path.is_file():
+    return {"path": str(path), "available": False, "content": ""}
+  return {"path": str(path), "available": True, "content": _read_tail_bytes(path, max_bytes)}
+
+
+def _expected_confirmation_token(build_key: str, center: dict[str, int]) -> str:
+  return f"EXECUTAR_{build_key}_{center['x']}_{center['y']}_{center['z']}"
+
+
+def _execute_planned_build(
+  build_key: str = "piramide_egito_gigante",
+  executor: str = "mcp",
+  approval_confirmed: bool = False,
+  execute: bool = False,
+  confirmation_token: str | None = None,
+  world_path: str = "/root/MinecraftServer/worlds/Bedrock level",
+  log_path: str = "/root/MinecraftServer/logging/bedrock.log",
+  function_path: str | None = None,
+  size_x: int | None = None,
+  size_y: int | None = None,
+  size_z: int | None = None,
+  preferred_y: int | None = None,
+  margin: int | None = None,
+  dimension: int = OVERWORLD_DIMENSION_ID,
+) -> dict[str, Any]:
+  plan = _plan_build_location(
+    build_key=build_key,
+    world_path=world_path,
+    log_path=log_path,
+    function_path=function_path,
+    size_x=size_x,
+    size_y=size_y,
+    size_z=size_z,
+    preferred_y=preferred_y,
+    margin=margin,
+    approval_confirmed=approval_confirmed,
+    dimension=dimension,
+  )
+
+  command = plan.get("command_after_approval")
+  if not command:
+    return {
+      "status": "blocked_by_precheck_or_missing_approval",
+      "build_key": build_key,
+      "plan": plan,
+      "execution": None,
+      "next_step": "Corrigir incertezas/precheck ou repetir com approval_confirmed=true após aprovação formal.",
+    }
+
+  normalized_command = _validate_bedrock_command(str(command))
+  expected_token = _expected_confirmation_token(build_key, plan["recommended_center"])
+  if not execute:
+    _append_bedrock_command_audit("dry_run", executor, normalized_command, f"expected_confirmation_token={expected_token}")
+    return {
+      "status": "dry_run_ready",
+      "build_key": build_key,
+      "plan": plan,
+      "execution": {
+        "would_send": normalized_command,
+        "executor": executor,
+        "expected_confirmation_token": expected_token,
+      },
+      "next_step": "Para executar, repetir com execute=true e confirmation_token igual ao token esperado após backup e validação visual.",
+    }
+
+  if confirmation_token != expected_token:
+    _append_bedrock_command_audit("rejected_confirmation", executor, normalized_command, "confirmation_token ausente ou divergente")
+    return {
+      "status": "blocked_by_confirmation",
+      "build_key": build_key,
+      "plan": plan,
+      "execution": {
+        "would_send": normalized_command,
+        "executor": executor,
+        "expected_confirmation_token": expected_token,
+      },
+      "next_step": "Confirmar backup/precheck e reenviar com o confirmation_token esperado exatamente igual.",
+    }
+
+  execution = _run_bedrock_command(normalized_command, executor=executor)
+  return {
+    "status": "sent",
+    "build_key": build_key,
+    "plan": plan,
+    "execution": execution,
+    "post_execution_observation": {
+      "command_audit_tail": _read_optional_tail(BEDROCK_COMMAND_LOG),
+      "bedrock_log_tail": _read_optional_tail(Path(log_path)),
+      "operator_guidance": "Se o log/chat não evidenciar resultado visual, peça captura do operador no local antes de repetir a montagem.",
+    },
+  }
+
+
+DANGEROUS_BEDROCK_COMMAND_RE = re.compile(r"(^|\s)(fill|setblock|kill|op|deop|stop)\b", re.IGNORECASE)
+ALLOWED_BEDROCK_COMMAND_PATTERNS = (
+  re.compile(r"^say \[MinecraftAddOn\] MCP run_bedrock_command operacional$"),
+  re.compile(r"^function piramide_egito_gigante/montar_centro_historico$"),
+  re.compile(r"^function piramide_egito_gigante/diagnosticar_local$"),
+  re.compile(r"^function piramide_egito_gigante/diagnostico_marcador_centro$"),
+  re.compile(r"^function piramide_egito_gigante/diagnostico_marcador_operador$"),
+  re.compile(
+    r"^execute positioned -?\d+ -?\d+ -?\d+ run function piramide_egito_gigante/montar_completa$"
+  ),
+)
+
+
+def _normalize_bedrock_command(command: str) -> str:
+  normalized = " ".join(command.strip().split())
+  if not normalized:
+    raise ValueError("Comando Bedrock vazio")
+  if normalized.startswith("/"):
+    raise ValueError("Envie comandos Bedrock sem '/' inicial")
+  if any(ord(char) < 32 for char in normalized):
+    raise ValueError("Comando Bedrock contém caractere de controle")
+  if len(normalized) > 240:
+    raise ValueError("Comando Bedrock excede 240 caracteres")
+  return normalized
+
+
+def _validate_bedrock_command(command: str) -> str:
+  normalized = _normalize_bedrock_command(command)
+  if DANGEROUS_BEDROCK_COMMAND_RE.search(normalized):
+    raise ValueError("Comando Bedrock recusado: comandos destrutivos diretos exigem função versionada allowlisted")
+  if not any(pattern.fullmatch(normalized) for pattern in ALLOWED_BEDROCK_COMMAND_PATTERNS):
+    raise ValueError("Comando Bedrock fora da allowlist administrativa")
+  return normalized
+
+
+def _append_bedrock_command_audit(status: str, executor: str, command: str, detail: str = "") -> None:
+  BEDROCK_COMMAND_LOG.parent.mkdir(parents=True, exist_ok=True)
+  payload = {
+    "timestamp": dt.datetime.now(dt.UTC).isoformat(),
+    "status": status,
+    "executor": executor,
+    "command": command,
+  }
+  if detail:
+    payload["detail"] = detail
+  with BEDROCK_COMMAND_LOG.open("a", encoding="utf-8") as handle:
+    handle.write(json.dumps(payload, ensure_ascii=False, sort_keys=True) + "\n")
+
+
+def _run_bedrock_command(command: str, executor: str = "mcp") -> dict[str, Any]:
+  try:
+    normalized = _validate_bedrock_command(command)
+  except Exception as exc:  # noqa: BLE001
+    safe_command = str(command).strip().replace("\n", " ").replace("\r", " ")[:240]
+    _append_bedrock_command_audit("rejected", executor, safe_command, str(exc))
+    raise
+
+  if not BEDROCK_CONSOLE_FIFO.exists() or not BEDROCK_CONSOLE_FIFO.is_fifo():
+    _append_bedrock_command_audit("failed", executor, normalized, f"FIFO ausente: {BEDROCK_CONSOLE_FIFO}")
+    raise ValueError(f"FIFO do console Bedrock ausente ou inválido: {BEDROCK_CONSOLE_FIFO}")
+
+  try:
+    fd = os.open(BEDROCK_CONSOLE_FIFO, os.O_WRONLY | os.O_NONBLOCK)
+  except OSError as exc:
+    detail = f"Falha ao abrir FIFO: {exc}"
+    _append_bedrock_command_audit("failed", executor, normalized, detail)
+    if exc.errno == errno.ENXIO:
+      raise RuntimeError("FIFO do console Bedrock não possui leitor ativo; verifique bedrock.service") from exc
+    raise RuntimeError(detail) from exc
+
+  try:
+    os.write(fd, f"{normalized}\n".encode("utf-8"))
+  finally:
+    os.close(fd)
+
+  _append_bedrock_command_audit("sent", executor, normalized)
+  return {
+    "status": "sent",
+    "command": normalized,
+    "executor": executor,
+    "fifo": str(BEDROCK_CONSOLE_FIFO),
+    "audit_log": str(BEDROCK_COMMAND_LOG),
+  }
+
+
 def _restart_bedrock() -> dict[str, Any]:
   if not BEDROCK_RESTART_CMD:
     raise ValueError("Reinício não configurado: defina BEDROCK_RESTART_CMD no ambiente do MCP")
@@ -767,6 +1162,30 @@ def _tools_list_result() -> dict[str, Any]:
         },
       },
       {
+        "name": "backup_world",
+        "description": "Cria um backup tar.gz do mundo Bedrock em /root/Uploads com hash SHA-256.",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "world_path": {"type": "string"},
+            "output_dir": {"type": "string"},
+            "label": {"type": "string"},
+          },
+        },
+      },
+      {
+        "name": "run_bedrock_command",
+        "description": "Envia comando administrativo allowlisted ao console Bedrock via FIFO seguro.",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "command": {"type": "string"},
+            "executor": {"type": "string"},
+          },
+          "required": ["command"],
+        },
+      },
+      {
         "name": "run_read_command",
         "description": "Executa comandos Linux somente leitura a partir de uma allowlist.",
         "inputSchema": {
@@ -814,6 +1233,49 @@ def _tools_list_result() -> dict[str, Any]:
             "use_snapshot": {"type": "boolean"},
           },
           "required": ["x1", "y1", "z1", "x2", "y2", "z2"],
+        },
+      },
+      {
+        "name": "execute_planned_build",
+        "description": "Executa ou simula a execução de uma construção planejada após precheck e aprovação explícita.",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "build_key": {"type": "string"},
+            "executor": {"type": "string"},
+            "approval_confirmed": {"type": "boolean"},
+            "execute": {"type": "boolean"},
+            "confirmation_token": {"type": "string"},
+            "world_path": {"type": "string"},
+            "log_path": {"type": "string"},
+            "function_path": {"type": "string"},
+            "size_x": {"type": "integer", "minimum": 1},
+            "size_y": {"type": "integer", "minimum": 1},
+            "size_z": {"type": "integer", "minimum": 1},
+            "preferred_y": {"type": "integer"},
+            "margin": {"type": "integer", "minimum": 0},
+            "dimension": {"type": "integer"},
+          },
+        },
+      },
+      {
+        "name": "plan_build_location",
+        "description": "Planeja local de construção com heurística, área afetada, amostragem e comando pendente de aprovação.",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "build_key": {"type": "string"},
+            "world_path": {"type": "string"},
+            "log_path": {"type": "string"},
+            "function_path": {"type": "string"},
+            "size_x": {"type": "integer", "minimum": 1},
+            "size_y": {"type": "integer", "minimum": 1},
+            "size_z": {"type": "integer", "minimum": 1},
+            "preferred_y": {"type": "integer"},
+            "margin": {"type": "integer", "minimum": 0},
+            "approval_confirmed": {"type": "boolean"},
+            "dimension": {"type": "integer"},
+          },
         },
       },
       {
@@ -884,6 +1346,17 @@ def _handle_rpc(message: dict[str, Any]) -> dict[str, Any] | None:
         )
       elif name == "restart_bedrock":
         payload = _restart_bedrock()
+      elif name == "backup_world":
+        payload = _backup_world(
+          world_path=arguments.get("world_path", "/root/MinecraftServer/worlds/Bedrock level"),
+          output_dir=arguments.get("output_dir", "/root/Uploads"),
+          label=arguments.get("label"),
+        )
+      elif name == "run_bedrock_command":
+        payload = _run_bedrock_command(
+          command=arguments["command"],
+          executor=arguments.get("executor", "mcp"),
+        )
       elif name == "run_read_command":
         payload = _run_read_command(
           command=arguments["command"],
@@ -912,6 +1385,37 @@ def _handle_rpc(message: dict[str, Any]) -> dict[str, Any] | None:
           dimension=int(arguments.get("dimension", OVERWORLD_DIMENSION_ID)),
           include_air=bool(arguments.get("include_air", True)),
           use_snapshot=bool(arguments.get("use_snapshot", True)),
+        )
+      elif name == "execute_planned_build":
+        payload = _execute_planned_build(
+          build_key=arguments.get("build_key", "piramide_egito_gigante"),
+          executor=arguments.get("executor", "mcp"),
+          approval_confirmed=bool(arguments.get("approval_confirmed", False)),
+          execute=bool(arguments.get("execute", False)),
+          confirmation_token=arguments.get("confirmation_token"),
+          world_path=arguments.get("world_path", "/root/MinecraftServer/worlds/Bedrock level"),
+          log_path=arguments.get("log_path", "/root/MinecraftServer/logging/bedrock.log"),
+          function_path=arguments.get("function_path"),
+          size_x=arguments.get("size_x"),
+          size_y=arguments.get("size_y"),
+          size_z=arguments.get("size_z"),
+          preferred_y=arguments.get("preferred_y"),
+          margin=arguments.get("margin"),
+          dimension=int(arguments.get("dimension", OVERWORLD_DIMENSION_ID)),
+        )
+      elif name == "plan_build_location":
+        payload = _plan_build_location(
+          build_key=arguments.get("build_key", "piramide_egito_gigante"),
+          world_path=arguments.get("world_path", "/root/MinecraftServer/worlds/Bedrock level"),
+          log_path=arguments.get("log_path", "/root/MinecraftServer/logging/bedrock.log"),
+          function_path=arguments.get("function_path"),
+          size_x=arguments.get("size_x"),
+          size_y=arguments.get("size_y"),
+          size_z=arguments.get("size_z"),
+          preferred_y=arguments.get("preferred_y"),
+          margin=arguments.get("margin"),
+          approval_confirmed=bool(arguments.get("approval_confirmed", False)),
+          dimension=int(arguments.get("dimension", OVERWORLD_DIMENSION_ID)),
         )
       elif name == "suggest_arena_location":
         payload = _suggest_arena_location(
