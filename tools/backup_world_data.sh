@@ -8,12 +8,15 @@ RETENTION_DAYS="${RETENTION_DAYS:-14}"
 CRON_HOUR="${CRON_HOUR:-4}"
 CRON_MINUTE="${CRON_MINUTE:-0}"
 CRON_LOG="${CRON_LOG:-$BACKUP_DIR/backup_world_data.log}"
+LABEL="${LABEL:-}"
 SCRIPT_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/$(basename "${BASH_SOURCE[0]}")"
 
 usage() {
   cat <<USAGE
 Uso:
   $(basename "$0") --world-dir /caminho/do/mundo
+  $(basename "$0") --world-dir /caminho/do/mundo --label pre-megaconstrucao
+  $(basename "$0") /root/MinecraftServer/worlds pre-megaconstrucao
   $(basename "$0") --world-dir /caminho/do/mundo --install-cron
 
 Descrição:
@@ -23,11 +26,14 @@ Descrição:
 
 Opções:
   --world-dir PATH    Caminho da pasta do mundo (obrigatório)
+  --backup-dir PATH   Destino do backup
+  --label LABEL       Rótulo seguro adicionado ao nome do arquivo
   --install-cron      Instala rotina diária no crontab
   -h, --help          Mostra esta ajuda
 
 Variáveis opcionais:
   BACKUP_DIR          Destino dos backups (padrão: $ROOT_DIR/backups/worlds)
+  LABEL               Rótulo seguro adicionado ao nome do arquivo
   RETENTION_DAYS      Dias de retenção (padrão: 14)
   CRON_HOUR           Hora da rotina (padrão: 4)
   CRON_MINUTE         Minuto da rotina (padrão: 0)
@@ -64,10 +70,15 @@ create_backup() {
   require_world_dir
   mkdir -p "$BACKUP_DIR"
 
-  local world_name timestamp archive_name archive_path
+  local world_name timestamp archive_name archive_path safe_label
   world_name="$(basename "$WORLD_DIR")"
   timestamp="$(date +'%Y%m%d_%H%M%S')"
-  archive_name="world_backup_${world_name}_${timestamp}.tar.gz"
+  safe_label="$(printf '%s' "$LABEL" | tr -c 'A-Za-z0-9_.-' '-' | sed 's/^[._-]*//; s/[._-]*$//' | cut -c1-80)"
+  if [[ -n "$safe_label" ]]; then
+    archive_name="world_backup_${world_name}_${safe_label}_${timestamp}.tar.gz"
+  else
+    archive_name="world_backup_${world_name}_${timestamp}.tar.gz"
+  fi
   archive_path="$BACKUP_DIR/$archive_name"
 
   echo "[info] Fazendo backup de: $WORLD_DIR"
@@ -76,6 +87,9 @@ create_backup() {
     "$world_name"
 
   echo "[ok] Backup criado em: $archive_path"
+  if command -v sha256sum >/dev/null 2>&1; then
+    sha256sum "$archive_path" | awk '{print "[ok] SHA-256: " $1}'
+  fi
 
   if [[ "$RETENTION_DAYS" =~ ^[0-9]+$ ]]; then
     find "$BACKUP_DIR" -maxdepth 1 -type f -name "world_backup_${world_name}_*.tar.gz" -mtime +"$RETENTION_DAYS" -delete
@@ -127,6 +141,22 @@ while [[ $# -gt 0 ]]; do
       WORLD_DIR="$2"
       shift 2
       ;;
+    --backup-dir)
+      if [[ $# -lt 2 ]]; then
+        echo "[erro] --backup-dir exige um caminho."
+        exit 1
+      fi
+      BACKUP_DIR="$2"
+      shift 2
+      ;;
+    --label)
+      if [[ $# -lt 2 ]]; then
+        echo "[erro] --label exige um valor."
+        exit 1
+      fi
+      LABEL="$2"
+      shift 2
+      ;;
     --install-cron)
       INSTALL_CRON=1
       shift
@@ -136,9 +166,21 @@ while [[ $# -gt 0 ]]; do
       exit 0
       ;;
     *)
-      echo "[erro] Opção inválida: $1"
-      usage
-      exit 1
+      if [[ -z "$WORLD_DIR" ]]; then
+        if [[ -d "$1/Bedrock level" ]]; then
+          WORLD_DIR="$1/Bedrock level"
+        else
+          WORLD_DIR="$1"
+        fi
+        shift
+      elif [[ -z "$LABEL" ]]; then
+        LABEL="$1"
+        shift
+      else
+        echo "[erro] Opção inválida: $1"
+        usage
+        exit 1
+      fi
       ;;
   esac
 done
