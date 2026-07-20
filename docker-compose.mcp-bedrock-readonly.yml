@@ -13,9 +13,12 @@ services:
       - MCP_TRANSPORT=${MCP_TRANSPORT:-http}
       - MCP_HTTP_HOST=${MCP_HTTP_HOST:-0.0.0.0}
       - MCP_HTTP_PORT=${MCP_HTTP_PORT:-8765}
+      - BEDROCK_CONSOLE_FIFO=${BEDROCK_CONSOLE_FIFO:-/run/minecraft/bedrock-console.in}
+      - BEDROCK_COMMAND_LOG=${BEDROCK_COMMAND_LOG:-/root/MinecraftServer/logging/bedrock-console-commands.log}
     ports:
       - ${MCP_HOST_PORT:-80}:${MCP_HTTP_PORT:-8765}
     volumes:
       - ${BEDROCK_ROOT:-/root/MinecraftServer}:/root/MinecraftServer:${BEDROCK_ROOT_MOUNT_MODE:-rw}
+      - ${BEDROCK_RUN_DIR:-/run/minecraft}:/run/minecraft:${BEDROCK_RUN_MOUNT_MODE:-rw}
       - ${HOST_REPO_DIR:-/root/MinecraftAddOn}:/root/MinecraftAddOn:${HOST_REPO_MOUNT_MODE:-ro}
       - ${HOST_UPLOADS_DIR:-/root/Uploads}:/root/Uploads:${HOST_UPLOADS_MOUNT_MODE:-ro}
