@@ -65,9 +65,10 @@ Descobrir como o `bedrock_server` está sendo executado no host e qual mecanismo
 - Nenhum comando Bedrock destrutivo executado nessa sprint.
 
 ### Registro pós-conclusão
-- O que foi feito:
-- O que ficou faltando:
-- Impedimentos/bloqueios:
+- O que foi feito: em 2026-07-19 15:27 UTC-3, foi executado diagnóstico readonly via MCP (`tools/list`, `run_read_command find/cat/tail`) e inspeção local do workflow de deploy. A investigação perguntou explicitamente: **por que isso aconteceu?** A causa raiz confirmada é arquitetural: o projeto reinicia o Bedrock por `systemd` quando disponível, por Docker quando algum container candidato existe, ou por fallback manual com `nohup ./bedrock_server ... < /dev/null &`; nenhum desses caminhos versionados mantém hoje uma ponte administrativa MCP para o stdin/console do `bedrock_server`. O MCP disponível também roda como serviço readonly em container (`/proc/1/cmdline = python /app/server.py`) e não expõe visão de processos do host suficiente para anexar no console Bedrock.
+- Decisão registrada: mecanismo alvo recomendado para as próximas sprints é **systemd wrapper com FIFO seguro** para o `bedrock_server`, porque o workflow já prioriza `bedrock.service` no restart e o fallback atual com `nohup ... < /dev/null` deve ser substituído por um mecanismo persistente e auditável. `screen/tmux` fica apenas como alternativa manual de contingência; Docker attach não foi escolhido porque o Bedrock principal observado é tratado pelo workflow como processo/serviço do host, enquanto Docker é usado de forma clara para Log Viewer e MCP readonly.
+- O que ficou faltando: confirmar no host, durante a Sprint 2, a existência/conteúdo real de `bedrock.service` fora do escopo readonly do MCP atual; criar o wrapper; ajustar o workflow para não cair mais no fallback com stdin fechado; e validar um comando inofensivo (`say`) somente depois de existir allowlist/bridge.
+- Impedimentos/bloqueios: o MCP atual não permite `ps`, `systemctl`, `docker` nem leitura de `/etc/systemd`; a consulta `journalctl -u bedrock.service` falhou porque `journalctl` não está instalado dentro do container MCP. Portanto, a decisão usa evidências do workflow versionado, do log Bedrock ativo e da limitação observada do container MCP, sem executar comando Bedrock destrutivo.
 
 ## Sprint 2 — Wrapper seguro do console Bedrock
 
@@ -86,9 +87,10 @@ Criar um wrapper versionado que mantenha um canal controlado para enviar comando
 - Restart não deixa processos órfãos.
 
 ### Registro pós-conclusão
-- O que foi feito:
-- O que ficou faltando:
-- Impedimentos/bloqueios:
+- O que foi feito: em 2026-07-19 15:33 UTC-3, foi criado um wrapper versionado para executar `bedrock_server` com stdin ligado ao FIFO seguro `/run/minecraft/bedrock-console.in`, registrar inicialização em `bedrock-console-commands.log` e preservar o descritor do FIFO vivo entre comandos. Também foi criado um instalador systemd (`bedrock.service`) e um emissor temporário restrito a `say <mensagem>` para validar o bridge sem liberar comandos destrutivos antes da Sprint 3.
+- Causa raiz registrada: **por que isso aconteceu?** Porque o fallback anterior do workflow usava `nohup ./bedrock_server ... < /dev/null &`, fechando stdin e criando risco de processo órfão sem canal administrativo; a correção ataca a causa ao transformar o restart em um serviço systemd versionado, com FIFO persistente e sem fallback manual com stdin fechado e com limpeza pré-start de processos legados do Bedrock.
+- O que ficou faltando: validar no próximo deploy remoto que `systemctl restart bedrock.service` sobe com o FIFO, que o comando inofensivo `say [MinecraftAddOn] bridge FIFO operacional` aparece no log/chat e que não sobram processos antigos. A allowlist administrativa completa ainda fica para a Sprint 3.
+- Impedimentos/bloqueios: a execução local não possui `systemd` nem o binário Bedrock real em operação, então a validação completa depende do workflow/host. Nenhum comando Bedrock destrutivo foi adicionado ou executado; o emissor desta sprint aceita somente `say`.
 
 ## Sprint 3 — Tool MCP administrativa com allowlist
 
@@ -107,9 +109,10 @@ Expor uma tool MCP controlada para enviar apenas comandos Bedrock permitidos.
 - O MCP diferencia comandos readonly Linux de comandos administrativos Bedrock.
 
 ### Registro pós-conclusão
-- O que foi feito:
-- O que ficou faltando:
-- Impedimentos/bloqueios:
+- O que foi feito: em 2026-07-19 15:45 UTC-3, foi implementada a tool MCP administrativa `run_bedrock_command`, separada de `run_read_command`, com allowlist rígida para comandos Bedrock versionados da Pirâmide e um `say` fixo de validação operacional. A tool normaliza comandos, recusa `/` inicial, caracteres de controle, comandos acima de 240 caracteres, comandos destrutivos diretos (`fill`, `setblock`, `kill`, `op`, `deop`, `stop`) e qualquer comando fora dos padrões permitidos.
+- Causa raiz registrada: **por que isso aconteceu?** Porque, mesmo com o FIFO da Sprint 2, o MCP ainda não distinguia leitura Linux de ação administrativa Bedrock; sem uma tool dedicada, seria fácil tentar reaproveitar `run_read_command` ou escrever no FIFO sem auditoria/allowlist, contornando a causa de segurança em vez de resolvê-la.
+- O que ficou faltando: validar no próximo deploy que o MCP `0.6.0` lista `run_bedrock_command`, que o container enxerga `/run/minecraft/bedrock-console.in`, que o `say [MinecraftAddOn] MCP run_bedrock_command operacional` chega ao console e que comandos recusados ficam auditados como `rejected`.
+- Impedimentos/bloqueios: o MCP remoto consultado antes do deploy ainda lista apenas as ferramentas antigas, portanto a validação end-to-end depende da publicação da nova imagem. Localmente foram validados sintaxe Python, testes unitários da allowlist e escrita em FIFO temporário.
 
 ## Sprint 4 — Fluxo de escolha de local e precheck
 
@@ -128,9 +131,10 @@ Permitir que o agente escolha um local candidato com evidências antes de execut
 - Área afetada X/Y/Z é documentada antes da montagem.
 
 ### Registro pós-conclusão
-- O que foi feito:
-- O que ficou faltando:
-- Impedimentos/bloqueios:
+- O que foi feito: em 2026-07-19 16:08 UTC-3, foi implementado o fluxo reutilizável `plan_build_location` no MCP para escolher local candidato antes da execução. A Pirâmide é o primeiro perfil (`piramide_egito_gigante`), mas a estrutura aceita `build_key`, `function_path`, dimensões, margem e Y preferido para reaproveitamento por outros Add-Ons.
+- Causa raiz registrada: **por que isso aconteceu?** Porque o projeto já tinha heurística de arena e uma tool de comando, mas ainda faltava uma etapa intermediária que conectasse evidências de local, área afetada e precheck antes de gerar comando executável; sem essa etapa, a Pirâmide poderia funcionar como caso isolado e não como padrão seguro reutilizável.
+- O que ficou faltando: validar no próximo deploy que o MCP `0.7.0` lista `plan_build_location`; executar o plano remoto para a Pirâmide; comparar as amostras LevelDB com validação visual do operador; e só gerar/enviar o comando final quando `approval_confirmed=true` e não houver incerteza de água/lava/colisão.
+- Impedimentos/bloqueios: o MCP remoto atual ainda está na versão anterior e não lista `plan_build_location`; a amostragem é limitada a centro/cantos e Y de base/topo, não varredura completa. Por isso, se houver erro LevelDB ou bloco de risco, a montagem deve parar e exigir validação visual.
 
 ## Sprint 5 — Execução assistida da Pirâmide
 
@@ -151,9 +155,10 @@ Permitir que o agente execute a montagem da Pirâmide em local escolhido/validad
 - Falhas são registradas com causa raiz provável e próximo passo.
 
 ### Registro pós-conclusão
-- O que foi feito:
-- O que ficou faltando:
-- Impedimentos/bloqueios:
+- O que foi feito: em 2026-07-19 16:23 UTC-3, foi implementada a tool MCP `execute_planned_build`, que reaproveita `plan_build_location`, exige aprovação/precheck limpo para obter `command_after_approval` e só envia ao FIFO quando `execute=true`. O fluxo nasce com a Pirâmide como primeiro perfil, mas aceita parâmetros genéricos para outros Add-Ons.
+- Causa raiz registrada: **por que isso aconteceu?** Porque a Sprint 4 conseguia planejar o local, mas ainda não havia um orquestrador único que encadeasse planejamento, aprovação, comando allowlisted, envio e coleta de evidências pós-execução; sem isso, a execução assistida poderia voltar a depender de passos manuais e específicos da Pirâmide.
+- O que ficou faltando: após deploy do MCP `0.8.0`, executar primeiro em modo dry-run/blocked sem aprovação, depois planejar local real aprovado, e somente então chamar `execute_planned_build` com `execute=true` para a Pirâmide. A confirmação visual/captura do operador continua necessária se logs não provarem resultado visual.
+- Impedimentos/bloqueios: o MCP remoto atual ainda não lista `run_bedrock_command`, `plan_build_location` nem `execute_planned_build`; portanto nenhuma montagem real foi disparada nesta sprint. A execução real deve aguardar deploy, precheck sem incerteza e aprovação explícita do local.
 
 ## Sprint 6 — Auditoria e segurança operacional
 
@@ -172,6 +177,7 @@ Reduzir risco de comandos acidentais ou destrutivos em produção.
 - Há instrução de backup/reversão antes de megaconstruções.
 
 ### Registro pós-conclusão
-- O que foi feito:
-- O que ficou faltando:
-- Impedimentos/bloqueios:
+- O que foi feito: em 2026-07-19 20:23 UTC-3, foi adicionada confirmação explícita por `confirmation_token` em `execute_planned_build`, auditoria de dry-run/rejeição por confirmação, testes unitários de segurança e o runbook `docs/runbook_backup_reversao_bedrock.md` para backup/reversão antes de megaconstruções.
+- Causa raiz registrada: **por que isso aconteceu?** Porque o fluxo já conseguia planejar e executar, mas ainda dependia apenas de `approval_confirmed=true`; isso não reduz suficientemente o risco de clique/chamada acidental em produção, nem documenta backup/reversão antes de comandos grandes. O token derivado de `build_key` e coordenada força confirmação consciente do local aprovado.
+- O que ficou faltando: após deploy do MCP `0.9.0`, validar o token em dry-run remoto, registrar backup real e executar apenas quando operador confirmar o token esperado. Para próximos Add-Ons, manter o padrão `planejar -> backup -> confirmar token -> executar -> validar logs/captura`.
+- Impedimentos/bloqueios: o MCP remoto atual ainda não lista as tools novas, então não houve execução real. Reversão granular por região/chunk ainda não foi implementada; o runbook atual orienta backup/reversão do mundo inteiro.
