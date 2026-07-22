@@ -219,6 +219,7 @@ setblock -186 74 113 lectern
 setblock -194 75 124 sea_lantern
 setblock -194 79 124 sea_lantern
 tellraw @a[x=-194,y=69,z=111,r=100] {"rawtext":[{"text":"[Piramide][Educativo] Camara pronta: use lecterns para registrar conteudos sobre engenharia, historia e geometria."}]}
+function piramide_egito_gigante/reforcar_fundacao_centro_historico
 # Expandido de sprint5_polimento_validacao.mcfunction
 tellraw @a[x=-194,y=69,z=111,r=100] {"rawtext":[{"text":"[Piramide][Sprint 5] Polimento concluido. Validacao visual ainda e recomendada porque o precheck e por amostragem."}]}
 fill -200 71 45 -188 71 50 smooth_sandstone
