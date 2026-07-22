@@ -26,8 +26,10 @@ class BedrockCommandAllowlistTest(unittest.TestCase):
       "function piramide_egito_gigante/diagnosticar_local",
       "function piramide_egito_gigante/diagnostico_marcador_centro",
       "function piramide_egito_gigante/diagnostico_marcador_operador",
+      "function piramide_egito_gigante/reforcar_fundacao_centro_historico",
+      "function piramide_egito_gigante/limpar_ceu_centro_historico",
       "execute positioned -194 69 111 run function piramide_egito_gigante/montar_completa",
-      "say [MinecraftAddOn] MCP run_bedrock_command operacional",
+      "say MinecraftAddOn MCP run_bedrock_command operacional",
     ]
     for command in allowed:
       with self.subTest(command=command):
@@ -83,13 +85,13 @@ class BedrockCommandAllowlistTest(unittest.TestCase):
       thread = threading.Thread(target=reader)
       thread.start()
       result = server._run_bedrock_command(
-        "say [MinecraftAddOn] MCP run_bedrock_command operacional",
+        "say MinecraftAddOn MCP run_bedrock_command operacional",
         executor="unit-test",
       )
       thread.join(timeout=2)
 
       self.assertFalse(thread.is_alive())
-      self.assertEqual(received, ["say [MinecraftAddOn] MCP run_bedrock_command operacional"])
+      self.assertEqual(received, ["say MinecraftAddOn MCP run_bedrock_command operacional"])
       self.assertEqual(result["status"], "sent")
       audit_lines = audit.read_text(encoding="utf-8").splitlines()
       self.assertEqual(len(audit_lines), 1)
@@ -274,11 +276,11 @@ class BedrockCommandAllowlistTest(unittest.TestCase):
       with mock.patch.object(server, "BEDROCK_SERVER_PROPERTIES", props), \
         mock.patch.object(server, "BEDROCK_CONSOLE_FIFO", fifo), \
         mock.patch.object(server, "BEDROCK_COMMAND_LOG", Path(tmpdir) / "commands.log"):
-        result = server._run_bedrock_command("say [MinecraftAddOn] MCP run_bedrock_command operacional")
+        result = server._run_bedrock_command("say MinecraftAddOn MCP run_bedrock_command operacional")
 
       thread.join(timeout=2)
       self.assertEqual(result["status"], "sent")
-      self.assertEqual(received, ["say [MinecraftAddOn] MCP run_bedrock_command operacional"])
+      self.assertEqual(received, ["say MinecraftAddOn MCP run_bedrock_command operacional"])
 
 
 if __name__ == "__main__":
