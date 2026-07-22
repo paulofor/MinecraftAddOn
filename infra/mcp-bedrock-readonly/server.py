@@ -22,7 +22,7 @@ from pathlib import Path
 from typing import Any
 
 SERVER_NAME = "bedrock-readonly"
-SERVER_VERSION = "0.13.0"
+SERVER_VERSION = "0.14.0"
 PROTOCOL_VERSION = "2024-11-05"
 
 DEFAULT_ALLOWED_ROOTS = (
@@ -1007,6 +1007,10 @@ def _execute_planned_build(
 
 
 DANGEROUS_BEDROCK_COMMAND_RE = re.compile(r"(^|\s)(fill|setblock|kill|op|deop|stop)\b", re.IGNORECASE)
+ALLOWED_DIRECT_BEDROCK_DIAGNOSTIC_COMMANDS = {
+  "execute as @a at @s run setblock ~ ~3 ~ minecraft:diamond_block",
+  "execute as @a at @s run setblock ~ ~4 ~ minecraft:sea_lantern",
+}
 ALLOWED_BEDROCK_COMMAND_PATTERNS = (
   re.compile(r"^say \[MinecraftAddOn\] MCP run_bedrock_command operacional$"),
   re.compile(r"^function piramide_egito_gigante/montar_centro_historico$"),
@@ -1034,6 +1038,8 @@ def _normalize_bedrock_command(command: str) -> str:
 
 def _validate_bedrock_command(command: str) -> str:
   normalized = _normalize_bedrock_command(command)
+  if normalized in ALLOWED_DIRECT_BEDROCK_DIAGNOSTIC_COMMANDS:
+    return normalized
   if DANGEROUS_BEDROCK_COMMAND_RE.search(normalized):
     raise ValueError("Comando Bedrock recusado: comandos destrutivos diretos exigem função versionada allowlisted")
   if not any(pattern.fullmatch(normalized) for pattern in ALLOWED_BEDROCK_COMMAND_PATTERNS):

@@ -33,6 +33,19 @@ class BedrockCommandAllowlistTest(unittest.TestCase):
       with self.subTest(command=command):
         self.assertEqual(server._validate_bedrock_command(command), command)
 
+
+  def test_allows_exact_direct_player_marker_diagnostics(self) -> None:
+    for command in [
+      "execute as @a at @s run setblock ~ ~3 ~ minecraft:diamond_block",
+      "execute as @a at @s run setblock ~ ~4 ~ minecraft:sea_lantern",
+    ]:
+      with self.subTest(command=command):
+        self.assertEqual(server._validate_bedrock_command(command), command)
+
+  def test_rejects_other_direct_setblock_commands(self) -> None:
+    with self.assertRaisesRegex(ValueError, "destrutivos diretos"):
+      server._validate_bedrock_command("setblock -195 72 114 minecraft:diamond_block")
+
   def test_rejects_dangerous_or_unknown_commands(self) -> None:
     rejected = [
       "/function piramide_egito_gigante/montar_centro_historico",
