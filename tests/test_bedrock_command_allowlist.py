@@ -27,6 +27,7 @@ class BedrockCommandAllowlistTest(unittest.TestCase):
       "function piramide_egito_gigante/diagnostico_marcador_centro",
       "function piramide_egito_gigante/diagnostico_marcador_operador",
       "function piramide_egito_gigante/reforcar_fundacao_centro_historico",
+      "function piramide_egito_gigante/limpar_ceu_centro_historico",
       "execute positioned -194 69 111 run function piramide_egito_gigante/montar_completa",
       "say MinecraftAddOn MCP run_bedrock_command operacional",
     ]
