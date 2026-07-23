@@ -3778,3 +3778,21 @@ Checklist executado no host via MCP readonly/projeto:
 - Evidências usadas: inspeção dos arquivos de sprint mostrou preenchimento de base/corpo até aproximadamente `~-64..~64` em X/Z e altura até `~59`, além de limpeza de terreno alta. Isso explica diretamente o risco de estrutura suspensa quando o ponto de execução não representa chão firme no centro da obra.
 - Correção aplicada: bloquear também as funções internas e sprints antigas da Pirâmide com mensagens `tellraw`, removendo `fill`/`setblock` desses caminhos. O planejador MCP agora nem gera `command_after_approval` para a Pirâmide padrão; retorna `confidence=blocked` e exige redesenho em protótipo pequeno/cópia do mundo.
 - Próximo passo seguro: só reabilitar construção quando houver desenho novo ancorado a uma base detectada no chão, com altura calculada a partir do terreno real e teste em cópia do mundo antes do mundo ativo.
+
+## 2026-07-23 12:25 UTC-3 — Protótipo pequeno ancorado no chão após marcador de posição
+
+- Solicitação do operador: confirmou que o marcador acima da posição apareceu, indicando que o comando `execute as @a at @s` alcança o jogador certo no mundo ativo.
+- Pergunta obrigatória: por que reconstruir agora precisa ser diferente? Porque a falha anterior não foi falta de blocos, mas referência de montagem errada: volumes grandes criados sem garantir que a base inteira estivesse ancorada ao chão real.
+- Evidências usadas: marcador diagnóstico pequeno retornou `Block placed`; registros anteriores mostram risco de sprints relativas grandes; planejador padrão continua bloqueado para a megaconstrução.
+- Correção/proposta segura aplicada: criada linha `piramide_egito_gigante/prototipo/*`, limitada a raio aproximado de 12 blocos e altura até ~+6, com precheck visual obrigatório e montagem somente via `execute as @a at @s` para usar a posição real do jogador. A função pública permitida é apenas o protótipo pequeno; a Pirâmide gigante continua bloqueada.
+- Área afetada do protótipo: X/Z aproximado `~-12..~12`, Y aproximado `~-1..~6`; sem subsolo profundo, sem plataforma alta e com aviso para parar se qualquer lado ficar suspenso.
+- Próximo passo: após deploy, executar primeiro `execute as @a at @s run function piramide_egito_gigante/prototipo/precheck_chao`; se o operador confirmar visualmente, executar `execute as @a at @s run function piramide_egito_gigante/prototipo/montar_base_chao`.
+
+## 2026-07-23 12:40 UTC-3 — Âncora persistente para não exigir jogador parado no ponto
+
+- Solicitação do operador: perguntou se o ponto já marcado poderia ser usado como referência para que ele não precisasse ficar parado e exposto a mobs.
+- Pergunta obrigatória: por que o marcador visual ainda não bastava? Porque o comando `setblock ~ ~3 ~` retornou apenas `Block placed`; o Bedrock não devolveu coordenadas numéricas no resultado. O bloco de diamante prova visualmente o local, mas o MCP não consegue transformar isso sozinho em coordenada absoluta confiável.
+- Causa raiz operacional: o fluxo ainda dependia do jogador estar no ponto no momento da montagem. Isso reduz segurança do operador e pode induzir pressa/erro, especialmente com mobs por perto.
+- Correção aplicada: adicionada função `prototipo/fixar_ancora`, executada como jogador, que cria uma entidade `armor_stand` nomeada `PEG_Ancora_Prototipo` e reforça o marcador local. Depois, `prototipo/montar_base_ancora` monta o protótipo pequeno no ponto da âncora, sem exigir que o jogador continue parado ali.
+- Segurança/limitações: a Pirâmide gigante permanece bloqueada; a montagem por âncora continua limitada a X/Z `~-12..~12` e Y `~-1..~6`. Se houver múltiplas âncoras com o mesmo nome ou se a entidade for movida/removida, deve-se fixar a âncora novamente antes de montar.
+- Próximo passo após deploy: com o jogador no ponto desejado por poucos segundos, executar `execute as @a at @s run function piramide_egito_gigante/prototipo/fixar_ancora`; depois o jogador pode sair, e a montagem pequena pode ser disparada por `function piramide_egito_gigante/prototipo/montar_base_ancora`.

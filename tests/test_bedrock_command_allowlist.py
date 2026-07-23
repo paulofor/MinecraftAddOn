@@ -26,6 +26,10 @@ class BedrockCommandAllowlistTest(unittest.TestCase):
       "function piramide_egito_gigante/diagnostico_marcador_centro",
       "function piramide_egito_gigante/diagnostico_marcador_operador",
       "function piramide_egito_gigante/limpar_ceu_centro_historico",
+      "execute as @a at @s run function piramide_egito_gigante/prototipo/precheck_chao",
+      "execute as @a at @s run function piramide_egito_gigante/prototipo/montar_base_chao",
+      "execute as @a at @s run function piramide_egito_gigante/prototipo/fixar_ancora",
+      "function piramide_egito_gigante/prototipo/montar_base_ancora",
       "say MinecraftAddOn MCP run_bedrock_command operacional",
     ]
     for command in allowed:
@@ -53,6 +57,9 @@ class BedrockCommandAllowlistTest(unittest.TestCase):
       "kill @e",
       "function outro_modulo/montar",
       "function piramide_egito_gigante/montar_centro_historico",
+      "function piramide_egito_gigante/prototipo/montar_base_chao",
+      "function piramide_egito_gigante/prototipo/fixar_ancora",
+      "execute positioned 0 64 0 run function piramide_egito_gigante/prototipo/montar_base_chao",
       "function piramide_egito_gigante/reforcar_fundacao_centro_historico",
       "function piramide_egito_gigante/aventura/montar_interior",
       "execute positioned -194 69 111 run function piramide_egito_gigante/montar_completa",
