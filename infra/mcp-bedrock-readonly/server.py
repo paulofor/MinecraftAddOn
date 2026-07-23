@@ -17,12 +17,13 @@ import subprocess
 import tempfile
 import sys
 import tarfile
+import time
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from typing import Any
 
 SERVER_NAME = "bedrock-readonly"
-SERVER_VERSION = "0.14.0"
+SERVER_VERSION = "0.15.7"
 PROTOCOL_VERSION = "2024-11-05"
 
 DEFAULT_ALLOWED_ROOTS = (
@@ -44,6 +45,7 @@ MAX_BLOCK_REGION_VOLUME = int(os.getenv("MAX_BLOCK_REGION_VOLUME", "4096"))
 BEDROCK_RESTART_CMD = [part for part in os.getenv("BEDROCK_RESTART_CMD", "").split() if part]
 BEDROCK_CONSOLE_FIFO = Path(os.getenv("BEDROCK_CONSOLE_FIFO", "/run/minecraft/bedrock-console.in"))
 BEDROCK_COMMAND_LOG = Path(os.getenv("BEDROCK_COMMAND_LOG", "/root/MinecraftServer/logging/bedrock-console-commands.log"))
+BEDROCK_LOG_PATH = Path(os.getenv("BEDROCK_LOG_PATH", "/root/MinecraftServer/logging/bedrock.log"))
 BEDROCK_SERVER_PROPERTIES = Path(os.getenv("BEDROCK_SERVER_PROPERTIES", "/root/MinecraftServer/server.properties"))
 
 SAFE_COMMANDS = {
@@ -847,6 +849,24 @@ def _plan_build_location(
   dimension: int = OVERWORLD_DIMENSION_ID,
 ) -> dict[str, Any]:
   profile = BUILD_PROFILES.get(build_key, {})
+  if build_key == "piramide_egito_gigante" and function_path is None:
+    return {
+      "build_key": build_key,
+      "function_path": str(profile.get("function_path", "piramide_egito_gigante/montar_completa")),
+      "recommended_center": None,
+      "affected_area": None,
+      "size": {"x": profile.get("size_x", 129), "y": profile.get("size_y", 68), "z": profile.get("size_z", 129)},
+      "margin": profile.get("margin", 65),
+      "confidence": "blocked",
+      "reasons": ["Megaconstrucao da Piramide desativada apos incidente de estrutura flutuante."],
+      "warnings": ["Risco principal identificado: construcao em altura/local errado cria bloco/plataforma no ar."],
+      "precheck": None,
+      "approval_required": True,
+      "requires_visual_validation": True,
+      "command_after_approval": None,
+      "next_step": "Redesenhar em prototipo pequeno e testar em copia do mundo antes de reabilitar qualquer fill/setblock de construcao.",
+      "reusable_structure_note": "Bloqueio especifico da Piramide; outros Add-Ons ainda podem usar o planejador com function_path customizado.",
+    }
   resolved_function = _validate_function_path(function_path or str(profile.get("function_path", "")))
   resolved_size_x = int(size_x or profile.get("size_x", 19))
   resolved_size_y = int(size_y or profile.get("size_y", 10))
@@ -912,6 +932,24 @@ def _plan_build_location(
 
 
 
+
+def _read_file_from_offset(path: Path, offset: int, max_bytes: int = 8000) -> dict[str, Any]:
+  if not path.exists() or not path.is_file():
+    return {"path": str(path), "available": False, "offset": offset, "content": ""}
+  current_size = path.stat().st_size
+  start = max(0, min(offset, current_size))
+  with path.open("rb") as handle:
+    handle.seek(start)
+    data = handle.read(max_bytes)
+  return {
+    "path": str(path),
+    "available": True,
+    "offset": start,
+    "bytes_read": len(data),
+    "truncated": current_size - start > max_bytes,
+    "content": data.decode("utf-8", errors="replace"),
+  }
+
 def _read_optional_tail(path: Path, max_bytes: int = 4000) -> dict[str, Any]:
   if not path.exists() or not path.is_file():
     return {"path": str(path), "available": False, "content": ""}
@@ -960,6 +998,16 @@ def _execute_planned_build(
       "plan": plan,
       "execution": None,
       "next_step": "Corrigir incertezas/precheck ou repetir com approval_confirmed=true após aprovação formal.",
+    }
+
+  if build_key == "piramide_egito_gigante":
+    _append_bedrock_command_audit("blocked", executor, str(command), "pyramid megabuild disabled after sky artifact cleanup")
+    return {
+      "status": "blocked_pyramid_megabuild_disabled",
+      "build_key": build_key,
+      "plan": plan,
+      "execution": None,
+      "next_step": "Nao executar nova megaconstrucao da piramide ate redesenho seguro, teste em copia do mundo e validacao visual.",
     }
 
   normalized_command = _validate_bedrock_command(str(command))
@@ -1012,14 +1060,11 @@ ALLOWED_DIRECT_BEDROCK_DIAGNOSTIC_COMMANDS = {
   "execute as @a at @s run setblock ~ ~4 ~ minecraft:sea_lantern",
 }
 ALLOWED_BEDROCK_COMMAND_PATTERNS = (
-  re.compile(r"^say \[MinecraftAddOn\] MCP run_bedrock_command operacional$"),
-  re.compile(r"^function piramide_egito_gigante/montar_centro_historico$"),
+  re.compile(r"^say MinecraftAddOn MCP run_bedrock_command operacional$"),
   re.compile(r"^function piramide_egito_gigante/diagnosticar_local$"),
   re.compile(r"^function piramide_egito_gigante/diagnostico_marcador_centro$"),
   re.compile(r"^function piramide_egito_gigante/diagnostico_marcador_operador$"),
-  re.compile(
-    r"^execute positioned -?\d+ -?\d+ -?\d+ run function piramide_egito_gigante/montar_completa$"
-  ),
+  re.compile(r"^function piramide_egito_gigante/limpar_ceu_centro_historico$"),
 )
 
 
@@ -1104,6 +1149,8 @@ def _run_bedrock_command(command: str, executor: str = "mcp") -> dict[str, Any]:
     _append_bedrock_command_audit("failed", executor, normalized, f"FIFO ausente: {BEDROCK_CONSOLE_FIFO}")
     raise ValueError(f"FIFO do console Bedrock ausente ou inválido: {BEDROCK_CONSOLE_FIFO}")
 
+  bedrock_log_offset = BEDROCK_LOG_PATH.stat().st_size if BEDROCK_LOG_PATH.exists() else 0
+
   try:
     fd = os.open(BEDROCK_CONSOLE_FIFO, os.O_WRONLY | os.O_NONBLOCK)
   except OSError as exc:
@@ -1119,12 +1166,38 @@ def _run_bedrock_command(command: str, executor: str = "mcp") -> dict[str, Any]:
     os.close(fd)
 
   _append_bedrock_command_audit("sent", executor, normalized)
+  time.sleep(0.5)
+  bedrock_log_after_send = _read_file_from_offset(BEDROCK_LOG_PATH, bedrock_log_offset, max_bytes=8000)
+  bedrock_tail_content = bedrock_log_after_send.get("content", "")
+  detected_errors = [
+    pattern
+    for pattern in (
+      "No targets matched selector",
+      "Syntax error",
+      "Unknown command",
+      "commands.generic",
+    )
+    if pattern in bedrock_tail_content
+  ]
+  status = "sent_with_log_warnings" if detected_errors else "sent"
+  if detected_errors:
+    _append_bedrock_command_audit(
+      "sent_with_log_warnings",
+      executor,
+      normalized,
+      f"Possíveis erros no bedrock.log após envio: {', '.join(detected_errors)}",
+    )
   return {
-    "status": "sent",
+    "status": status,
     "command": normalized,
     "executor": executor,
     "fifo": str(BEDROCK_CONSOLE_FIFO),
     "audit_log": str(BEDROCK_COMMAND_LOG),
+    "post_send_observation": {
+      "bedrock_log_after_send": bedrock_log_after_send,
+      "detected_error_markers": detected_errors,
+      "limitation": "A leitura é por cauda do log logo após o envio; mensagens concorrentes de outros scripts podem aparecer e a confirmação visual/LevelDB ainda pode ser necessária.",
+    },
   }
 
 
