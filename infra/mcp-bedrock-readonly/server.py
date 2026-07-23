@@ -23,7 +23,7 @@ from pathlib import Path
 from typing import Any
 
 SERVER_NAME = "bedrock-readonly"
-SERVER_VERSION = "0.15.3"
+SERVER_VERSION = "0.15.7"
 PROTOCOL_VERSION = "2024-11-05"
 
 DEFAULT_ALLOWED_ROOTS = (
@@ -849,6 +849,24 @@ def _plan_build_location(
   dimension: int = OVERWORLD_DIMENSION_ID,
 ) -> dict[str, Any]:
   profile = BUILD_PROFILES.get(build_key, {})
+  if build_key == "piramide_egito_gigante" and function_path is None:
+    return {
+      "build_key": build_key,
+      "function_path": str(profile.get("function_path", "piramide_egito_gigante/montar_completa")),
+      "recommended_center": None,
+      "affected_area": None,
+      "size": {"x": profile.get("size_x", 129), "y": profile.get("size_y", 68), "z": profile.get("size_z", 129)},
+      "margin": profile.get("margin", 65),
+      "confidence": "blocked",
+      "reasons": ["Megaconstrucao da Piramide desativada apos incidente de estrutura flutuante."],
+      "warnings": ["Risco principal identificado: construcao em altura/local errado cria bloco/plataforma no ar."],
+      "precheck": None,
+      "approval_required": True,
+      "requires_visual_validation": True,
+      "command_after_approval": None,
+      "next_step": "Redesenhar em prototipo pequeno e testar em copia do mundo antes de reabilitar qualquer fill/setblock de construcao.",
+      "reusable_structure_note": "Bloqueio especifico da Piramide; outros Add-Ons ainda podem usar o planejador com function_path customizado.",
+    }
   resolved_function = _validate_function_path(function_path or str(profile.get("function_path", "")))
   resolved_size_x = int(size_x or profile.get("size_x", 19))
   resolved_size_y = int(size_y or profile.get("size_y", 10))
@@ -982,6 +1000,16 @@ def _execute_planned_build(
       "next_step": "Corrigir incertezas/precheck ou repetir com approval_confirmed=true após aprovação formal.",
     }
 
+  if build_key == "piramide_egito_gigante":
+    _append_bedrock_command_audit("blocked", executor, str(command), "pyramid megabuild disabled after sky artifact cleanup")
+    return {
+      "status": "blocked_pyramid_megabuild_disabled",
+      "build_key": build_key,
+      "plan": plan,
+      "execution": None,
+      "next_step": "Nao executar nova megaconstrucao da piramide ate redesenho seguro, teste em copia do mundo e validacao visual.",
+    }
+
   normalized_command = _validate_bedrock_command(str(command))
   expected_token = _expected_confirmation_token(build_key, plan["recommended_center"])
   if not execute:
@@ -1033,15 +1061,10 @@ ALLOWED_DIRECT_BEDROCK_DIAGNOSTIC_COMMANDS = {
 }
 ALLOWED_BEDROCK_COMMAND_PATTERNS = (
   re.compile(r"^say MinecraftAddOn MCP run_bedrock_command operacional$"),
-  re.compile(r"^function piramide_egito_gigante/montar_centro_historico$"),
   re.compile(r"^function piramide_egito_gigante/diagnosticar_local$"),
   re.compile(r"^function piramide_egito_gigante/diagnostico_marcador_centro$"),
   re.compile(r"^function piramide_egito_gigante/diagnostico_marcador_operador$"),
-  re.compile(r"^function piramide_egito_gigante/reforcar_fundacao_centro_historico$"),
   re.compile(r"^function piramide_egito_gigante/limpar_ceu_centro_historico$"),
-  re.compile(
-    r"^execute positioned -?\d+ -?\d+ -?\d+ run function piramide_egito_gigante/montar_completa$"
-  ),
 )
 
 

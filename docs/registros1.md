@@ -3726,3 +3726,55 @@ Checklist executado no host via MCP readonly/projeto:
 - Área afetada: `X=-258..-130`, `Y=70..139`, `Z=47..175`; subsolo/terreno abaixo de `Y70` não é alterado. Limitação: limpeza absoluta sem varredura completa; executar somente após backup e confirmação visual.
 - Versionamento: BP/RP pareados da Pirâmide incrementados para `0.1.19`; MCP readonly incrementado para `0.15.3` e allowlist ampliada para `function piramide_egito_gigante/limpar_ceu_centro_historico`.
 - Próximo passo: após deploy, executar `function piramide_egito_gigante/limpar_ceu_centro_historico` para apagar o artefato no céu. Não reexecutar a Pirâmide antiga até criarmos uma versão redesenhada por sprints menores e com base realmente assentada no terreno.
+
+## 2026-07-22 — Execução da limpeza do artefato suspenso após deploy 0.1.19 / MCP 0.15.3
+
+- Solicitação do operador: informou que fez o deploy, entraria no mundo e autorizou executar a limpeza do artefato no céu.
+- Pergunta obrigatória de causa raiz: por que isso aconteceu? O reparo de fundação anterior piorou o artefato porque criou um volume maciço; após o deploy da limpeza, era necessário apagar somente o envelope suspenso `Y=70..139` e preservar o terreno abaixo de `Y70`, sem reexecutar a Pirâmide antiga.
+- Evidências pré-execução: MCP remoto respondeu `serverInfo.version=0.15.3` e `/health` retornou `version=0.15.3`; leitura do pack do mundo confirmou a presença de `piramide_egito_gigante/limpar_ceu_centro_historico.mcfunction`; o `bedrock.log` registrou `Player connected: Buck9523` às `2026-07-22 20:28:56:665` e `Player Spawned` às `20:28:59:745`.
+- Falha operacional antes da execução: a tentativa de backup pré-limpeza `pre-piramide-sky-cleanup-0.1.19` falhou com `[Errno 2] No such file or directory: '/root/MinecraftServer/worlds/Bedrock level/db/083357.ldb'`, provavelmente por rotação/compactação do LevelDB enquanto o servidor estava ativo. Por erro operacional do agente, a sequência de shell não interrompeu a execução após a falha de backup.
+- Execução: enviado `function piramide_egito_gigante/limpar_ceu_centro_historico`, executor `codex-piramide-sky-cleanup-0.1.19`; o MCP retornou `status=sent`, `detected_error_markers=[]`, e o `bedrock.log` registrou `Successfully executed 84 function entries.` às `2026-07-22 20:29:22:332` (UTC-3).
+- Mitigação pós-execução: criado backup pós-limpeza `/root/MinecraftServer/backups/Bedrock-level-post-piramide-sky-cleanup-0.1.19.tar.gz`, com `124345192` bytes e SHA-256 `26aff67d964a5105de51d6acd4af9dcd472caf4c0ae0392896feb0f6399b4bf4`.
+- Resultado esperado: o volume suspenso em `X=-258..-130`, `Y=70..139`, `Z=47..175` deve ter sido removido, preservando terreno/subsolo abaixo de `Y70`. A validação final é visual pelo operador.
+- Próximo passo: se a limpeza visual ficou correta, não reexecutar a Pirâmide antiga; planejar uma nova construção em sprints menores e assentada ao terreno. Se sobrou artefato, capturar tela com coordenadas para criar limpeza incremental da área remanescente.
+
+
+## 2026-07-22 — Aventura interna educativa da Pirâmide preparada
+
+- Solicitação do operador: pediu verificar como a Pirâmide é por dentro e criar uma aventura interessante para quem entra pela Pirâmide.
+- Pergunta obrigatória de causa raiz: por que isso aconteceu? A Pirâmide passou por tentativas de montagem, reforço e limpeza; o interior existente era basicamente técnico/diagnóstico, com poucas interações guiadas. Para transformar o erro em experiência educativa, a solução precisa separar a aventura interna da megaconstrução externa e usar uma área menor, rastreável e com etapas de aprendizagem.
+- Evidências usadas: arquivos existentes da Pirâmide já tinham corredor/câmaras simples e funções de diagnóstico; registros recentes mostraram que grandes fills externos causaram artefatos, então a aventura foi projetada em volume menor `X=-214..-174`, `Y=70..86`, `Z=48..148`, sem PNG e sem depender de scripts novos.
+- Correção/conteúdo aplicado: adicionadas funções `piramide_egito_gigante/aventura/montar_interior`, `iniciar`, `prova_geometria`, `prova_historia`, `prova_engenharia`, `finalizar` e `reset`. A aventura se chama “A Pirâmide dos Saberes” e guia o jogador por três câmaras: Geometria, História e Engenharia, concluindo com o “Selo do Arquiteto”.
+- Segurança de construção: `montar_interior` documenta “por que essa construção poderia danificar ou ficar mal posicionada no mundo?”, estima a área afetada, teleporta jogadores dentro do volume para `-194 88 50` antes de limpar/montar e usa fills pequenos. O reparo não mexe abaixo de `Y70`.
+- Versionamento: BP/RP pareados da Pirâmide incrementados para `0.1.20`; MCP readonly incrementado para `0.15.4` e allowlist ampliada para `function piramide_egito_gigante/aventura/montar_interior` e `function piramide_egito_gigante/aventura/iniciar`.
+- Próximo passo: após deploy, executar com backup `function piramide_egito_gigante/aventura/montar_interior`; jogador entra pela galeria e usa `/function piramide_egito_gigante/aventura/iniciar`. Não reexecutar a Pirâmide externa antiga até redesenho definitivo.
+
+
+## 2026-07-22 — Aventura interna convertida para descoberta sem funções de progresso
+
+- Solicitação do operador: pediu “sem funções, apenas coisas interessantes que vão sendo descobertas internamente”.
+- Pergunta obrigatória de causa raiz: por que isso aconteceu? A versão anterior ainda dependia de comandos `/function` para avançar etapas, o que quebrava a imersão e repetia o padrão operacional usado para corrigir a Pirâmide. Para uma aventura interna, a causa do problema era a interação ser externa/administrativa demais; a correção é deixar a descoberta acontecer por exploração visual dentro do mundo.
+- Evidências usadas: inspeção das funções recém-criadas `iniciar`, `prova_geometria`, `prova_historia`, `prova_engenharia`, `finalizar` e `reset` mostrou que a progressão dependia de comandos manuais; a solicitação do operador pediu explicitamente remover esse fluxo.
+- Correção aplicada: removidas as funções de progresso do jogador; `aventura/montar_interior` foi refeito como interior explorável estático, com galeria iluminada, Câmara da Geometria com padrão 3-4-5 e eixo central, Câmara da História com rota em lapis/lecterns/barris, passagem descoberta, nichos laterais, chest/barrel e sala menor de engenharia com selo visual.
+- Segurança: a montagem continua limitada a `X=-214..-174`, `Y=70..86`, `Z=48..148`, teleporta jogadores dentro do volume antes de limpar/montar e usa fills segmentados abaixo do limite de `fill`. Não altera abaixo de `Y70`.
+- Versionamento: BP/RP pareados da Pirâmide incrementados para `0.1.21`; MCP readonly incrementado para `0.15.5`; allowlist mantém apenas `function piramide_egito_gigante/aventura/montar_interior` para construção administrativa, sem `aventura/iniciar`.
+- Próximo passo: após deploy, executar com backup `function piramide_egito_gigante/aventura/montar_interior`; o jogador explora fisicamente o interior sem executar funções de progressão.
+
+## 2026-07-23 11:47 UTC-3 — Trava operacional da Pirâmide após limpeza manual da área
+
+- Solicitação/alerta do operador: após limpar toda a área manualmente, não repetir o erro que gerou blocos no céu e exigiu muito trabalho de remoção.
+- Pergunta obrigatória: por que isso aconteceu?
+- Causa raiz identificada: as rotinas públicas da Pirâmide ainda permitiam megaconstruções com `fill`/`setblock` em coordenadas fixas ou com volumes altos/largos mesmo depois das tentativas de correção; a validação anterior não impedia completamente execução em local mal posicionado nem a criação de plataforma/volume suspenso.
+- Evidências consultadas: histórico das tentativas registradas neste arquivo, funções `montar_centro_historico`, `montar_completa`, `reforcar_fundacao_centro_historico` e `aventura/montar_interior`, além da allowlist do MCP que ainda aceitava comandos de montagem/reparo/interior.
+- Correção aplicada: bloquear operacionalmente a megaconstrução da Pirâmide. As funções públicas de montagem/reparo/interior agora retornam apenas `tellraw` de bloqueio, sem executar `fill`/`setblock`; a allowlist do MCP removeu montagem, reforço e interior, mantendo apenas diagnósticos e limpeza.
+- Área afetada estimada antes do bloqueio: a versão histórica manipulava a região aproximada X=-258..-130, Y=37..139, Z=47..175, suficiente para gerar blocos visíveis no ar se o terreno real não estivesse compatível.
+- Limitação conhecida: ainda existem arquivos legados de sprint/construção no pack para rastreabilidade, mas eles não ficam expostos pela função pública nem pela allowlist MCP. Próximo passo seguro: redesenhar a Pirâmide como protótipo pequeno, em mundo de teste/cópia, com precheck obrigatório e somente depois reabilitar montagem.
+
+## 2026-07-23 12:05 UTC-3 — Bloqueio reforçado contra Pirâmide flutuante
+
+- Solicitação do operador: o problema maior não foi apenas limpar a área, mas a Pirâmide ficar flutuando.
+- Pergunta obrigatória: por que isso aconteceu?
+- Causa raiz refinada: ainda havia funções internas de sprint (`preparar_terreno`, `sprint1..sprint5`, `construir_estrutura`, `executar_sprint1` e `precheck_ambiente`) capazes de executar `fill`/`setblock` relativos ao executor. Mesmo com as funções públicas bloqueadas e a allowlist reduzida, um operador no jogo poderia chamar uma sprint manualmente e reconstruir volumes a partir de uma altura/local inadequado.
+- Evidências usadas: inspeção dos arquivos de sprint mostrou preenchimento de base/corpo até aproximadamente `~-64..~64` em X/Z e altura até `~59`, além de limpeza de terreno alta. Isso explica diretamente o risco de estrutura suspensa quando o ponto de execução não representa chão firme no centro da obra.
+- Correção aplicada: bloquear também as funções internas e sprints antigas da Pirâmide com mensagens `tellraw`, removendo `fill`/`setblock` desses caminhos. O planejador MCP agora nem gera `command_after_approval` para a Pirâmide padrão; retorna `confidence=blocked` e exige redesenho em protótipo pequeno/cópia do mundo.
+- Próximo passo seguro: só reabilitar construção quando houver desenho novo ancorado a uma base detectada no chão, com altura calculada a partir do terreno real e teste em cópia do mundo antes do mundo ativo.
