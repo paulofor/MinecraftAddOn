@@ -1,7 +1,3 @@
-# Sprint 1: fundacao e area de seguranca.
-tellraw @s {"rawtext":[{"text":"[Piramide][Sprint 1] Fundacao nivelada, moldura de seguranca e eixo central."}]}
-fill ~-60 ~1 ~-60 ~60 ~1 ~60 sandstone
-fill ~-58 ~2 ~-58 ~58 ~2 ~58 smooth_sandstone
-fill ~-64 ~1 ~-64 ~64 ~1 ~64 sandstone outline
-setblock ~ ~2 ~ chiseled_sandstone
-tellraw @s {"rawtext":[{"text":"[Piramide][Sprint 1] Marcador central agora fica embutido na base; o cubo dourado isolado nao e a piramide completa."}]}
+# BLOQUEADO EM 2026-07-23: Sprint 1 antiga desativada para evitar base/plataforma flutuante.
+# Por que isso aconteceu? As sprints antigas constroem por coordenadas relativas/volumes grandes e podem ficar no ar se o executor estiver em altura/local inadequado.
+tellraw @a {"rawtext":[{"text":"[Piramide][BLOQUEADO] Sprint 1 antiga desativada para evitar base/plataforma flutuante."}]}

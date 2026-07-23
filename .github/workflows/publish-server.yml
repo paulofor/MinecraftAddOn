@@ -469,7 +469,7 @@ jobs:
         run: |
           ssh -i ~/.ssh/id_ed25519 -p "$VPS_PORT" "$VPS_USER@$VPS_HOST" \
             "set -euo pipefail && \
-             /usr/local/bin/send_bedrock_console_command.sh 'say [MinecraftAddOn] bridge FIFO operacional' && \
+             /usr/local/bin/send_bedrock_console_command.sh 'say MinecraftAddOn bridge FIFO operacional' && \
              sleep 2 && \
              tail -n 40 /root/MinecraftServer/logging/bedrock-console-commands.log && \
              tail -n 80 /root/MinecraftServer/logging/bedrock.log"
@@ -542,7 +542,7 @@ jobs:
           PY_REMOTE_ASSERT_KEY
           }
 
-          call_mcp /tmp/mcp_run_bedrock_allowed.json '{"jsonrpc":"2.0","id":31,"method":"tools/call","params":{"name":"run_bedrock_command","arguments":{"command":"say [MinecraftAddOn] MCP run_bedrock_command operacional","executor":"github-actions"}}}'
+          call_mcp /tmp/mcp_run_bedrock_allowed.json '{"jsonrpc":"2.0","id":31,"method":"tools/call","params":{"name":"run_bedrock_command","arguments":{"command":"say MinecraftAddOn MCP run_bedrock_command operacional","executor":"github-actions"}}}'
           allowed_payload="$(parse_mcp_text_json /tmp/mcp_run_bedrock_allowed.json)"
           assert_payload_field "$allowed_payload" status sent
 

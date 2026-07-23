@@ -1,8 +1,3 @@
-# Sprint 5: polimento, acesso e lembrete de validacao visual.
-tellraw @s {"rawtext":[{"text":"[Piramide][Sprint 5] Polimento concluido. Validacao visual ainda e recomendada porque o precheck e por amostragem."}]}
-fill ~-6 ~2 ~-66 ~6 ~2 ~-61 smooth_sandstone
-fill ~-7 ~1 ~-70 ~7 ~1 ~-66 sandstone
-setblock ~-6 ~3 ~-64 torch
-setblock ~6 ~3 ~-64 torch
-setblock ~-6 ~3 ~-70 torch
-setblock ~6 ~3 ~-70 torch
+# BLOQUEADO EM 2026-07-23: Sprint 5 antiga desativada porque nao deve validar uma montagem bloqueada.
+# Por que isso aconteceu? As sprints antigas constroem por coordenadas relativas/volumes grandes e podem ficar no ar se o executor estiver em altura/local inadequado.
+tellraw @a {"rawtext":[{"text":"[Piramide][BLOQUEADO] Sprint 5 antiga desativada porque nao deve validar uma montagem bloqueada."}]}

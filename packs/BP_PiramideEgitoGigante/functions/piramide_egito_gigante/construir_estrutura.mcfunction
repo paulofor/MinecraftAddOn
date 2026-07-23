@@ -1,7 +1,3 @@
-# Construção interna chamada somente depois do precheck e da preparacao do terreno.
-function piramide_egito_gigante/init
-function piramide_egito_gigante/sprint1_base_fundacao
-function piramide_egito_gigante/sprint2_corpo_piramide
-function piramide_egito_gigante/sprint3_entrada_corredor
-function piramide_egito_gigante/sprint4_camaras_educativas
-function piramide_egito_gigante/sprint5_polimento_validacao
+# BLOQUEADO EM 2026-07-23: Construcao interna desativada; as sprints antigas nao devem ser chamadas ate redesenho ancorado no terreno.
+# Por que isso aconteceu? As sprints antigas constroem por coordenadas relativas/volumes grandes e podem ficar no ar se o executor estiver em altura/local inadequado.
+tellraw @a {"rawtext":[{"text":"[Piramide][BLOQUEADO] Construcao interna desativada; as sprints antigas nao devem ser chamadas ate redesenho ancorado no terreno."}]}
