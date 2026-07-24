@@ -23,7 +23,7 @@ from pathlib import Path
 from typing import Any
 
 SERVER_NAME = "bedrock-readonly"
-SERVER_VERSION = "0.15.9"
+SERVER_VERSION = "0.15.10"
 PROTOCOL_VERSION = "2024-11-05"
 
 DEFAULT_ALLOWED_ROOTS = (
@@ -1069,6 +1069,7 @@ ALLOWED_BEDROCK_COMMAND_PATTERNS = (
   re.compile(r"^execute as @a at @s run function piramide_egito_gigante/prototipo/montar_base_chao$"),
   re.compile(r"^execute as @a at @s run function piramide_egito_gigante/prototipo/fixar_ancora$"),
   re.compile(r"^function piramide_egito_gigante/prototipo/montar_base_ancora$"),
+  re.compile(r"^function piramide_egito_gigante/prototipo/montar_base_ponto_operador$"),
 )
 
 

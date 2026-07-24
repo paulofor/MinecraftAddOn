@@ -30,6 +30,7 @@ class BedrockCommandAllowlistTest(unittest.TestCase):
       "execute as @a at @s run function piramide_egito_gigante/prototipo/montar_base_chao",
       "execute as @a at @s run function piramide_egito_gigante/prototipo/fixar_ancora",
       "function piramide_egito_gigante/prototipo/montar_base_ancora",
+      "function piramide_egito_gigante/prototipo/montar_base_ponto_operador",
       "say MinecraftAddOn MCP run_bedrock_command operacional",
     ]
     for command in allowed:
