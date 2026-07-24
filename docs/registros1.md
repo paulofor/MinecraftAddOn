@@ -3853,3 +3853,11 @@ Checklist executado no host via MCP readonly/projeto:
 - Evidência usada: captura do operador em 2026-07-24 mostra a estrutura em camadas próxima à posição exibida `-165 71 91`, alinhada ao local esperado do protótipo absoluto.
 - Segurança: a validação confirma que o caminho absoluto pequeno é o único fluxo de montagem aceitável por enquanto; a megaconstrução gigante permanece bloqueada e qualquer expansão deve partir desse protótipo com incrementos pequenos e validação visual a cada etapa.
 - Próximo passo: desenhar uma Sprint 2 pequena para transformar o protótipo em pirâmide mais interessante sem aumentar demais a área; manter limite de volume baixo e opção de limpeza local antes de qualquer expansão.
+
+## 2026-07-24 12:05 UTC-3 — Plano aplicado para Pirâmide completa segura a partir do protótipo
+
+- Solicitação do operador: após validar que o protótipo absoluto funciona, pediu criar a Pirâmide completa seguindo o mesmo padrão.
+- Pergunta obrigatória: por que isso agora pode ser tentado com menor risco? Porque o padrão validado abandona `@s`/âncora/posição atual do jogador e usa coordenadas absolutas no chão, no ponto já aprovado visualmente. A causa dos erros anteriores foi justamente depender de contexto relativo ou montar em escala grande antes da validação.
+- Correção aplicada: adicionada `prototipo/montar_piramide_completa_segura`, centrada em `-182 71 95`, com área limitada X=`-206..-158`, Y=`70..94`, Z=`71..119`, camadas segmentadas e interior simples. A megaconstrução 129x129 continua bloqueada.
+- Segurança: função deve ser executada somente após backup; não usa subsolo profundo nem plataforma alta; cada `fill` é pequeno e começa em Y=70, que foi o chão validado pelo protótipo. Validação visual obrigatória após execução antes de qualquer aumento de escala.
+- Sprint pós-conclusão: feito — função completa segura adicionada; faltando — deploy e execução com backup; impedimentos — validar visualmente se a expansão manteve a base no chão e se o interior está acessível.
