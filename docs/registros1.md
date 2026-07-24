@@ -3804,3 +3804,11 @@ Checklist executado no host via MCP readonly/projeto:
 - Segurança prévia: tentativa inicial de backup em `/root/Uploads` falhou por sistema de arquivos somente leitura (`Errno 30`), então a montagem não foi executada nessa tentativa. Backup refeita com sucesso em `/root/MinecraftServer/backups/Bedrock-level-pre-piramide-prototipo-ancora.tar.gz`, `128190123` bytes, SHA-256 `d1cbcb70e17cdc01566ace29517db6d25d06538f5204e0899c99f7636d6143de`.
 - Execução: enviado `function piramide_egito_gigante/prototipo/montar_base_ancora` via MCP `run_bedrock_command`; retorno `status=sent`, bedrock.log pós-envio: `Successfully executed 19 function entries.`, sem marcadores de erro detectados.
 - Próximo passo: operador deve validar visualmente se a base está encostada no chão em todos os lados. Se qualquer lado estiver suspenso, parar e limpar somente o protótipo pequeno; não aumentar escala.
+
+## 2026-07-23 17:58 UTC-3 — Protótipo não apareceu; fallback absoluto no ponto do operador
+
+- Sintoma observado pelo operador: após `Successfully executed 19 function entries`, nada visível foi criado; a captura mostra apenas o marcador/armor stand e a posição `-182 71 95`.
+- Pergunta obrigatória: por que isso aconteceu? Hipótese mais provável: o fluxo relativo via `execute ... run function`/âncora não preservou o contexto de posição do jeito esperado para os `fill` internos, ou o selector contextual gerou `No targets matched selector`; logo o comando pôde contar entradas executadas sem produzir a construção no local visível.
+- Evidências usadas: log pós-envio da tentativa direta ao jogador retornou `No targets matched selector`; captura do operador mostra marcador mas não a base; coordenada da tela: `-182 71 95`.
+- Correção aplicada: adicionada função pequena absoluta `prototipo/montar_base_ponto_operador`, centrada em `-182 71 95`, com área X=`-194..-170`, Y=`70..77`, Z=`83..107`. Ela evita dependência de `@s`, entidade âncora ou coordenadas relativas para validar a ideia do protótipo.
+- Segurança: continua sendo protótipo pequeno; não reabilita Pirâmide gigante. Se a base absoluta também ficar visualmente ruim, limpar só esta caixa pequena antes de qualquer nova tentativa.
