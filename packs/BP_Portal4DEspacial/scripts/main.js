@@ -7,7 +7,7 @@ const USE_CUSTOM_DIMENSION_DESTINATION = true;
 const PLATFORM_RADIUS = 7;
 const DIMENSION_IDENTITY_RADIUS = 10;
 const IMMERSION_RADIUS = 18;
-const TESSERACT_CENTER = { x: CUSTOM_CENTER.x, y: CUSTOM_CENTER.y + 6, z: CUSTOM_CENTER.z + 2 };
+const TESSERACT_CENTER = { x: CUSTOM_CENTER.x, y: CUSTOM_CENTER.y + 7, z: CUSTOM_CENTER.z + 3 };
 const HYPERCUBE_ROOM = { halfWidth: 12, halfDepth: 12, height: 15 };
 const PORTAL_TRIGGER_BLOCK = "minecraft:sea_lantern";
 const RETURN_TRIGGER_BLOCKS = new Set(["minecraft:lodestone", "minecraft:sea_lantern"]);
@@ -43,6 +43,7 @@ const EXPANSION_MARKERS = [
   { dx: -24, dz: 18, block: "minecraft:emerald_block", label: "grafos" },
 ];
 const arenaStates = new Map();
+const unverifiableDestinationAnchors = new Set();
 
 let customDimensionRegistered = false;
 let customDimensionError = "startup ainda nao executado";
@@ -339,6 +340,32 @@ function buildHypercubeRoom(dimension, center) {
   setBlockSafe(dimension, { x: center.x, y: center.y + 1, z: center.z }, "minecraft:air");
 }
 
+function buildGuidedHypercubeRoute(dimension, center) {
+  const entranceZ = center.z - 10;
+  const exhibitZ = center.z + 3;
+
+  // Portal de chegada interno: enquadra a primeira vista sem competir com o tesseracto.
+  for (const x of [center.x - 4, center.x + 4]) {
+    setLineSafe(dimension, { x, y: center.y, z: entranceZ }, { x, y: center.y + 5, z: entranceZ }, "minecraft:crying_obsidian");
+    setBlockSafe(dimension, { x, y: center.y + 6, z: entranceZ }, "minecraft:sea_lantern");
+  }
+  setLineSafe(dimension, { x: center.x - 4, y: center.y + 5, z: entranceZ }, { x: center.x + 4, y: center.y + 5, z: entranceZ }, "minecraft:purple_stained_glass");
+
+  // Caminho único: chegada -> explicação -> controles -> hipercubo.
+  for (let z = entranceZ; z <= exhibitZ; z += 1) {
+    const pathBlock = (z - entranceZ) % 4 === 0 ? "minecraft:sea_lantern" : "minecraft:polished_blackstone_bricks";
+    setLineSafe(dimension, { x: center.x - 1, y: center.y - 1, z }, { x: center.x + 1, y: center.y - 1, z }, pathBlock);
+  }
+
+  // Pedestais laterais deixam W e rotação separados do eixo de circulação.
+  setLineSafe(dimension, { x: center.x - 8, y: center.y - 1, z: center.z - 4 }, { x: center.x - 5, y: center.y - 1, z: center.z - 4 }, "minecraft:emerald_block");
+  setBlockSafe(dimension, { x: center.x - 6, y: center.y, z: center.z - 4 }, W_CONTROL_BLOCK);
+  setBlockSafe(dimension, { x: center.x - 6, y: center.y + 1, z: center.z - 4 }, "minecraft:sea_lantern");
+  setLineSafe(dimension, { x: center.x + 5, y: center.y - 1, z: center.z - 4 }, { x: center.x + 8, y: center.y - 1, z: center.z - 4 }, "minecraft:lapis_block");
+  setBlockSafe(dimension, { x: center.x + 6, y: center.y, z: center.z - 4 }, ROTATION_CONTROL_BLOCK);
+  setBlockSafe(dimension, { x: center.x + 6, y: center.y + 1, z: center.z - 4 }, "minecraft:sea_lantern");
+}
+
 function buildImmersive4DChamber(dimension, center) {
   for (let x = center.x - IMMERSION_RADIUS; x <= center.x + IMMERSION_RADIUS; x += 1) {
     for (let z = center.z - IMMERSION_RADIUS; z <= center.z + IMMERSION_RADIUS; z += 1) {
@@ -364,14 +391,14 @@ function buildImmersive4DChamber(dimension, center) {
   }
 
   buildHypercubeRoom(dimension, center);
+  buildGuidedHypercubeRoute(dimension, center);
   buildTesseractProjection(dimension, TESSERACT_CENTER);
 
+  // Remove as cinco faixas simultâneas antigas; somente a fatia W ativa será renderizada.
   for (let index = 0; index < W_SLICE_BLOCKS.length; index += 1) {
     const z = center.z - 12 + index * 6;
-    setLineSafe(dimension, { x: center.x - 14, y: center.y, z }, { x: center.x + 14, y: center.y, z }, W_SLICE_BLOCKS[index]);
-    setLineSafe(dimension, { x: center.x - 14, y: center.y + 1, z }, { x: center.x + 14, y: center.y + 1, z }, "minecraft:white_stained_glass");
-    setBlockSafe(dimension, { x: center.x - 15, y: center.y, z }, "minecraft:sea_lantern");
-    setBlockSafe(dimension, { x: center.x + 15, y: center.y, z }, "minecraft:sea_lantern");
+    setLineSafe(dimension, { x: center.x - 15, y: center.y, z }, { x: center.x + 15, y: center.y, z }, "minecraft:air");
+    setLineSafe(dimension, { x: center.x - 15, y: center.y + 1, z }, { x: center.x + 15, y: center.y + 1, z }, "minecraft:air");
   }
 
   const state = getArenaState(dimension.id, center);
@@ -381,8 +408,8 @@ function buildImmersive4DChamber(dimension, center) {
 
   setBlockSafe(dimension, { x: center.x, y: center.y, z: center.z }, "minecraft:air");
   setBlockSafe(dimension, { x: center.x, y: center.y, z: center.z - 4 }, GUIDE_TRIGGER_BLOCK);
-  setBlockSafe(dimension, { x: center.x + 6, y: center.y, z: center.z }, ROTATION_CONTROL_BLOCK);
-  setBlockSafe(dimension, { x: center.x - 6, y: center.y, z: center.z }, W_CONTROL_BLOCK);
+  setBlockSafe(dimension, { x: center.x + 6, y: center.y, z: center.z }, "minecraft:air");
+  setBlockSafe(dimension, { x: center.x - 6, y: center.y, z: center.z }, "minecraft:air");
 }
 
 function buildApiDimensionIdentity(dimension, center) {
@@ -445,12 +472,21 @@ function buildSafePlatform(dimensionId, center, label, force = false) {
   setBlockSafe(dimension, { x: center.x - 4, y: center.y, z: center.z }, "minecraft:lodestone");
   setBlockSafe(dimension, { x: center.x + 4, y: center.y, z: center.z }, "minecraft:sea_lantern");
   const anchorBlock = getBlockTypeId(dimension, { x: center.x, y: center.y - 1, z: center.z });
+  if (anchorBlock === undefined) {
+    builtDestinations.add(key);
+    if (!unverifiableDestinationAnchors.has(key)) {
+      unverifiableDestinationAnchors.add(key);
+      log(`Plataforma ${label} montada, mas a API nao permite verificar a ancora neste momento; evitando reconstrucoes repetidas.`);
+    }
+    return true;
+  }
   if (anchorBlock !== "minecraft:amethyst_block") {
     builtDestinations.delete(key);
     log(`Plataforma ${label} ainda nao verificou bloco ancora em ${center.x} ${center.y - 1} ${center.z}; bloco atual=${anchorBlock ?? "indisponivel"}.`);
     return false;
   }
 
+  unverifiableDestinationAnchors.delete(key);
   builtDestinations.add(key);
   log(`Plataforma segura criada para ${label} em ${dimensionId} @ ${center.x} ${center.y} ${center.z}.`);
   return true;
@@ -618,6 +654,9 @@ function ensureDestinationHealthy() {
   }
 
   const anchor = getBlockTypeId(dimension, { x: CUSTOM_CENTER.x, y: CUSTOM_CENTER.y - 1, z: CUSTOM_CENTER.z });
+  if (anchor === undefined) {
+    return;
+  }
   if (anchor !== "minecraft:amethyst_block") {
     builtDestinations.delete(`${CUSTOM_DIMENSION_ID}:${CUSTOM_CENTER.x}:${CUSTOM_CENTER.y}:${CUSTOM_CENTER.z}`);
     log("Ancora da Sala do Hipercubo ausente; reconstruindo destino customizado sem depender do intervalo pesado.");
@@ -1035,8 +1074,8 @@ if (scriptEventReceive?.subscribe) {
 }
 
 system.run(() => {
-  log("Sprint 9 carregada: Sala do Hipercubo com W dinamico, quatro projecoes, puzzle final e verificacao leve de saude.");
-  notifyOperators("Sprint 9 ativa. Sala do Hipercubo: W muda a sala, lapis tem 4 projecoes, W=4 + Projecao=4 abre a passagem final.");
+  log("Sprint 10 carregada: percurso visual focado, controles separados e uma unica fatia W ativa.");
+  notifyOperators("Sprint 10 ativa. Siga o caminho iluminado; esmeralda controla W, lapis controla projecao e o hipercubo e o foco central.");
   buildAllKnownDestinations();
 });
 
