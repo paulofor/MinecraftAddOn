@@ -8,3 +8,4 @@ tellraw @s {"rawtext":[{"text":"[Piramide] Por que essa construcao poderia danif
 tellraw @s {"rawtext":[{"text":"[Piramide] A funcao publica roda precheck anti-agua antes da limpeza automatica e so depois chama a construcao interna."}]}
 tellraw @s {"rawtext":[{"text":"[Piramide] Para executar somente a Sprint 1 com seguranca, use /function piramide_egito_gigante/executar_sprint1."}]}
 tellraw @s {"rawtext":[{"text":"[Piramide] Para escolher coordenada olhando o mundo pelo proprio jogo, fique no centro desejado e use /function piramide_egito_gigante/diagnosticar_local; o resultado APROVADO/BLOQUEADO sai no bedrock.log."}]}
+tellraw @s {"rawtext":[{"text":"[Piramide] Interior exploravel: apos limpar artefatos e validar a piramide, use /function piramide_egito_gigante/aventura/montar_interior; a descoberta acontece andando pelas salas, sem funcoes de progresso."}]}
