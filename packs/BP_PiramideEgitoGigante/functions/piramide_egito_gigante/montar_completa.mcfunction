@@ -1,8 +1,3 @@
-# Funcao publica: valida agua, prepara terreno e so entao constroi a Piramide Egito Gigante.
-function piramide_egito_gigante/precheck_ambiente
-execute if score peg_state peg_bloqueio matches 0 run function piramide_egito_gigante/preparar_terreno
-execute if score peg_state peg_bloqueio matches 0 run function piramide_egito_gigante/construir_estrutura
-execute if score peg_state peg_bloqueio matches 0 run effect @a[r=80] slow_falling 40 1 true
-execute if score peg_state peg_bloqueio matches 0 run tp @a[r=80] ~ ~65 ~
-execute if score peg_state peg_bloqueio matches 0 run tellraw @a[r=80] {"rawtext":[{"text":"[Piramide] Voce foi movido acima da piramide com queda lenta para evitar sufocamento e dano de queda."}]}
-execute unless score peg_state peg_bloqueio matches 0 run tellraw @a[r=80] {"rawtext":[{"text":"[Piramide][TRAVA] Montagem bloqueada: agua/lava amostrada ou jogador sem bloco sob os pes. Escolha area seca/desertica, com os pes no chao e longe de rios/oceanos, e execute novamente."}]}
+# BLOQUEADO EM 2026-07-23: megaconstrucao desativada para evitar repetir artefato no ceu.
+# Por que isso aconteceu? A montagem anterior usou coordenadas fixas/volumes altos sem validação visual suficiente do terreno real e gerou blocos flutuantes difíceis de limpar.
+tellraw @a {"rawtext":[{"text":"[Piramide][BLOQUEADO] Montagem desativada. Nao execute a piramide gigante ate redesenhar com precheck seguro, area pequena e teste em copia do mundo."}]}
