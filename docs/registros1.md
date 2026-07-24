@@ -3837,3 +3837,35 @@ Checklist executado no host via MCP readonly/projeto:
 - Correção aplicada: remover `montar_base_chao` e `montar_base_ancora` da allowlist MCP, mantendo apenas a montagem absoluta `montar_base_ponto_operador` para o marcador original. Adicionadas limpezas pequenas: `limpar_base_chao` para limpar o protótipo no local atual do jogador e `limpar_base_ponto_operador` para limpar a caixa absoluta do marcador.
 - Segurança: as limpezas removem apenas materiais do protótipo (`sandstone`, `smooth_sandstone`, `chiseled_sandstone`, `gold_block`, `sea_lantern`, `torch`) em volume pequeno e restauram a camada inferior para `sand` quando possível; a megaconstrução permanece bloqueada.
 - Próximo passo após deploy: se o operador ainda estiver no protótipo criado por engano, executar `execute as @a at @s run function piramide_egito_gigante/prototipo/limpar_base_chao`; depois usar somente `function piramide_egito_gigante/prototipo/montar_base_ponto_operador` para o marcador original.
+
+## 2026-07-24 00:36 UTC-3 — Retentativa no ponto absoluto após bloqueio do fluxo relativo
+
+- Operação: operador autorizou executar novamente no ponto absoluto do marcador original após remover da allowlist o caminho relativo que havia montado no jogador.
+- Pergunta obrigatória: por que esta tentativa é mais segura? Porque a allowlist ativa no MCP `0.15.11` não permite mais `montar_base_chao`/`montar_base_ancora`; foi usado somente `function piramide_egito_gigante/prototipo/montar_base_ponto_operador`, centrado no ponto fixo `-182 71 95`.
+- Segurança prévia: backup criado em `/root/MinecraftServer/backups/Bedrock-level-pre-piramide-prototipo-absoluto-retry.tar.gz`, `128215301` bytes, SHA-256 `4f36ce874d656872d09b3f7e9094e22bb727d68089ba5409e99d594241bbf638`.
+- Execução: enviado `function piramide_egito_gigante/prototipo/montar_base_ponto_operador`; retorno `status=sent`; bedrock.log pós-envio: `Successfully executed 17 function entries.`, sem marcadores de erro detectados.
+- Próximo passo: operador deve verificar visualmente apenas a região do marcador absoluto; se não aparecer, a próxima investigação deve consultar blocos da região absoluta/possível dimensão antes de qualquer nova montagem.
+
+## 2026-07-24 11:54 UTC-3 — Validação visual positiva do protótipo absoluto da Pirâmide
+
+- Resultado informado pelo operador: o protótipo absoluto apareceu e ficou visualmente bom, com estrutura baixa em camadas de arenito no chão.
+- Pergunta obrigatória: por que essa tentativa funcionou? Porque deixou de depender do contexto relativo do jogador/âncora e passou a usar coordenadas absolutas do marcador original, evitando o problema anterior de construir onde o jogador estava ou não construir nada visível.
+- Evidência usada: captura do operador em 2026-07-24 mostra a estrutura em camadas próxima à posição exibida `-165 71 91`, alinhada ao local esperado do protótipo absoluto.
+- Segurança: a validação confirma que o caminho absoluto pequeno é o único fluxo de montagem aceitável por enquanto; a megaconstrução gigante permanece bloqueada e qualquer expansão deve partir desse protótipo com incrementos pequenos e validação visual a cada etapa.
+- Próximo passo: desenhar uma Sprint 2 pequena para transformar o protótipo em pirâmide mais interessante sem aumentar demais a área; manter limite de volume baixo e opção de limpeza local antes de qualquer expansão.
+
+## 2026-07-24 12:05 UTC-3 — Plano aplicado para Pirâmide completa segura a partir do protótipo
+
+- Solicitação do operador: após validar que o protótipo absoluto funciona, pediu criar a Pirâmide completa seguindo o mesmo padrão.
+- Pergunta obrigatória: por que isso agora pode ser tentado com menor risco? Porque o padrão validado abandona `@s`/âncora/posição atual do jogador e usa coordenadas absolutas no chão, no ponto já aprovado visualmente. A causa dos erros anteriores foi justamente depender de contexto relativo ou montar em escala grande antes da validação.
+- Correção aplicada: adicionada `prototipo/montar_piramide_completa_segura`, centrada em `-182 71 95`, com área limitada X=`-206..-158`, Y=`70..94`, Z=`71..119`, camadas segmentadas e interior simples. A megaconstrução 129x129 continua bloqueada.
+- Segurança: função deve ser executada somente após backup; não usa subsolo profundo nem plataforma alta; cada `fill` é pequeno e começa em Y=70, que foi o chão validado pelo protótipo. Validação visual obrigatória após execução antes de qualquer aumento de escala.
+- Sprint pós-conclusão: feito — função completa segura adicionada; faltando — deploy e execução com backup; impedimentos — validar visualmente se a expansão manteve a base no chão e se o interior está acessível.
+
+## 2026-07-24 12:09 UTC-3 — Tentativa bloqueada de Pirâmide completa segura antes do deploy 0.15.12
+
+- Solicitação do operador: pediu “crie a grande pirâmide agora”.
+- Pergunta obrigatória: por que não executou? Porque o MCP remoto ainda está na versão `0.15.11`, enquanto a função `prototipo/montar_piramide_completa_segura` foi adicionada na versão seguinte (`0.15.12`/pack `0.1.28`). A allowlist remota ainda não conhece esse comando.
+- Segurança prévia: backup criado antes da tentativa em `/root/MinecraftServer/backups/Bedrock-level-pre-piramide-completa-segura.tar.gz`, `128287575` bytes, SHA-256 `b9b10d2a07bf5b7ab5f0eb48f907d3d1d6d32c77586143728a755ab0e82c9f13`.
+- Resultado: envio de `function piramide_egito_gigante/prototipo/montar_piramide_completa_segura` foi bloqueado pelo MCP com `Comando Bedrock fora da allowlist administrativa`; portanto nenhum bloco foi alterado por essa tentativa.
+- Próximo passo: fazer deploy da versão que contém MCP `0.15.12` e BP/RP `0.1.28`; após confirmar `/health` com `0.15.12`, repetir a execução com backup.

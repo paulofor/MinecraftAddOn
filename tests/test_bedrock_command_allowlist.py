@@ -29,6 +29,7 @@ class BedrockCommandAllowlistTest(unittest.TestCase):
       "execute as @a at @s run function piramide_egito_gigante/prototipo/precheck_chao",
       "execute as @a at @s run function piramide_egito_gigante/prototipo/fixar_ancora",
       "function piramide_egito_gigante/prototipo/montar_base_ponto_operador",
+      "function piramide_egito_gigante/prototipo/montar_piramide_completa_segura",
       "execute as @a at @s run function piramide_egito_gigante/prototipo/limpar_base_chao",
       "function piramide_egito_gigante/prototipo/limpar_base_ponto_operador",
       "say MinecraftAddOn MCP run_bedrock_command operacional",
