@@ -3845,3 +3845,11 @@ Checklist executado no host via MCP readonly/projeto:
 - Segurança prévia: backup criado em `/root/MinecraftServer/backups/Bedrock-level-pre-piramide-prototipo-absoluto-retry.tar.gz`, `128215301` bytes, SHA-256 `4f36ce874d656872d09b3f7e9094e22bb727d68089ba5409e99d594241bbf638`.
 - Execução: enviado `function piramide_egito_gigante/prototipo/montar_base_ponto_operador`; retorno `status=sent`; bedrock.log pós-envio: `Successfully executed 17 function entries.`, sem marcadores de erro detectados.
 - Próximo passo: operador deve verificar visualmente apenas a região do marcador absoluto; se não aparecer, a próxima investigação deve consultar blocos da região absoluta/possível dimensão antes de qualquer nova montagem.
+
+## 2026-07-24 11:54 UTC-3 — Validação visual positiva do protótipo absoluto da Pirâmide
+
+- Resultado informado pelo operador: o protótipo absoluto apareceu e ficou visualmente bom, com estrutura baixa em camadas de arenito no chão.
+- Pergunta obrigatória: por que essa tentativa funcionou? Porque deixou de depender do contexto relativo do jogador/âncora e passou a usar coordenadas absolutas do marcador original, evitando o problema anterior de construir onde o jogador estava ou não construir nada visível.
+- Evidência usada: captura do operador em 2026-07-24 mostra a estrutura em camadas próxima à posição exibida `-165 71 91`, alinhada ao local esperado do protótipo absoluto.
+- Segurança: a validação confirma que o caminho absoluto pequeno é o único fluxo de montagem aceitável por enquanto; a megaconstrução gigante permanece bloqueada e qualquer expansão deve partir desse protótipo com incrementos pequenos e validação visual a cada etapa.
+- Próximo passo: desenhar uma Sprint 2 pequena para transformar o protótipo em pirâmide mais interessante sem aumentar demais a área; manter limite de volume baixo e opção de limpeza local antes de qualquer expansão.
