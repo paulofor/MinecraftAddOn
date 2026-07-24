@@ -3861,3 +3861,11 @@ Checklist executado no host via MCP readonly/projeto:
 - Correção aplicada: adicionada `prototipo/montar_piramide_completa_segura`, centrada em `-182 71 95`, com área limitada X=`-206..-158`, Y=`70..94`, Z=`71..119`, camadas segmentadas e interior simples. A megaconstrução 129x129 continua bloqueada.
 - Segurança: função deve ser executada somente após backup; não usa subsolo profundo nem plataforma alta; cada `fill` é pequeno e começa em Y=70, que foi o chão validado pelo protótipo. Validação visual obrigatória após execução antes de qualquer aumento de escala.
 - Sprint pós-conclusão: feito — função completa segura adicionada; faltando — deploy e execução com backup; impedimentos — validar visualmente se a expansão manteve a base no chão e se o interior está acessível.
+
+## 2026-07-24 12:09 UTC-3 — Tentativa bloqueada de Pirâmide completa segura antes do deploy 0.15.12
+
+- Solicitação do operador: pediu “crie a grande pirâmide agora”.
+- Pergunta obrigatória: por que não executou? Porque o MCP remoto ainda está na versão `0.15.11`, enquanto a função `prototipo/montar_piramide_completa_segura` foi adicionada na versão seguinte (`0.15.12`/pack `0.1.28`). A allowlist remota ainda não conhece esse comando.
+- Segurança prévia: backup criado antes da tentativa em `/root/MinecraftServer/backups/Bedrock-level-pre-piramide-completa-segura.tar.gz`, `128287575` bytes, SHA-256 `b9b10d2a07bf5b7ab5f0eb48f907d3d1d6d32c77586143728a755ab0e82c9f13`.
+- Resultado: envio de `function piramide_egito_gigante/prototipo/montar_piramide_completa_segura` foi bloqueado pelo MCP com `Comando Bedrock fora da allowlist administrativa`; portanto nenhum bloco foi alterado por essa tentativa.
+- Próximo passo: fazer deploy da versão que contém MCP `0.15.12` e BP/RP `0.1.28`; após confirmar `/health` com `0.15.12`, repetir a execução com backup.
