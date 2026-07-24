@@ -3812,3 +3812,28 @@ Checklist executado no host via MCP readonly/projeto:
 - Evidências usadas: log pós-envio da tentativa direta ao jogador retornou `No targets matched selector`; captura do operador mostra marcador mas não a base; coordenada da tela: `-182 71 95`.
 - Correção aplicada: adicionada função pequena absoluta `prototipo/montar_base_ponto_operador`, centrada em `-182 71 95`, com área X=`-194..-170`, Y=`70..77`, Z=`83..107`. Ela evita dependência de `@s`, entidade âncora ou coordenadas relativas para validar a ideia do protótipo.
 - Segurança: continua sendo protótipo pequeno; não reabilita Pirâmide gigante. Se a base absoluta também ficar visualmente ruim, limpar só esta caixa pequena antes de qualquer nova tentativa.
+
+## 2026-07-23 21:30 UTC-3 — Execução do protótipo absoluto no ponto -182 71 95
+
+- Operação: após deploy do MCP `0.15.10`/pack com fallback absoluto, foi executado o protótipo pequeno centrado em `-182 71 95`.
+- Pergunta obrigatória: por que esta execução deve aparecer onde a relativa não apareceu? Porque a função `prototipo/montar_base_ponto_operador` usa coordenadas absolutas em todos os `fill`/`setblock`, eliminando dependência de `@s`, contexto `execute ... run function` ou entidade âncora.
+- Segurança prévia: backup criado em `/root/MinecraftServer/backups/Bedrock-level-pre-piramide-prototipo-absoluto.tar.gz`, `128180983` bytes, SHA-256 `da412a38c20de2964a9a22d58f3b9e11cc55dcb51dca3c6d81bf5821de2e1a04`.
+- Execução: enviado `function piramide_egito_gigante/prototipo/montar_base_ponto_operador`; retorno `status=sent`; bedrock.log pós-envio: `Successfully executed 17 function entries.`, sem marcadores de erro detectados.
+- Próximo passo: operador deve validar visualmente no jogo se o protótipo apareceu no ponto correto e se a base está encostada no chão. Não aumentar escala até essa validação.
+
+## 2026-07-23 21:35 UTC-3 — Retentativa do protótipo com jogador presente
+
+- Sintoma/hipótese do operador: protótipo absoluto continuou sem aparecer; hipótese levantada de que comandos dependentes do jogo só funcionam corretamente com o jogador conectado/presente.
+- Pergunta obrigatória: por que tentar novamente com o jogador presente? Porque a tentativa anterior relativa ao jogador havia retornado `No targets matched selector`, enquanto o comando direto de marcador funcionou quando havia alvo; portanto a presença do jogador é variável crítica a validar antes de alterar novamente a estratégia.
+- Execução: enviado `execute as @a at @s run function piramide_egito_gigante/prototipo/montar_base_chao`; retorno `status=sent`, bedrock.log pós-envio: `Successfully executed 20 function entries.`, sem marcadores de erro detectados.
+- Validação adicional: enviado marcador pequeno `execute as @a at @s run setblock ~ ~4 ~ minecraft:sea_lantern`; retorno `status=sent`, bedrock.log: `Block placed`, confirmando que o seletor `@a` encontrou o jogador nesse momento.
+- Próximo passo: operador deve confirmar visualmente se a base apareceu. Se só o marcador aparecer e a base não, a causa provável passa a ser limitação de contexto/dimensão dos `fill` dentro de função; próximo ajuste deve usar comandos `execute in overworld run fill ...` ou sequência direta/absoluta, ainda em volume pequeno.
+
+## 2026-07-23 21:45 UTC-3 — Protótipo apareceu no jogador, não no marcador; bloquear montagem relativa
+
+- Sintoma observado pelo operador: a tentativa com jogador presente criou onde o jogador estava, não onde estava a marca original.
+- Pergunta obrigatória: por que isso aconteceu? Porque o comando permitido `execute as @a at @s run function .../montar_base_chao` usa a posição atual do jogador como referência. Isso valida que comandos relativos funcionam, mas também confirma que esse fluxo é perigoso para o objetivo de montar no marcador salvo.
+- Causa raiz operacional: havia dois fluxos concorrentes de montagem — relativo ao jogador e absoluto/por marcador. Ao tentar diagnosticar com o jogador presente, o fluxo relativo produziu exatamente o comportamento que queríamos evitar: construir no local atual do operador.
+- Correção aplicada: remover `montar_base_chao` e `montar_base_ancora` da allowlist MCP, mantendo apenas a montagem absoluta `montar_base_ponto_operador` para o marcador original. Adicionadas limpezas pequenas: `limpar_base_chao` para limpar o protótipo no local atual do jogador e `limpar_base_ponto_operador` para limpar a caixa absoluta do marcador.
+- Segurança: as limpezas removem apenas materiais do protótipo (`sandstone`, `smooth_sandstone`, `chiseled_sandstone`, `gold_block`, `sea_lantern`, `torch`) em volume pequeno e restauram a camada inferior para `sand` quando possível; a megaconstrução permanece bloqueada.
+- Próximo passo após deploy: se o operador ainda estiver no protótipo criado por engano, executar `execute as @a at @s run function piramide_egito_gigante/prototipo/limpar_base_chao`; depois usar somente `function piramide_egito_gigante/prototipo/montar_base_ponto_operador` para o marcador original.
