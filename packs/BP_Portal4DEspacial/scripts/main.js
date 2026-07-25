@@ -2,8 +2,8 @@ import { system, world } from "@minecraft/server";
 
 const PREFIX = "[Portal4D]";
 const CUSTOM_DIMENSION_ID = "portal4d:espaco_4d";
-const BLACK_HOLE_CENTER = { x: 0, y: 90, z: 0 };
-const ARRIVAL = { x: 0, y: 82, z: -54 };
+const BLACK_HOLE_CENTER = { x: 0, y: 96, z: 0 };
+const ARRIVAL = { x: 0, y: 84, z: -82 };
 const PORTAL_TRIGGER_BLOCK = "minecraft:sea_lantern";
 const PORTAL_WALK_CHECK_INTERVAL_TICKS = 10;
 const TELEPORT_COOLDOWN_TICKS = 80;
@@ -11,12 +11,17 @@ const INTERACTION_COOLDOWN_TICKS = 14;
 const RECOVERY_SCRIPT_EVENT_ID = "portal4d:recuperar";
 const NEARBY_PORTAL_SCRIPT_EVENT_ID = "portal4d:montar_proximo";
 const COORDINATE_PORTAL_SCRIPT_EVENT_ID = "portal4d:montar_coordenada";
-const WORLD_ENVELOPE = { minX: -64, maxX: 64, minY: 60, maxY: 124, minZ: -64, maxZ: 64 };
-const BUILD_TICKING_AREA = "p4d_planeta_build";
+const WORLD_ENVELOPE = { minX: -96, maxX: 96, minY: 45, maxY: 150, minZ: -96, maxZ: 96 };
+const BUILD_TICKING_AREAS = [
+  { name: "p4d_planeta_nw", x: -48, z: -48 },
+  { name: "p4d_planeta_ne", x: 48, z: -48 },
+  { name: "p4d_planeta_sw", x: -48, z: 48 },
+  { name: "p4d_planeta_se", x: 48, z: 48 },
+];
 const FRAGMENTS = {
-  natureza: { center: { x: -38, y: 83, z: -6 }, anchor: { x: -38, y: 84, z: -6 }, title: "FRAGMENTO DA NATUREZA", color: "§a" },
-  ruinas: { center: { x: 25, y: 87, z: -32 }, anchor: { x: 25, y: 88, z: -32 }, title: "FRAGMENTO DAS RUÍNAS", color: "§6" },
-  maquina: { center: { x: 32, y: 80, z: 28 }, anchor: { x: 32, y: 81, z: 28 }, title: "FRAGMENTO DA MÁQUINA", color: "§b" },
+  natureza: { center: { x: -62, y: 88, z: -8 }, anchor: { x: -62, y: 89, z: -8 }, title: "FRAGMENTO DA NATUREZA", color: "§a" },
+  ruinas: { center: { x: 42, y: 96, z: -48 }, anchor: { x: 42, y: 97, z: -48 }, title: "FRAGMENTO DAS RUÍNAS", color: "§6" },
+  maquina: { center: { x: 56, y: 82, z: 42 }, anchor: { x: 56, y: 83, z: 42 }, title: "FRAGMENTO DA MÁQUINA", color: "§b" },
 };
 const FRAGMENT_TAGS = {
   natureza: "portal4d_fragmento_natureza",
@@ -27,6 +32,8 @@ const FRAGMENT_TAGS = {
 let customDimensionRegistered = false;
 let customDimensionError = "startup ainda não executado";
 let worldBuilt = false;
+let buildInProgress = false;
+const worldReadyCallbacks = [];
 const playerOrigins = new Map();
 const cooldowns = new Map();
 
@@ -87,21 +94,34 @@ function runCommandSafe(dimension, command, context) {
   try {
     const runner = dimension.runCommand ?? dimension.runCommandAsync;
     const result = runner?.call(dimension, command);
-    result?.catch?.((error) => log(`Falha no comando ${context}: ${error}`));
+    return result?.catch?.((error) => log(`Falha no comando ${context}: ${error}`)) ?? result;
   } catch (error) {
     log(`Falha ao iniciar ${context}: ${error}`);
+    return undefined;
   }
 }
 
-function clearPreviousWorld(dimension) {
-  // Fatias abaixo do limite do /fill limpam somente o envelope absoluto documentado.
-  for (const [x1, x2] of [[-64, -1], [0, 64]]) {
-    for (const [z1, z2] of [[-64, -1], [0, 64]]) {
-      for (let y = 60; y <= 124; y += 7) {
-        runCommandSafe(dimension, `fill ${x1} ${y} ${z1} ${x2} ${Math.min(y + 6, 124)} ${z2} air`, "apagamento seguro da experiência anterior");
-      }
+function clearPreviousWorld(dimension, onComplete) {
+  const commands = [];
+  const horizontalSlices = [[-96, -49], [-48, -1], [0, 48], [49, 96]];
+  for (const [x1, x2] of horizontalSlices) for (const [z1, z2] of horizontalSlices) {
+    for (let y = WORLD_ENVELOPE.minY; y <= WORLD_ENVELOPE.maxY; y += 6) {
+      commands.push(`fill ${x1} ${y} ${z1} ${x2} ${Math.min(y + 5, WORLD_ENVELOPE.maxY)} ${z2} air`);
     }
   }
+  let index = 0;
+  const clearNextSlice = () => {
+    if (index >= commands.length) {
+      log(`Limpeza integral concluída: ${commands.length} fatias em X/Z=-96..96, Y=45..150.`);
+      onComplete();
+      return;
+    }
+    const result = runCommandSafe(dimension, commands[index], `apagamento seguro ${index + 1}/${commands.length}`);
+    index += 1;
+    if (result?.then) result.then(() => system.run(clearNextSlice));
+    else system.run(clearNextSlice);
+  };
+  clearNextSlice();
 }
 
 function buildSphere(dimension, center, radius, shellBlock, glowBlock) {
@@ -118,12 +138,12 @@ function buildSphere(dimension, center, radius, shellBlock, glowBlock) {
 }
 
 function buildAccretionDisk(dimension) {
-  for (let x = -29; x <= 29; x += 1) {
-    for (let z = -29; z <= 29; z += 1) {
+  for (let x = -43; x <= 43; x += 1) {
+    for (let z = -43; z <= 43; z += 1) {
       const distance = Math.sqrt(x * x + z * z);
-      if (distance < 15 || distance > 28) continue;
-      const y = BLACK_HOLE_CENTER.y + Math.round((x + z) / 24);
-      const block = distance > 24 ? "minecraft:orange_stained_glass" : distance > 19 ? "minecraft:magenta_stained_glass" : "minecraft:purple_stained_glass";
+      if (distance < 22 || distance > 42) continue;
+      const y = BLACK_HOLE_CENTER.y + Math.round((x + z) / 32);
+      const block = distance > 36 ? "minecraft:orange_stained_glass" : distance > 29 ? "minecraft:magenta_stained_glass" : "minecraft:purple_stained_glass";
       setBlock(dimension, { x, y, z }, block);
       if ((x * 3 + z * 5) % 19 === 0) setBlock(dimension, { x, y: y + 1, z }, "minecraft:sea_lantern");
     }
@@ -188,30 +208,41 @@ function decorateMachineFragment(dimension) {
 function buildArrivalObservatory(dimension) {
   const floorY = ARRIVAL.y - 1;
   for (let x = -10; x <= 10; x += 1) {
-    for (let z = -61; z <= -45; z += 1) {
-      const distance = Math.sqrt(x * x + (z + 53) ** 2);
+    for (let z = ARRIVAL.z - 8; z <= ARRIVAL.z + 8; z += 1) {
+      const distance = Math.sqrt(x * x + (z - ARRIVAL.z) ** 2);
       if (distance <= 10) setBlock(dimension, { x, y: floorY, z }, distance > 8.5 ? "minecraft:sea_lantern" : "minecraft:polished_blackstone_bricks");
     }
   }
-  for (const x of [-4, 4]) line(dimension, { x, y: ARRIVAL.y, z: -58 }, { x, y: ARRIVAL.y + 8, z: -58 }, "minecraft:crying_obsidian");
-  line(dimension, { x: -4, y: ARRIVAL.y + 8, z: -58 }, { x: 4, y: ARRIVAL.y + 8, z: -58 }, "minecraft:crying_obsidian");
-  setBlock(dimension, { x: 0, y: ARRIVAL.y, z: -57 }, "minecraft:lodestone");
-  setBlock(dimension, { x: 0, y: ARRIVAL.y, z: -49 }, "minecraft:lectern");
+  for (const x of [-4, 4]) line(dimension, { x, y: ARRIVAL.y, z: ARRIVAL.z - 5 }, { x, y: ARRIVAL.y + 10, z: ARRIVAL.z - 5 }, "minecraft:crying_obsidian");
+  line(dimension, { x: -4, y: ARRIVAL.y + 10, z: ARRIVAL.z - 5 }, { x: 4, y: ARRIVAL.y + 10, z: ARRIVAL.z - 5 }, "minecraft:crying_obsidian");
+  setBlock(dimension, { x: 0, y: ARRIVAL.y, z: ARRIVAL.z - 4 }, "minecraft:lodestone");
+  setBlock(dimension, { x: 0, y: ARRIVAL.y, z: ARRIVAL.z + 5 }, "minecraft:lectern");
 }
 
 function buildShatteredPlanet(dimension) {
-  buildSphere(dimension, BLACK_HOLE_CENTER, 12, "minecraft:black_concrete", "minecraft:crying_obsidian");
+  buildSphere(dimension, BLACK_HOLE_CENTER, 18, "minecraft:black_concrete", "minecraft:crying_obsidian");
   buildAccretionDisk(dimension);
   buildArrivalObservatory(dimension);
-  buildFloatingFragment(dimension, FRAGMENTS.natureza, 13, "minecraft:moss_block", "minecraft:stone");
-  buildFloatingFragment(dimension, FRAGMENTS.ruinas, 14, "minecraft:stone_bricks", "minecraft:deepslate");
-  buildFloatingFragment(dimension, FRAGMENTS.maquina, 14, "minecraft:oxidized_copper", "minecraft:blackstone");
+  buildFloatingFragment(dimension, FRAGMENTS.natureza, 20, "minecraft:moss_block", "minecraft:stone");
+  buildFloatingFragment(dimension, FRAGMENTS.ruinas, 21, "minecraft:stone_bricks", "minecraft:deepslate");
+  buildFloatingFragment(dimension, FRAGMENTS.maquina, 21, "minecraft:oxidized_copper", "minecraft:blackstone");
   decorateNatureFragment(dimension);
   decorateRuinsFragment(dimension);
   decorateMachineFragment(dimension);
-  buildBridge(dimension, { x: 0, y: 81, z: -45 }, { x: -30, y: 84, z: -12 }, "minecraft:lime_stained_glass");
-  buildBridge(dimension, { x: 6, y: 81, z: -45 }, { x: 18, y: 88, z: -38 }, "minecraft:orange_stained_glass");
-  buildBridge(dimension, { x: 8, y: 81, z: -48 }, { x: 27, y: 81, z: 18 }, "minecraft:cyan_stained_glass");
+  buildBridge(dimension, { x: -5, y: 83, z: -72 }, { x: -46, y: 89, z: -18 }, "minecraft:lime_stained_glass");
+  buildBridge(dimension, { x: 5, y: 83, z: -72 }, { x: 27, y: 97, z: -58 }, "minecraft:orange_stained_glass");
+  buildBridge(dimension, { x: 9, y: 83, z: -75 }, { x: 43, y: 83, z: 28 }, "minecraft:cyan_stained_glass");
+  for (const debris of [
+    { x: -31, y: 116, z: 35, r: 7 }, { x: 33, y: 126, z: 28, r: 6 },
+    { x: -20, y: 70, z: 42, r: 5 }, { x: 68, y: 111, z: -5, r: 7 },
+    { x: -73, y: 110, z: -45, r: 6 },
+  ]) buildSphere(dimension, debris, debris.r, "minecraft:deepslate", "minecraft:amethyst_block");
+  for (const radius of [26, 34]) {
+    for (let angle = 0; angle < 360; angle += 8) {
+      const radians = angle * Math.PI / 180;
+      setBlock(dimension, { x: Math.round(Math.cos(radians) * radius), y: 96 + Math.round(Math.sin(radians) * 7), z: Math.round(Math.sin(radians) * radius) }, "minecraft:end_rod");
+    }
+  }
   worldBuilt = true;
   log("Planeta Partido construído: buraco negro central, três fragmentos e observatório de chegada.");
 }
@@ -229,24 +260,33 @@ function precheckShatteredPlanet(dimension) {
   }
   const requiredPoints = [BLACK_HOLE_CENTER, ARRIVAL, ...Object.values(FRAGMENTS).flatMap((fragment) => [fragment.center, fragment.anchor])];
   if (!requiredPoints.every(isInsideWorldEnvelope)) {
-    log("Precheck bloqueou construção: marco, chegada ou fragmento fora do envelope X/Z=-64..64, Y=60..124.");
+    log("Precheck bloqueou construção: marco, chegada ou fragmento fora do envelope X/Z=-96..96, Y=45..150.");
     return false;
   }
   return true;
 }
 
-function ensureWorld(force = false) {
+function finishWorldBuild(dimension) {
+  buildShatteredPlanet(dimension);
+  for (const area of BUILD_TICKING_AREAS) runCommandSafe(dimension, `tickingarea remove ${area.name}`, `remoção da área temporária ${area.name}`);
+  buildInProgress = false;
+  for (const callback of worldReadyCallbacks.splice(0)) callback(dimension);
+}
+
+function ensureWorld(force = false, onReady) {
   if (!customDimensionRegistered) return undefined;
   const dimension = getDimensionSafe(CUSTOM_DIMENSION_ID, false);
   if (!dimension) return undefined;
-  if (force || !worldBuilt || blockId(dimension, { x: 0, y: 90, z: 12 }) !== "minecraft:black_concrete") {
+  if (onReady) worldReadyCallbacks.push(onReady);
+  if (worldBuilt && !force) {
+    for (const callback of worldReadyCallbacks.splice(0)) callback(dimension);
+    return dimension;
+  }
+  if (!buildInProgress && (force || !worldBuilt || blockId(dimension, { x: 0, y: 96, z: 18 }) !== "minecraft:black_concrete")) {
     if (!precheckShatteredPlanet(dimension)) return undefined;
-    runCommandSafe(dimension, `tickingarea add circle 0 90 0 4 ${BUILD_TICKING_AREA} true`, "carregamento temporário do Planeta Partido");
-    clearPreviousWorld(dimension);
-    system.runTimeout(() => {
-      buildShatteredPlanet(dimension);
-      runCommandSafe(dimension, `tickingarea remove ${BUILD_TICKING_AREA}`, "limpeza da área temporária do Planeta Partido");
-    }, 12);
+    buildInProgress = true;
+    for (const area of BUILD_TICKING_AREAS) runCommandSafe(dimension, `tickingarea add circle ${area.x} 96 ${area.z} 4 ${area.name} true`, `carregamento temporário ${area.name}`);
+    clearPreviousWorld(dimension, () => system.run(() => finishWorldBuild(dimension)));
   }
   return dimension;
 }
@@ -268,9 +308,9 @@ function hasAllFragmentTags(player) {
 }
 
 function energizeBlackHole(dimension) {
-  buildSphere(dimension, BLACK_HOLE_CENTER, 13, "minecraft:purple_stained_glass", "minecraft:sea_lantern");
-  line(dimension, { x: 0, y: BLACK_HOLE_CENTER.y + 13, z: 0 }, { x: 0, y: 124, z: 0 }, "minecraft:sea_lantern");
-  for (const y of [74, 78, 102, 106]) buildSphere(dimension, { x: 0, y, z: 0 }, 3, "minecraft:magenta_stained_glass", "minecraft:ochre_froglight");
+  buildSphere(dimension, BLACK_HOLE_CENTER, 19, "minecraft:purple_stained_glass", "minecraft:sea_lantern");
+  line(dimension, { x: 0, y: BLACK_HOLE_CENTER.y + 19, z: 0 }, { x: 0, y: 150, z: 0 }, "minecraft:sea_lantern");
+  for (const y of [62, 70, 122, 132]) buildSphere(dimension, { x: 0, y, z: 0 }, 4, "minecraft:magenta_stained_glass", "minecraft:ochre_froglight");
 }
 
 function activateFragment(player, block, fragmentId) {
@@ -311,11 +351,10 @@ function enterWorld(player, location, mode) {
   if (onCooldown(player, "teleport", TELEPORT_COOLDOWN_TICKS)) return;
   saveOrigin(player);
   for (const tag of Object.values(FRAGMENT_TAGS)) player.removeTag(tag);
-  const dimension = ensureWorld();
-  system.runTimeout(() => {
+  ensureWorld(false, (dimension) => {
     teleport(player, dimension, ARRIVAL, "O PLANETA FOI PARTIDO. Atravesse os três fragmentos e reacenda o buraco negro.");
     system.runTimeout(() => player.sendMessage(`${PREFIX} Siga as três pontes coloridas. Em cada ilha, toque a PEDRA-ÍMÃ sob a luz. O núcleo negro está sempre no centro.`), 40);
-  }, worldBuilt ? 1 : 18);
+  });
   log(`Entrada de ${player.name} por ${mode} em ${location.x} ${location.y} ${location.z}.`);
 }
 
@@ -416,12 +455,12 @@ function handleInteraction(event) {
           return;
         }
       }
-      if (distanceSquared(block.location, { x: 0, y: ARRIVAL.y, z: -57 }) <= 2) {
+      if (distanceSquared(block.location, { x: 0, y: ARRIVAL.y, z: ARRIVAL.z - 4 }) <= 2) {
         returnToOrigin(player);
         return;
       }
     }
-    if (block.typeId === "minecraft:lectern" && distanceSquared(block.location, { x: 0, y: ARRIVAL.y, z: -49 }) <= 4) {
+    if (block.typeId === "minecraft:lectern" && distanceSquared(block.location, { x: 0, y: ARRIVAL.y, z: ARRIVAL.z + 5 }) <= 4) {
       player.sendMessage(`${PREFIX} MISSÃO: Natureza à esquerda, Ruínas à frente e Máquina à direita. Ative uma pedra-ímã em cada fragmento.`);
       return;
     }
@@ -447,8 +486,7 @@ if (startup?.subscribe) {
 world.afterEvents?.playerInteractWithBlock?.subscribe(handleInteraction);
 system.afterEvents?.scriptEventReceive?.subscribe((event) => {
   if (event.id === RECOVERY_SCRIPT_EVENT_ID && event.sourceEntity) {
-    const dimension = ensureWorld();
-    system.runTimeout(() => teleport(event.sourceEntity, dimension, ARRIVAL, "Recuperação concluída no observatório do Planeta Partido."), 18);
+    ensureWorld(false, (dimension) => teleport(event.sourceEntity, dimension, ARRIVAL, "Recuperação concluída no observatório do Planeta Partido."));
   } else if (event.id === NEARBY_PORTAL_SCRIPT_EVENT_ID) {
     mountPortalNearPlayer(event.sourceEntity, event.message);
   } else if (event.id === COORDINATE_PORTAL_SCRIPT_EVENT_ID) {
@@ -457,7 +495,7 @@ system.afterEvents?.scriptEventReceive?.subscribe((event) => {
 });
 
 system.run(() => {
-  log("Sprint 15 carregada: Planeta Partido, buraco negro e três fragmentos exploráveis.");
+  log("Sprint 16 carregada: Planeta Perdido expandido, limpeza integral e três biomas exploráveis.");
   ensureWorld(true);
 });
 
