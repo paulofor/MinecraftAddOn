@@ -118,6 +118,33 @@ construir_estrutura.mcfunction    -> chama init e sprints somente após aprovaç
 
 Essa regra vale para qualquer construção nova ou alteração em construção existente, não apenas para o Observatório das Estrelas Quebradas.
 
+## Regra obrigatória — montagem parametrizada por coordenadas
+
+Para toda peça, estrutura ou megaconstrução colocada no mundo por automação, a
+função pública deve receber uma coordenada absoluta explícita como parâmetro. A
+montagem e a procura por terreno **não podem depender da posição do jogador**,
+de `@s`, `@p`, `event.sourceEntity.location` ou de o operador estar conectado.
+
+O padrão obrigatório está documentado em
+`docs/padrao_montagem_parametrizada.md` e deve incluir:
+
+- entrada explícita `X Y Z` e, quando houver busca, raio limitado;
+- validação de formato, limites de altura/dimensão e área afetada;
+- carregamento temporário dos chunks antes de ler o terreno, com remoção da
+  área temporária tanto em sucesso quanto em falha;
+- procura ordenada a partir da origem informada, com precheck de apoio,
+  água/lava, colisões, subsolo e altura máxima;
+- separação entre função pública segura e rotina interna de construção;
+- comando remoto específico na allowlist, nunca uma permissão genérica;
+- backup anterior à primeira tentativa, logs do local escolhido e validação
+  visual posterior;
+- ajuste autônomo dos parâmetros após falha fundamentada nos logs, sem repetir
+  cegamente a mesma tentativa.
+
+Uma mecânica cujo propósito seja acompanhar o jogador pode usar posição
+relativa internamente, mas isso deve ser explicitamente justificado e não pode
+ser o único meio de posicionar uma construção persistente no mundo.
+
 ## MCP Server oficial da Microsoft (Minecraft)
 Para consultas de documentação e materiais oficiais de Minecraft, utilizar também o MCP Server da Microsoft Learn:
 
