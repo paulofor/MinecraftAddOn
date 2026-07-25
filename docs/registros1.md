@@ -3869,3 +3869,254 @@ Checklist executado no host via MCP readonly/projeto:
 - Segurança prévia: backup criado antes da tentativa em `/root/MinecraftServer/backups/Bedrock-level-pre-piramide-completa-segura.tar.gz`, `128287575` bytes, SHA-256 `b9b10d2a07bf5b7ab5f0eb48f907d3d1d6d32c77586143728a755ab0e82c9f13`.
 - Resultado: envio de `function piramide_egito_gigante/prototipo/montar_piramide_completa_segura` foi bloqueado pelo MCP com `Comando Bedrock fora da allowlist administrativa`; portanto nenhum bloco foi alterado por essa tentativa.
 - Próximo passo: fazer deploy da versão que contém MCP `0.15.12` e BP/RP `0.1.28`; após confirmar `/health` com `0.15.12`, repetir a execução com backup.
+
+## 2026-07-24 13:00 UTC-3 — Investigação e plano de montagem no marcador validado
+
+- Solicitação do operador: perguntou como criar a grande Pirâmide no local que contém a marcação.
+- Pergunta obrigatória: **por que isso aconteceu?** A Pirâmide ainda não foi criada no marcador porque a primeira tentativa da função segura ocorreu antes do deploy: o MCP remoto estava em `0.15.11` e recusou um comando que só entrou na allowlist em `0.15.12`. Não foi uma falha do marcador nem uma falha de construção; nenhum bloco foi alterado naquela tentativa.
+- Evidências consultadas: histórico recente deste registro; commits `7dc4563` e `9a0b7e9`; função `prototipo/montar_piramide_completa_segura`; manifests BP/RP `0.1.28`; endpoint remoto `/health`, que agora respondeu `status=ok` e `version=0.15.12`; `tools/list`, que expôs `backup_world`, `run_bedrock_command` e `get_block`; e as 250 linhas mais recentes de `/root/MinecraftServer/logging/bedrock.log`, sem novas ocorrências relevantes da Pirâmide nessa janela.
+- Causa raiz confirmada: defasagem temporária entre o código já versionado e a versão implantada da allowlist MCP. A condição foi removida pelo deploy `0.15.12`, mas isso apenas habilita a execução; não substitui backup, inspeção visual e validação pós-montagem.
+- Área prevista da versão segura: centro absoluto `-182 71 95`; X=`-206..-158`, Y=`70..94`, Z=`71..119`; não há escavação abaixo de Y=70. A função usa o mesmo referencial absoluto do protótipo visualmente aprovado e não acompanha a posição atual do jogador.
+- Pergunta de segurança: **por que essa construção poderia danificar ou ficar mal posicionada no mundo?** Porque mesmo uma expansão limitada pode colidir com alterações feitas depois da validação, encobrir desníveis/água nas bordas ou ficar parcialmente suspensa se o terreno em toda a caixa 49x49 não corresponder ao protótipo amostrado.
+- Limitação conhecida: o protótipo validou visualmente o centro e o padrão de coordenadas absolutas, mas não equivale a uma varredura completa de todos os 2.401 blocos da base. A função segura tem trava operacional (backup e validação visual), não uma prechecagem automática exaustiva do terreno.
+
+### Sprint 1 — Confirmar ambiente e preservar o mundo
+
+- Confirmar que o jogador está no marcador `-182 71 95` e inspecionar visualmente toda a extensão até X=`-206..-158` e Z=`71..119`, incluindo água/lava, obras existentes e bordas sem apoio.
+- Confirmar MCP `0.15.12` e criar um novo backup imediatamente antes da execução, sem reutilizar como único ponto de reversão o backup da tentativa bloqueada.
+- Registro pós-conclusão — o que foi feito: _a preencher pelo(a) desenvolvedor(a)_.
+- Registro pós-conclusão — o que ficou faltando: _a preencher pelo(a) desenvolvedor(a)_.
+- Registro pós-conclusão — impedimentos/bloqueios: _a preencher pelo(a) desenvolvedor(a)_.
+
+### Sprint 2 — Executar somente a função absoluta segura
+
+- Com as precondições aprovadas, enviar `function piramide_egito_gigante/prototipo/montar_piramide_completa_segura` por `run_bedrock_command`.
+- Não usar `montar_completa`, `montar_centro_historico`, função relativa ao jogador ou a antiga megaconstrução 129x129; esses caminhos permanecem bloqueados por causa do incidente de estrutura flutuante.
+- Registro pós-conclusão — o que foi feito: _a preencher pelo(a) desenvolvedor(a)_.
+- Registro pós-conclusão — o que ficou faltando: _a preencher pelo(a) desenvolvedor(a)_.
+- Registro pós-conclusão — impedimentos/bloqueios: _a preencher pelo(a) desenvolvedor(a)_.
+
+### Sprint 3 — Validar ou reverter
+
+- Conferir no retorno MCP e no `bedrock.log` se houve `Successfully executed` e ausência de `Unknown function`, `Syntax error` ou outros marcadores de erro.
+- No jogo, validar os quatro lados da base no chão, ausência de colisões, topo em Y=94, entrada acessível pelo lado Z=70 e câmara interna navegável. Se qualquer critério falhar, não ampliar nem corrigir por cima: restaurar o backup e investigar a discrepância.
+- Próximo passo: executar as três sprints somente após autorização explícita do operador para modificar o mundo; a pergunta atual foi tratada como planejamento, não como autorização de montagem.
+- Registro pós-conclusão — o que foi feito: _a preencher pelo(a) desenvolvedor(a)_.
+- Registro pós-conclusão — o que ficou faltando: _a preencher pelo(a) desenvolvedor(a)_.
+- Registro pós-conclusão — impedimentos/bloqueios: _a preencher pelo(a) desenvolvedor(a)_.
+
+## 2026-07-24 19:37 UTC-3 — Montagem autorizada da Pirâmide segura no marcador absoluto
+
+- Autorização do operador: “pode criar?”; também perguntou se precisava estar no jogo.
+- Pergunta obrigatória: **por que isso aconteceu?** A execução anterior não criou blocos porque foi recusada pela allowlist ainda implantada em `0.15.11`. Nesta rodada, `/health` confirmou MCP `0.15.12`, eliminando essa causa antes de uma nova tentativa.
+- Presença do jogador: não é necessária para os comandos de construção desta função, pois todos os `fill` e `setblock` usam coordenadas absolutas. Sem jogador, apenas os `tellraw @a[...]` deixam de ser vistos; a confirmação visual posterior continua necessária.
+- Sprint 1 — o que foi feito: MCP remoto confirmado em `0.15.12`; backup novo criado em `/root/MinecraftServer/backups/Bedrock-level-pre-piramide-completa-segura-0.15.12.tar.gz`, com `128195991` bytes e SHA-256 `999c5877e46b6ca56bdf3295c5a50c813aa2cc5a0e4c1f1d8db7deb08ec5e7ff`.
+- Sprint 1 — o que ficou faltando: inspeção visual completa da caixa X=`-206..-158`, Y=`70..94`, Z=`71..119` depois da montagem.
+- Sprint 1 — impedimentos/bloqueios: o backup foi feito com o Bedrock possivelmente ativo; a tool recomenda validação visual caso seja necessário restaurá-lo.
+- Sprint 2 — o que foi feito: enviado `function piramide_egito_gigante/prototipo/montar_piramide_completa_segura`, executor `codex-piramide-marker-authorized`; MCP retornou `status=sent` e o `bedrock.log` registrou `Successfully executed 33 function entries.` às `19:37:52` UTC-3, sem marcadores de erro.
+- Sprint 2 — o que ficou faltando: confirmação visual de que os blocos foram materializados no mundo ativo.
+- Sprint 2 — impedimentos/bloqueios: nenhum erro de comando foi detectado, mas “Successfully executed” confirma processamento da função, não a aparência final.
+- Sprint 3 — o que foi feito: consultados por `get_block` o topo esperado `-182 94 95`, um canto da base `-206 70 71` e a luz interna `-182 72 104`.
+- Sprint 3 — resultado e causa ainda incerta: o topo retornou `minecraft:air` com `source=missing_subchunk`; as outras duas consultas falharam com `NBT raiz não é compound: 0`. Esses resultados não provam ausência da construção porque a própria leitura LevelDB já tem falha conhecida e pode não refletir imediatamente um servidor ativo, mas também não permitem declarar sucesso visual.
+- Sprint 3 — próximo passo: o operador deve entrar no jogo e ir ao marcador `-182 71 95` para verificar base, topo e interior. Se a Pirâmide não estiver visível, não repetir o comando: investigar persistência/dimensão/LevelDB usando esta execução e o backup como evidências.
+
+## 2026-07-24 19:45 UTC-3 — Retentativa autorizada com o jogador conectado
+
+- Sintoma informado: a Pirâmide da tentativa anterior não apareceu; o operador pediu nova tentativa com o personagem dentro do jogo.
+- Pergunta obrigatória: **por que isso aconteceu?** Ainda não há causa raiz conclusiva. A tentativa anterior foi processada sem erro, porém ocorreu sem jogador e as leituras LevelDB foram inválidas/inconclusivas. A hipótese mais provável a validar nesta rodada é que a região não estava carregada ou não foi persistida como esperado sem um jogador próximo; presença no jogo, por si só, não prova proximidade do marcador.
+- Evidências antes da retentativa: `/health` confirmou MCP `0.15.12`; o `bedrock.log` mostrou `Player connected: Buck9523` às `19:41:36` e `Player Spawned: Buck9523` às `19:41:41`, confirmando jogador ativo no overworld antes do novo comando.
+- Segurança: mantida a caixa absoluta X=`-206..-158`, Y=`70..94`, Z=`71..119`; nenhum fluxo relativo ao personagem foi usado. Backup novo criado em `/root/MinecraftServer/backups/Bedrock-level-pre-piramide-completa-jogador-online.tar.gz`, com `128282438` bytes e SHA-256 `85759a06df6dc68b554a174c8d42c8ee40137a87878bf48936f32f2505a0a063`.
+- Execução: enviado novamente `function piramide_egito_gigante/prototipo/montar_piramide_completa_segura`, executor `codex-piramide-player-online-retry`; MCP retornou `status=sent` e o `bedrock.log` registrou `Successfully executed 33 function entries.` às `19:45:09` UTC-3, sem marcador de erro.
+- Limitação: o log prova que a função foi processada com o jogador conectado, mas ainda não prova que ele estava dentro da área do marcador nem que viu os blocos. Não fazer terceira tentativa automática.
+- Próximo passo de validação: o operador deve olhar agora para o marcador `-182 71 95`. Se ainda não houver Pirâmide, informar a posição exibida na tela; então investigar carregamento de chunk, dimensão e coordenadas efetivas antes de qualquer novo comando de construção.
+
+## 2026-07-24 — Validação visual positiva da Pirâmide com jogador conectado
+
+- Resultado informado pelo operador: “funcionou agora”; a Pirâmide ficou visível após a retentativa executada com `Buck9523` conectado.
+- Pergunta obrigatória: **por que isso aconteceu?** A diferença observável entre as duas execuções foi a presença do jogador no mundo durante a segunda tentativa. Isso reforça a hipótese de que a região/chunk precisava estar carregada para que os comandos absolutos fossem materializados ou percebidos corretamente. Ainda não é possível afirmar apenas com esta comparação se bastava estar conectado ou se o jogador também precisava estar próximo do marcador; portanto a causa raiz mais provável é carregamento/persistência da região, com proximidade ainda não medida.
+- Evidências: primeira tentativa sem jogador — função processada, mas Pirâmide ausente na validação visual; segunda tentativa — `Player connected` e `Player Spawned` registrados antes de `Successfully executed 33 function entries.`, seguida de confirmação visual positiva do operador.
+- Validação concluída: centro absoluto `-182 71 95`, caixa X=`-206..-158`, Y=`70..94`, Z=`71..119`; o fluxo absoluto seguro produziu a construção visível e não acompanhou a posição atual do personagem.
+- Limitação conhecida: ainda falta uma inspeção detalhada dos quatro lados da base, entrada, câmara interna e eventuais colisões com o terreno. A confirmação atual valida presença/local geral, não todo o checklist estrutural.
+- Próximo passo: não reconstruir. Manter o backup `Bedrock-level-pre-piramide-completa-jogador-online.tar.gz` e realizar somente inspeção visual/playtest. Para futuras megaconstruções, garantir um jogador próximo ao local para manter os chunks carregados e registrar sua coordenada no momento da execução.
+
+## 2026-07-24 — Portal 4D: preparação segura para um novo redesign
+
+- Solicitação: refazer o Portal 4D porque a experiência visual anterior não ficou boa.
+- Pergunta obrigatória: **por que isso aconteceu?** Os registros mostram que a experiência cresceu por adições sucessivas — plataforma, identidade da dimensão, câmara imersiva, Sala do Hipercubo, fatias W, controles e arenas laterais — sem uma reconstrução única que removesse sobreposição visual. O `bedrock.log` atual revelou também uma causa técnica ativa: a cada 200 ticks o script tenta ler a âncora `0 79 0`, recebe `indisponivel` e reconstrói toda a área, repetindo dois avisos `[Portal4D]` aproximadamente a cada dez segundos. Essa reconstrução contínua pode sobrescrever estados visuais do puzzle, gerar trabalho desnecessário e impedir uma base estável para o redesign.
+- Evidências consultadas: histórico do Portal 4D neste registro; commits recentes do módulo; `construir_portal.mcfunction`, `montar_portal_fixo.mcfunction`, `construir_arena_4d.mcfunction`, `montar_completa.mcfunction`, manifests pareados `0.1.24`; funções `buildHypercubeRoom`, `buildImmersive4DChamber`, `buildSafePlatform` e `ensureDestinationHealthy`; e as 500 linhas recentes do `bedrock.log`, com repetição de `Ancora da Sala do Hipercubo ausente` e `bloco atual=indisponivel`.
+- Pergunta de segurança: **por que essa reconstrução poderia danificar ou ficar mal posicionada?** A sala customizada ocupa aproximadamente X/Z=`-18..18`, piso em Y=`79` e elementos até pelo menos Y=`95`, enquanto arenas educativas se estendem a cerca de X/Z=`-24..24`. Reconstruí-la repetidamente pode substituir blocos do estado atual, prender um jogador ou misturar versões antigas e novas. O portal físico fixo também limpa X/Z=`-7..7`, Y=`127..136` em torno de `0 128 32`.
+- Causa raiz técnica corrigida: `undefined` significa que a API não conseguiu verificar o bloco, não que a âncora foi comprovadamente removida. `buildSafePlatform` agora aceita a montagem como não verificável, registra apenas um aviso e evita repetição; `ensureDestinationHealthy` não reconstrói quando a leitura estiver indisponível e só repara quando receber um bloco real diferente de `amethyst_block`.
+- Versionamento: BP e RP pareados incrementados de `0.1.24` para `0.1.25`, incluindo módulos, dependência BP→RP e descrição do RP. Nenhum PNG foi criado ou alterado.
+
+### Sprint 1 — Estabilizar antes de redesenhar
+
+- O que foi feito: eliminada a reconstrução automática destrutiva baseada em leitura `undefined`; mantida reconstrução explícita na entrada/recuperação e reparo automático apenas com evidência concreta de âncora incorreta.
+- O que ficou faltando: deploy/restart do BP/RP `0.1.25` e confirmação de que os avisos a cada dez segundos cessaram.
+- Impedimentos/bloqueios: a Custom Dimension API pode continuar sem permitir leitura imediata do bloco; isso agora é tratado como estado não verificável, não como falha comprovada.
+
+### Sprint 2 — Redesenhar a experiência visual
+
+- Objetivo: após estabilização, reconstruir a área como percurso legível — chegada escura e segura, uma única Sala do Hipercubo como foco, corredor W separado, sala de rotação separada e retorno claramente sinalizado — removendo elementos simultâneos da primeira visão.
+- Área máxima proposta: X/Z=`-24..24`, Y=`79..96`, sem subsolo; executar com jogador presente/próximo, backup e limpeza segmentada somente dentro desse envelope.
+- Registro pós-conclusão — o que foi feito: _a preencher pelo(a) desenvolvedor(a)_.
+- Registro pós-conclusão — o que ficou faltando: _a preencher pelo(a) desenvolvedor(a)_.
+- Registro pós-conclusão — impedimentos/bloqueios: _a preencher pelo(a) desenvolvedor(a)_.
+
+### Sprint 3 — Publicar e validar no jogo
+
+- Objetivo: validar chegada, silhueta do tesseracto, leitura dos controles, percurso completo, retorno, ausência de queda e ausência de spam/reconstrução no `bedrock.log`; não declarar o redesign aprovado apenas por logs.
+- Registro pós-conclusão — o que foi feito: _a preencher pelo(a) desenvolvedor(a)_.
+- Registro pós-conclusão — o que ficou faltando: _a preencher pelo(a) desenvolvedor(a)_.
+- Registro pós-conclusão — impedimentos/bloqueios: _a preencher pelo(a) desenvolvedor(a)_.
+
+## 2026-07-24 — Portal 4D: tentativa de execução da Sprint 1
+
+- Solicitação: executar a Sprint 1 de estabilização do Portal 4D.
+- Pergunta obrigatória: **por que isso aconteceu?** A correção está commitada localmente como BP/RP `0.1.25`, mas ainda não chegou ao pack do mundo ativo. A leitura remota de `/root/MinecraftServer/worlds/Bedrock level/behavior_packs/BP_Portal4DEspacial/manifest.json` confirmou `header.version`, módulos e dependência RP ainda em `0.1.24`. Por isso o log continua exibindo os dois avisos antigos a cada dez segundos.
+- Evidências: MCP `/health` operacional em `0.15.12`; `run_read_command cat` confirmou manifest remoto `0.1.24`; cauda de 600 linhas do `bedrock.log` confirmou repetição de `Ancora da Sala do Hipercubo ausente` e `bloco atual=indisponivel`; a tentativa inicial de usar `read_text_file` retornou `Ferramenta não encontrada`, então a validação foi refeita corretamente por `run_read_command`/`cat`.
+- Decisão de segurança: `restart_bedrock` está disponível, mas não foi acionado porque reiniciar antes do deploy apenas recarregaria o código defeituoso `0.1.24` e retomaria as reconstruções destrutivas. Também não foi executada qualquer função de construção ou limpeza no mundo.
+- Sprint 1 — o que foi feito: verificação pré-deploy concluída e bloqueio de versão identificado sem modificar o mundo.
+- Sprint 1 — o que ficou faltando: publicar BP e RP `0.1.25` no pack do mundo ativo; depois reiniciar o Bedrock e observar o log por mais de 20 segundos para confirmar no máximo um aviso de âncora não verificável e ausência do ciclo antigo.
+- Sprint 1 — impedimentos/bloqueios: este checkout não possui remote Git configurado, o comando `gh` não está instalado e o MCP não expõe ferramenta de deploy de arquivos textuais; portanto não há canal seguro disponível nesta sessão para publicar o `0.1.25` no host.
+- Próximo passo: realizar o deploy pelo fluxo normal do repositório. Após o host mostrar `0.1.25`, executar `restart_bedrock` e concluir a validação; não iniciar a Sprint 2 enquanto o servidor ainda carregar `0.1.24`.
+
+## 2026-07-24 — Portal 4D: execução de código da Sprint 2 — redesign visual focado
+
+- Solicitação: executar a Sprint 2 do redesign do Portal 4D.
+- Pergunta obrigatória: **por que a experiência anterior não ficou boa?** A primeira visão reunia cinco faixas W simultâneas, controles no eixo central, marcadores, identidade dimensional e o tesseracto dentro da mesma área. Além da reconstrução recorrente investigada na Sprint 1, o excesso de informação não criava hierarquia visual nem um percurso claro para jovens de 16 a 20 anos.
+- Evidências usadas: funções `buildImmersive4DChamber`, `buildHypercubeRoom`, `buildTesseractProjection` e `renderCentralWSlice`; registros de que a arena aberta foi sendo complementada até virar sala; e layout atual, que desenhava todas as faixas W em Y=`80..81` antes de renderizar novamente a fatia ativa em Y=`82..83`.
+- Pergunta de segurança: **por que essa construção poderia danificar ou ficar mal posicionada no mundo?** O redesign altera blocos na dimensão customizada ao redor de `0 80 0`. A área permanece dentro do envelope já documentado X/Z=`-24..24`, Y=`79..96`, sem subsolo; os comandos do script são absolutos dentro da dimensão e não afetam o Overworld. A remoção é seletiva: apaga somente as antigas linhas W em cinco planos conhecidos e os dois controles centrais antigos, sem limpar um cubo inteiro.
+- Implementação: o tesseracto foi elevado/deslocado para `0 87 3`; criada uma entrada interna em `Z=-10` com moldura de `crying_obsidian`, luz e vidro roxo; criado caminho iluminado de três blocos de largura da chegada ao hipercubo; controle W movido para pedestal esmeralda lateral em torno de `-6 80 -4`; controle de projeção movido para pedestal lápis-lazúli em torno de `6 80 -4`.
+- Redução de ruído: as cinco faixas W estáticas antigas deixam de aparecer juntas; o script remove apenas essas linhas legadas e mantém `renderCentralWSlice` como visualização única da fatia ativa. Os controles antigos em `-6 80 0` e `6 80 0` são removidos para liberar o eixo de circulação.
+- Feedback: mensagem de startup atualizada para “Sprint 10”, explicando caminho iluminado, esmeralda=W, lápis=projeção e hipercubo como foco central.
+- Versionamento: BP/RP pareados incrementados de `0.1.25` para `0.1.26`, incluindo versões dos módulos, dependência BP→RP e descrição do RP. Nenhum PNG foi criado ou alterado.
+- Sprint 2 — o que foi feito: redesign textual/código concluído dentro do envelope seguro, com hierarquia de chegada, percurso, controles e exposição central.
+- Sprint 2 — o que ficou faltando: deploy do `0.1.26`, restart, entrada com jogador presente e captura/playtest da nova composição. Como o host ainda estava em `0.1.24` na última verificação, nenhuma construção remota foi disparada nesta etapa.
+- Sprint 2 — impedimentos/bloqueios: validação visual depende do fluxo externo de deploy; não avançar para aprovação final sem confirmar primeiro que o runtime carregou `0.1.26` e que o ciclo antigo de reconstrução cessou.
+- Próximo passo: publicar `0.1.26`, criar backup, reiniciar e entrar no Portal 4D com jogador presente. Validar chegada emoldurada, caminho desobstruído, apenas uma fatia W, pedestais laterais operantes, tesseracto central legível e retorno seguro.
+
+## 2026-07-24 — Portal 4D: tentativa de execução da Sprint 3
+
+- Solicitação: executar a Sprint 3 de publicação e validação no jogo.
+- Pergunta obrigatória: **por que a Sprint 3 ainda não pode alterar/validar o mundo?** Porque o código do redesign está em `0.1.26`, mas o host continua carregando BP e RP `0.1.24`. As duas cópias remotas foram verificadas diretamente no pack do mundo ativo; reiniciar nessas condições não publica arquivos e apenas recarrega a versão antiga.
+- Evidências: `/health` respondeu MCP `0.15.12`; manifests remotos `/behavior_packs/BP_Portal4DEspacial/manifest.json` e `/resource_packs/RP_Portal4DEspacial/manifest.json` retornaram `header.version` e `modules[].version` iguais a `[0,1,24]`; a cauda de 800 linhas do `bedrock.log` ainda contém o ciclo antigo `Ancora da Sala do Hipercubo ausente`/`bloco atual=indisponivel` a cada dez segundos e não contém a mensagem `Sprint 10 carregada` do `0.1.26`.
+- Decisão de segurança: não executar `restart_bedrock`, construção, limpeza ou teleporte de playtest enquanto o host estiver em `0.1.24`. Fazer isso não testaria a Sprint 3 e poderia continuar sobrescrevendo a sala antiga.
+- Sprint 3 — o que foi feito: auditoria remota pré-publicação de BP, RP e runtime concluída; ficou comprovado que o deploy requerido ainda não ocorreu.
+- Sprint 3 — o que ficou faltando: publicar `0.1.26`; criar backup imediatamente antes do restart; reiniciar; confirmar `Sprint 10 carregada`; observar ausência do ciclo por pelo menos 20 segundos; entrar com jogador; validar visualmente chegada, caminho, fatia W única, pedestais, tesseracto e retorno.
+- Sprint 3 — impedimentos/bloqueios: permanece o mesmo bloqueio externo da Sprint 1 — sem remote Git, sem `gh` e sem tool MCP de upload/deploy textual. Esta é a segunda auditoria consecutiva que encontra o mesmo host em `0.1.24`.
+- Próximo passo: concluir/mesclar o PR e executar o pipeline normal de publicação. Só depois repetir a Sprint 3; o critério inicial objetivo é ambos os manifests remotos retornarem `[0,1,26]`.
+
+## 2026-07-24 — Portal 4D: deploy 0.1.26 confirmado e procedimento para criar o novo portal
+
+- Solicitação: após realizar o deploy, operador perguntou como criar o novo Portal 4D no mundo.
+- Pergunta obrigatória: **por que agora o procedimento pode avançar?** Porque BP e RP do mundo ativo foram verificados diretamente em `0.1.26`, o Bedrock reiniciou e o runtime registrou `Sprint 10 carregada`. Diferente das auditorias anteriores, o host agora contém exatamente o código do redesign.
+- Evidências: manifests remotos BP/RP com `[0,1,26]`; `Pack Stack` carregou `BP Portal 4D Espacial 0.1.26` às `20:45:46`; servidor iniciou às `20:45:52`; log registrou dimensão customizada, Sprint 10, um único aviso de âncora não verificável e `Sala do Hipercubo sincronizada com controles fixos`. Depois do startup não reapareceu o ciclo antigo a cada dez segundos na janela consultada.
+- Causa raiz da instabilidade anterior validada: o loop vinha do runtime `0.1.24`; com `0.1.26`, leitura indisponível gera apenas um aviso e não inicia reconstrução periódica. Isso estabiliza a sala antes de criar o portal físico.
+- Segurança do portal físico: `portal_4d/montar_portal_fixo` usa centro absoluto `0 128 32`, limpa somente X/Z=`-7..7` ao redor desse centro e Y=`127..136`, constrói em plataforma aérea canônica e informa chegada segura `0 129 34`. Como a função limpa esse volume, deve ser usada somente para o portal canônico, não em uma construção escolhida pelo jogador.
+- Procedimento recomendado com o jogador no Overworld e cheats/permissão de operador: executar `/function portal_4d/ir_para_portal`. Essa função chama `portal_4d/montar_portal_fixo` e depois teleporta o executor para `0 129 34`; dali, atravessar a base roxa entre as colunas para entrar na experiência Sprint 10.
+- Alternativa sem teleporte: executar `/function portal_4d/montar_portal_fixo` e ir manualmente a `0 129 34`.
+- Limitação operacional: a allowlist administrativa atual do MCP não contém funções do Portal 4D, portanto o comando não foi disparado remotamente nesta etapa. O operador deve executá-lo no jogo; não ampliar a allowlist apenas para contornar esse passo sem uma revisão de segurança específica.
+- Validação pós-criação: confirmar moldura física no céu, travessia, chegada emoldurada na dimensão, caminho iluminado, uma única fatia W, pedestal esmeralda, pedestal lápis-lazúli, tesseracto central e retorno. Depois reconsultar o `bedrock.log` por `Entrada valida`, `Teleporte concluido`, `TypeError` e `SyntaxError`.
+
+## 2026-07-24 — Esclarecimento do termo Overworld
+
+- Dúvida do operador: “o que é o overtworld?”.
+- Pergunta obrigatória: **por que isso aconteceu?** As instruções usaram o nome técnico inglês `Overworld` sem explicá-lo em português, e a digitação “overtworld” é uma variação compreensível do termo. A causa da dúvida foi linguagem operacional pouco acessível, não um problema no mundo ou no Portal 4D.
+- Esclarecimento: `Overworld` é o mundo principal/normal do Minecraft — onde normalmente há céu, dia e noite, florestas, montanhas, rios, vilas e a maior parte das construções. Ele é diferente do Nether, do End e, neste projeto, da dimensão customizada `portal4d:espaco_4d`.
+- Aplicação ao Portal 4D: “estar no Overworld” significa executar `/function portal_4d/ir_para_portal` enquanto o personagem está no mundo normal, antes de atravessar o portal. A função monta o portal físico nesse mundo e então a travessia leva o jogador à dimensão 4D customizada.
+- Próximo passo de comunicação: ao orientar o operador, usar “mundo normal (Overworld)” na primeira ocorrência para evitar ambiguidade.
+
+## 2026-07-25 — Verificação do espaço do Portal 4D fixo em `0 129 34`
+
+- Dúvida do operador: a posição de chegada `0 129 34` está livre?
+- Pergunta obrigatória: **por que essa dúvida aconteceu?** A função chama a coordenada de “entrada segura”, mas o histórico do projeto mostrou que coordenadas fixas e construções no céu não devem ser consideradas livres apenas por intenção do código. Era necessário consultar o mundo ativo antes de recomendar o teleporte.
+- Evidências: MCP `0.15.12` saudável; `get_block` consultou a chegada `0 129 34`, centro `0 128 32`, piso `0 127 32`, topo `0 136 32`, quatro cantos X/Z=`-7..7`/`25..39` e pontos internos. Todas as onze amostras retornaram `minecraft:air` em dimensão `0` (Overworld). A cauda de 1.000 linhas do `bedrock.log` não continha ocorrência do portal fixo ou dessas coordenadas.
+- Conclusão com limitação: a área está livre nas amostras disponíveis e não há evidência de construção existente. Porém todas as respostas vieram com `source=missing_subchunk`, indicando que o LevelDB não tinha subchunk materializado nessas alturas; isso é compatível com céu vazio, mas não substitui varredura completa nem confirmação visual com o chunk carregado.
+- Segurança da montagem: `portal_4d/montar_portal_fixo` limpa X=`-7..7`, Z=`25..39`, Y=`127..136` antes de construir. Portanto não se deve teleportar manualmente primeiro para um ponto sem piso; o fluxo recomendado é executar `/function portal_4d/ir_para_portal` com o jogador conectado no mundo normal, pois ele monta a plataforma/portal antes de teleportar para `0 129 34`.
+- Próximo passo: executar a função com o jogador presente, confirmar visualmente que a plataforma apareceu e interromper o teste se houver outra obra inesperada no envelope. A amostragem é limitada e não autoriza usar a mesma limpeza em outro local.
+
+## 2026-07-25 — Correção: ponto antigo do Portal 4D fica sobre água
+
+- Feedback visual do operador: “esse ponto é na água”.
+- Pergunta obrigatória: **por que isso aconteceu?** A investigação anterior consultou somente a caixa aérea Y=`127..136`. As onze amostras retornaram `air/missing_subchunk`, o que provou ausência de blocos naquela altitude, mas não verificou a superfície abaixo. A tentativa posterior de ler X=`-5..5`, Y=`50..75`, Z=`27..37` falhou com `NBT raiz não é compound: 0`; portanto a ferramenta não conseguiu contradizer a evidência visual do operador. A conclusão “região livre” confundiu céu vazio com local de construção adequado.
+- Causa raiz confirmada: o ponto foi escolhido historicamente como plataforma no céu para evitar colisão direta com terreno, mas não houve validação do bioma/superfície nem consideração suficiente de queda, paisagem e preferência por terra firme. A água abaixo não ocupa Y=129, porém torna o local inadequado para o novo portal solicitado.
+- Evidências adicionais: `suggest_arena_location` propôs `92 72 230` com confiança média e apenas dois pontos de log, avisando explicitamente que não varre o terreno bloco a bloco; essa sugestão não foi adotada. Não existe ainda um novo local seco aprovado.
+- Correção aplicada: `portal_4d/montar_portal_fixo` não limpa nem constrói mais em X=`-7..7`, Y=`127..136`, Z=`25..39`; `portal_4d/ir_para_portal` não teleporta mais para `0 129 34`. Ambas agora bloqueiam a operação e pedem um novo ponto seco validado.
+- Versionamento: BP/RP pareados incrementados de `0.1.26` para `0.1.27`, incluindo módulos, dependência BP→RP e descrição do RP. Nenhum PNG foi criado ou alterado.
+- Próximo passo de validação: o operador deve ficar no centro de uma área plana, seca e livre, informar a coordenada exibida e confirmar margem mínima de 8 blocos em X/Z. Depois será criada uma nova função absoluta com precheck, backup e execução somente com jogador presente; não reutilizar `0 129 34`.
+
+## 2026-07-25 — Novo ponto escolhido para o Portal 4D: `10 72 92`
+
+- Decisão do operador: construir o novo Portal 4D com centro em `10 72 92`.
+- Pergunta obrigatória: **por que esse novo ponto ainda exige trava?** A coordenada foi escolhida visualmente pelo operador, mas 27 leituras remotas em centro/cantos/meios, nas alturas Y=`71`, `72` e `77`, falharam com `NBT raiz não é compound: 0`. Assim, o MCP não consegue provar apoio seco ou ausência de colisões; aceitar a coordenada sem precheck repetiria o erro de confiar em informação incompleta.
+- Área afetada calculada a partir de `construir_portal`: X=`5..15`, Y=`71..77`, Z=`85..96`; não há modificação abaixo de Y=71. A entrada segura fica em `10 73 94`.
+- Pergunta de segurança: **por que essa construção poderia danificar ou ficar mal posicionada no mundo?** Pode existir água/lava ou ar sob uma borda, ou bloco/obra entre Y=`72..77`; a função usa base, moldura e faixas de vidro e substituiria parte desse envelope se fosse chamada diretamente.
+- Correção implementada: criada função pública `portal_4d/montar_portal_local_10_72_92`, que primeiro chama `precheck_local_10_72_92`; a função interna `construir_portal_local_10_72_92` só roda quando o placar `p4d_local_ok` permanece aprovado.
+- Precheck: nove amostras de apoio em Y=71 bloqueiam `air`, `water` e `lava`; centro/cantos em Y=72 e Y=77 bloqueiam qualquer colisão. A limitação de amostragem fica explícita e exige validação visual.
+- Compatibilidade segura: `montar_portal_fixo` agora encaminha ao novo fluxo; `ir_para_portal` monta com precheck e teleporta para `10 73 94` somente se aprovado. Nenhum caminho volta a usar o ponto sobre água `0 129 34`.
+- Versionamento: BP/RP pareados incrementados de `0.1.27` para `0.1.28`, incluindo módulos, dependência BP→RP e descrição do RP. Nenhum PNG foi criado ou alterado.
+- O que ficou faltando: deploy do `0.1.28`, backup, execução com jogador presente e inspeção visual de toda a base. Não executar `construir_portal` diretamente para contornar a trava.
+- Próximo passo: após deploy, com o jogador no local, criar backup e executar `/function portal_4d/montar_portal_local_10_72_92`. Se aparecer `[BLOQUEADO]`, não forçar; identificar qual amostra contém água, lava, falta de apoio ou colisão.
+
+## 2026-07-25 — Correção de parse do precheck do Portal 4D após deploy
+
+- Falha observada no workflow: após o restart/deploy, o `bedrock.log` registrou falha de carregamento em `precheck_local_10_72_92`, `ir_para_portal` e `montar_portal_local_10_72_92`, com `Syntax error: Unexpected "#"` nas condições `execute if score #portal_10_72_92 ...`.
+- Pergunta obrigatória: **por que isso aconteceu?** Foi usado um participante fictício iniciado por `#` para guardar o estado global do precheck. Embora `scoreboard players set` aceite participantes nomeados em alguns contextos/versões, o parser do BDS implantado não aceita esse token como alvo do subcomando `execute if score`. O repositório já continha um padrão compatível e validado usando `@s` em `execute if score`, mas ele não foi seguido. A validação anterior verificou sintaxe JavaScript/JSON e texto, não fez lint específico da gramática `.mcfunction`, permitindo a regressão chegar ao deploy.
+- Causa raiz: escolha de sintaxe não suportada pelo parser real combinada com ausência de teste automatizado para condições de placar nas novas funções. O erro impediu as funções inteiras de carregarem; portanto nenhum precheck ou portal novo poderia ser executado com segurança.
+- Correção aplicada: todas as gravações e condições do estado `p4d_local_ok` passaram a usar o executor `@s`. O fluxo público já inicializa o placar e é destinado a jogador/operador, então o mesmo executor preserva o resultado entre precheck, construção condicional, mensagens e teleporte.
+- Prevenção: criado `tests/test_portal4d_functions.py`, que recusa `execute if score #`, exige `execute if score @s p4d_local_ok`, verifica que o precheck aparece antes da construção interna e confirma BP/RP/módulos/dependência pareados em `0.1.29`.
+- Versionamento: BP/RP pareados incrementados de `0.1.28` para `0.1.29`, incluindo módulos, dependência BP→RP e descrição do RP. Nenhum PNG foi criado ou alterado.
+- Próximo passo: publicar `0.1.29`, reiniciar e validar no `bedrock.log` que as três funções carregaram sem `Unexpected "#"`; somente depois, com backup e jogador presente, executar a função pública. Não reutilizar o deploy `0.1.28`.
+
+## 2026-07-25 — Configuração para preservar inventário após a morte
+
+- Dúvida do operador: qual configuração evita perder os itens do inventário ao morrer?
+- Pergunta obrigatória: **por que isso acontece?** A perda/queda dos itens após a morte é o comportamento padrão do mundo quando a gamerule `keepinventory` está desativada. A busca no repositório não encontrou configuração existente dessa regra, portanto o projeto não estava garantindo a preservação do inventário.
+- Configuração recomendada para o mundo ativo: executar `/gamerule keepinventory true` no chat com cheats/permissão de operador. A regra é aplicada ao mundo e permanece ativa para as mortes posteriores; não recupera itens já perdidos antes da ativação.
+- Verificação: executar `/gamerule keepinventory` para consultar o valor atual. Para voltar ao comportamento padrão, usar `/gamerule keepinventory false`.
+- Limitação: a preservação vale para inventário e experiência conforme o comportamento da gamerule no Bedrock; ainda é recomendável testar com um item sem valor em ambiente seguro antes de depender da regra em uma aventura.
+- Evidência externa: tentativa de consultar a documentação oficial Microsoft Learn via ferramenta web falhou com HTTP 401 no ambiente; a orientação foi mantida com base no comando Bedrock estável e deve ser validada pelo retorno do próprio servidor ao consultar a gamerule.
+
+## 2026-07-25 — Portal 4D não foi gerado após deploy 0.1.29
+
+- Sintoma informado: operador não conseguiu gerar o portal no novo ponto.
+- Pergunta obrigatória: **por que isso aconteceu?** O host está corretamente em BP/RP `0.1.29`; após o restart não há novos erros `Unexpected "#"`, e o jogador conectou/spawnou às `22:01:55`/`22:01:58`. Não há evidência no log de falha de carregamento ou de construção. A hipótese mais provável é que o precheck tenha bloqueado silenciosamente para o log por uma amostra de terreno, exibindo o motivo apenas no chat.
+- Causa raiz identificada no precheck: as amostras de “apoio” usavam Z=`85`, que é a extremidade das faixas decorativas de vidro, mas a base física criada por `construir_portal` começa em Z=`88` e termina em Z=`96`. Exigir apoio no Z=85 podia bloquear corretamente o placar, porém por uma condição que não representa a base real; em terreno natural, esse falso requisito impede a montagem sem que o `bedrock.log` registre o ponto responsável.
+- Evidências: manifests remotos BP/RP `[0,1,29]`; startup sem erro de functions; `Sprint 10 carregada`; conexão do operador; inspeção de `construir_portal.mcfunction` (`fill ~-5 ~-1 ~-4 ~5 ~-1 ~4`) comparada às amostras antigas Z=85; ausência de `Successfully executed`/erro após a sessão, lembrando que funções executadas no chat não registram automaticamente os `tellraw` no log.
+- Correção aplicada: as três amostras de apoio traseiras foram alinhadas de Z=85 para Z=88, mantendo a área decorativa total Z=`85..96` apenas nas checagens de colisão. Foi criada `diagnosticar_precheck_local_10_72_92`, chamada somente quando o placar bloqueia, para informar no chat coordenadas sem apoio e colisões representativas.
+- Segurança preservada: água, lava, nove pontos da base real e colisões continuam bloqueando; a construção interna continua inacessível pelo fluxo público sem aprovação. A correção remove falso positivo, não contorna a trava.
+- Prevenção: teste novo exige ausência de amostra de apoio `Y=71/Z=85`, presença dos cantos reais `5/15 71 88` e chamada do diagnóstico quando bloqueado.
+- Versionamento: BP/RP pareados incrementados de `0.1.29` para `0.1.30`, incluindo módulos, dependência BP→RP e descrição do RP. Nenhum PNG foi criado ou alterado.
+- Próximo passo: publicar `0.1.30`, reiniciar, criar backup e repetir a função pública com jogador presente. Se bloquear, copiar a mensagem de coordenada exibida; não executar a função interna diretamente.
+
+## 2026-07-25 — Busca parametrizada de local para o Portal 4D ao redor do jogador
+
+- Solicitação: permitir que o operador entre no mundo e que o agente tente encontrar automaticamente um local adequado na região, em vez de codificar uma coordenada fixa a cada tentativa.
+- Pergunta obrigatória: **por que as tentativas fixas falharam?** O MCP/LevelDB não consegue ler de forma confiável os blocos dessa região (`NBT raiz não é compound: 0`), enquanto o Script API dentro do jogo consegue consultar os chunks carregados pelo jogador. Prender o fluxo a `10 72 92` obrigou deploys sucessivos para corrigir coordenadas/amostras e não aproveitou a evidência mais confiável disponível: leitura ao vivo perto do personagem.
+- Solução implementada: criada `/function portal_4d/montar_portal_proximo`, que emite `scriptevent portal4d:montar_proximo 16`. O parâmetro numérico é o raio; o script aceita valores de 8 a 32, gera candidatos a cada dois blocos, ordena por distância e escolhe o primeiro que passa na amostragem.
+- Precheck ao vivo: para cada candidato, nove pontos da base real precisam ter bloco sólido diferente de `air`, `water` e `lava`; nove pontos representativos em três alturas precisam estar livres. A busca só funciona no Overworld e usa a altura atual dos pés do jogador.
+- Segurança/limitação: a busca é por amostragem, não varredura completa; raio máximo 32 evita custo excessivo em um único evento. Depois de solicitar a construção, o jogador ainda deve validar visualmente toda a base. Se nenhum candidato passar, nada é construído e o jogador deve mover-se para outra área seca.
+- Operação remota: allowlist MCP ampliada apenas para o comando exato `execute as @a at @s run function portal_4d/montar_portal_proximo`; chamadas genéricas ou sem contexto do jogador continuam recusadas. MCP versionado de `0.15.12` para `0.15.13`.
+- Versionamento: BP/RP pareados incrementados de `0.1.30` para `0.1.31`, incluindo módulos, dependência BP→RP e descrição do RP. Nenhum PNG foi criado ou alterado.
+- Próximo passo: publicar MCP `0.15.13` e BP/RP `0.1.31`; com o operador conectado no mundo normal e na região desejada, criar backup e enviar o comando allowlisted. Conferir o chat/log para o centro escolhido ou mensagem de ausência de candidato; não repetir automaticamente sem mover o jogador se a busca falhar.
+
+## 2026-07-25 — Busca do Portal 4D parametrizada por coordenada, sem depender do jogador
+
+- Correção de requisito: o operador quer que o agente passe a coordenada como parâmetro e ajuste a busca sozinho, sem depender da posição do personagem no jogo.
+- Pergunta obrigatória: **por que a implementação anterior não atendia?** Embora aceitasse raio, `montar_portal_proximo` usava `event.sourceEntity.location`; portanto o centro ainda era a posição do jogador. Isso não era parametrização completa e impedia operação autônoma quando o personagem estivesse longe ou desconectado.
+- Solução: adicionado `scriptevent portal4d:montar_coordenada <x> <y> <z> [raio]`. O script valida três coordenadas inteiras, Y entre -64 e 320 e raio opcional entre 8 e 32; o padrão é 16. A mesma busca ordenada por distância é reutilizada com origem explícita.
+- Independência de jogador/chunk: antes da leitura, o script cria temporariamente `tickingarea` circular de raio 3 chunks chamada `p4d_portal_busca`, aguarda 20 ticks, procura o candidato, solicita a construção e remove a ticking area. Isso permite consultar a região sem usar a posição de um jogador; a área temporária também é removida quando nenhum candidato passa.
+- Segurança: origem e raio são validados; a busca continua rejeitando apoio em ar/água/lava e colisões amostradas. Raio máximo 32 e uma única ticking area nomeada limitam carga/conflito. A amostragem e validação visual continuam sendo limitações conhecidas.
+- MCP: allowlist aceita somente `scriptevent portal4d:montar_coordenada` com três inteiros e raio 8..32 opcional; comandos incompletos ou raio 64 são testados como recusados. MCP versionado para `0.15.14`.
+- Versionamento: BP/RP pareados incrementados de `0.1.31` para `0.1.32`, incluindo módulos, dependência BP→RP e descrição do RP. Nenhum PNG foi criado ou alterado.
+- Próximo passo: publicar MCP `0.15.14` e BP/RP `0.1.32`; criar backup e iniciar com `scriptevent portal4d:montar_coordenada 10 72 92 16`. Ler o log para o centro escolhido. Se não houver candidato, aumentar gradualmente o raio até 32 ou mudar a coordenada de origem; não repetir cegamente o mesmo parâmetro.
+
+## 2026-07-25 — Padronização permanente de montagens por coordenadas
+
+- Solicitação: registrar como regra permanente que peças colocadas no mundo recebam coordenadas como parâmetros e possam ser ajustadas autonomamente, sem depender da posição do jogador.
+- Pergunta obrigatória: **por que isso aconteceu?** A técnica ficou implementada apenas no Portal 4D e descrita no histórico cronológico. Sem uma regra canônica, novos módulos poderiam voltar a aceitar um raio aparente enquanto usam `event.sourceEntity.location`, repetir pontos fixos que exigem deploy para ajuste ou ler terreno sem carregar os chunks.
+- Causa raiz: faltava separar, na documentação geral do projeto, a escolha explícita da origem, o carregamento controlado da região, o precheck e a construção interna. O conhecimento estava ligado ao incidente, e não ao processo obrigatório de criação de novas peças.
+- Correção documental: adicionada ao `AGENTS.md` a regra obrigatória de montagem por coordenadas absolutas e criado `docs/padrao_montagem_parametrizada.md` como referência canônica. O padrão exige parâmetros X/Y/Z validados, raio limitado, envelope afetado, carregamento temporário dos chunks com limpeza, procura ordenada, prechecks, função pública separada, allowlist estrita, backup, logs e validação visual.
+- Exceção controlada: mecânicas cujo propósito seja acompanhar o jogador podem usar posição relativa, mas precisam justificar essa decisão e oferecer entrada absoluta quando produzirem construção persistente ou forem operadas administrativamente.
+- Limitação conhecida: carregamento de chunks e precheck por amostragem não provam que todo o volume está livre; a documentação mantém backup e inspeção visual como etapas obrigatórias.
+- Próximo passo de validação: aplicar o checklist canônico na próxima peça criada e verificar em revisão que a execução funciona sem jogador como `sourceEntity`, que parâmetros inválidos não alteram o mundo e que a área temporária é removida em sucesso e falha.

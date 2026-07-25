@@ -7,7 +7,7 @@ const USE_CUSTOM_DIMENSION_DESTINATION = true;
 const PLATFORM_RADIUS = 7;
 const DIMENSION_IDENTITY_RADIUS = 10;
 const IMMERSION_RADIUS = 18;
-const TESSERACT_CENTER = { x: CUSTOM_CENTER.x, y: CUSTOM_CENTER.y + 6, z: CUSTOM_CENTER.z + 2 };
+const TESSERACT_CENTER = { x: CUSTOM_CENTER.x, y: CUSTOM_CENTER.y + 7, z: CUSTOM_CENTER.z + 3 };
 const HYPERCUBE_ROOM = { halfWidth: 12, halfDepth: 12, height: 15 };
 const PORTAL_TRIGGER_BLOCK = "minecraft:sea_lantern";
 const RETURN_TRIGGER_BLOCKS = new Set(["minecraft:lodestone", "minecraft:sea_lantern"]);
@@ -23,6 +23,8 @@ const ROTATION_PROGRESS_TAG = "portal4d_rotacao_4d";
 const W_PROGRESS_TAG_PREFIX = "portal4d_w_";
 const ROOM_COMPLETION_TAG = "portal4d_hipercubo_alinhado";
 const RECOVERY_SCRIPT_EVENT_ID = "portal4d:recuperar";
+const NEARBY_PORTAL_SCRIPT_EVENT_ID = "portal4d:montar_proximo";
+const COORDINATE_PORTAL_SCRIPT_EVENT_ID = "portal4d:montar_coordenada";
 const W_SLICE_BLOCKS = [
   "minecraft:redstone_block",
   "minecraft:gold_block",
@@ -43,6 +45,7 @@ const EXPANSION_MARKERS = [
   { dx: -24, dz: 18, block: "minecraft:emerald_block", label: "grafos" },
 ];
 const arenaStates = new Map();
+const unverifiableDestinationAnchors = new Set();
 
 let customDimensionRegistered = false;
 let customDimensionError = "startup ainda nao executado";
@@ -339,6 +342,32 @@ function buildHypercubeRoom(dimension, center) {
   setBlockSafe(dimension, { x: center.x, y: center.y + 1, z: center.z }, "minecraft:air");
 }
 
+function buildGuidedHypercubeRoute(dimension, center) {
+  const entranceZ = center.z - 10;
+  const exhibitZ = center.z + 3;
+
+  // Portal de chegada interno: enquadra a primeira vista sem competir com o tesseracto.
+  for (const x of [center.x - 4, center.x + 4]) {
+    setLineSafe(dimension, { x, y: center.y, z: entranceZ }, { x, y: center.y + 5, z: entranceZ }, "minecraft:crying_obsidian");
+    setBlockSafe(dimension, { x, y: center.y + 6, z: entranceZ }, "minecraft:sea_lantern");
+  }
+  setLineSafe(dimension, { x: center.x - 4, y: center.y + 5, z: entranceZ }, { x: center.x + 4, y: center.y + 5, z: entranceZ }, "minecraft:purple_stained_glass");
+
+  // Caminho único: chegada -> explicação -> controles -> hipercubo.
+  for (let z = entranceZ; z <= exhibitZ; z += 1) {
+    const pathBlock = (z - entranceZ) % 4 === 0 ? "minecraft:sea_lantern" : "minecraft:polished_blackstone_bricks";
+    setLineSafe(dimension, { x: center.x - 1, y: center.y - 1, z }, { x: center.x + 1, y: center.y - 1, z }, pathBlock);
+  }
+
+  // Pedestais laterais deixam W e rotação separados do eixo de circulação.
+  setLineSafe(dimension, { x: center.x - 8, y: center.y - 1, z: center.z - 4 }, { x: center.x - 5, y: center.y - 1, z: center.z - 4 }, "minecraft:emerald_block");
+  setBlockSafe(dimension, { x: center.x - 6, y: center.y, z: center.z - 4 }, W_CONTROL_BLOCK);
+  setBlockSafe(dimension, { x: center.x - 6, y: center.y + 1, z: center.z - 4 }, "minecraft:sea_lantern");
+  setLineSafe(dimension, { x: center.x + 5, y: center.y - 1, z: center.z - 4 }, { x: center.x + 8, y: center.y - 1, z: center.z - 4 }, "minecraft:lapis_block");
+  setBlockSafe(dimension, { x: center.x + 6, y: center.y, z: center.z - 4 }, ROTATION_CONTROL_BLOCK);
+  setBlockSafe(dimension, { x: center.x + 6, y: center.y + 1, z: center.z - 4 }, "minecraft:sea_lantern");
+}
+
 function buildImmersive4DChamber(dimension, center) {
   for (let x = center.x - IMMERSION_RADIUS; x <= center.x + IMMERSION_RADIUS; x += 1) {
     for (let z = center.z - IMMERSION_RADIUS; z <= center.z + IMMERSION_RADIUS; z += 1) {
@@ -364,14 +393,14 @@ function buildImmersive4DChamber(dimension, center) {
   }
 
   buildHypercubeRoom(dimension, center);
+  buildGuidedHypercubeRoute(dimension, center);
   buildTesseractProjection(dimension, TESSERACT_CENTER);
 
+  // Remove as cinco faixas simultâneas antigas; somente a fatia W ativa será renderizada.
   for (let index = 0; index < W_SLICE_BLOCKS.length; index += 1) {
     const z = center.z - 12 + index * 6;
-    setLineSafe(dimension, { x: center.x - 14, y: center.y, z }, { x: center.x + 14, y: center.y, z }, W_SLICE_BLOCKS[index]);
-    setLineSafe(dimension, { x: center.x - 14, y: center.y + 1, z }, { x: center.x + 14, y: center.y + 1, z }, "minecraft:white_stained_glass");
-    setBlockSafe(dimension, { x: center.x - 15, y: center.y, z }, "minecraft:sea_lantern");
-    setBlockSafe(dimension, { x: center.x + 15, y: center.y, z }, "minecraft:sea_lantern");
+    setLineSafe(dimension, { x: center.x - 15, y: center.y, z }, { x: center.x + 15, y: center.y, z }, "minecraft:air");
+    setLineSafe(dimension, { x: center.x - 15, y: center.y + 1, z }, { x: center.x + 15, y: center.y + 1, z }, "minecraft:air");
   }
 
   const state = getArenaState(dimension.id, center);
@@ -381,8 +410,8 @@ function buildImmersive4DChamber(dimension, center) {
 
   setBlockSafe(dimension, { x: center.x, y: center.y, z: center.z }, "minecraft:air");
   setBlockSafe(dimension, { x: center.x, y: center.y, z: center.z - 4 }, GUIDE_TRIGGER_BLOCK);
-  setBlockSafe(dimension, { x: center.x + 6, y: center.y, z: center.z }, ROTATION_CONTROL_BLOCK);
-  setBlockSafe(dimension, { x: center.x - 6, y: center.y, z: center.z }, W_CONTROL_BLOCK);
+  setBlockSafe(dimension, { x: center.x + 6, y: center.y, z: center.z }, "minecraft:air");
+  setBlockSafe(dimension, { x: center.x - 6, y: center.y, z: center.z }, "minecraft:air");
 }
 
 function buildApiDimensionIdentity(dimension, center) {
@@ -445,12 +474,21 @@ function buildSafePlatform(dimensionId, center, label, force = false) {
   setBlockSafe(dimension, { x: center.x - 4, y: center.y, z: center.z }, "minecraft:lodestone");
   setBlockSafe(dimension, { x: center.x + 4, y: center.y, z: center.z }, "minecraft:sea_lantern");
   const anchorBlock = getBlockTypeId(dimension, { x: center.x, y: center.y - 1, z: center.z });
+  if (anchorBlock === undefined) {
+    builtDestinations.add(key);
+    if (!unverifiableDestinationAnchors.has(key)) {
+      unverifiableDestinationAnchors.add(key);
+      log(`Plataforma ${label} montada, mas a API nao permite verificar a ancora neste momento; evitando reconstrucoes repetidas.`);
+    }
+    return true;
+  }
   if (anchorBlock !== "minecraft:amethyst_block") {
     builtDestinations.delete(key);
     log(`Plataforma ${label} ainda nao verificou bloco ancora em ${center.x} ${center.y - 1} ${center.z}; bloco atual=${anchorBlock ?? "indisponivel"}.`);
     return false;
   }
 
+  unverifiableDestinationAnchors.delete(key);
   builtDestinations.add(key);
   log(`Plataforma segura criada para ${label} em ${dimensionId} @ ${center.x} ${center.y} ${center.z}.`);
   return true;
@@ -469,6 +507,105 @@ function runCommandSafe(dimension, command, context) {
   } catch (error) {
     log(`Falha ao iniciar comando ${context}: ${error}`);
   }
+}
+
+function isDrySupportedPortalSite(dimension, center) {
+  const supportOffsets = [
+    [0, 0], [-5, -4], [5, -4], [-5, 4], [5, 4],
+    [0, -4], [0, 4], [-5, 0], [5, 0],
+  ];
+  for (const [dx, dz] of supportOffsets) {
+    const block = getBlockTypeId(dimension, { x: center.x + dx, y: center.y - 1, z: center.z + dz });
+    if (!block || block === "minecraft:air" || block === "minecraft:water" || block === "minecraft:lava") {
+      return false;
+    }
+  }
+
+  const clearanceOffsets = [
+    [0, 0], [-5, -7], [5, -7], [-5, 4], [5, 4],
+    [0, -7], [0, 4], [-5, 0], [5, 0],
+  ];
+  for (const height of [0, 3, 6]) {
+    for (const [dx, dz] of clearanceOffsets) {
+      const block = getBlockTypeId(dimension, { x: center.x + dx, y: center.y + height, z: center.z + dz });
+      if (block !== "minecraft:air") {
+        return false;
+      }
+    }
+  }
+  return true;
+}
+
+function findNearbyPortalSite(dimension, origin, requestedRadius) {
+  const radius = Math.max(8, Math.min(32, Number.parseInt(requestedRadius, 10) || 16));
+  const candidates = [];
+  for (let dx = -radius; dx <= radius; dx += 2) {
+    for (let dz = -radius; dz <= radius; dz += 2) {
+      candidates.push({ x: origin.x + dx, y: origin.y, z: origin.z + dz, distance: dx * dx + dz * dz });
+    }
+  }
+  candidates.sort((a, b) => a.distance - b.distance);
+  return candidates.find((candidate) => isDrySupportedPortalSite(dimension, candidate));
+}
+
+function mountPortalNearPlayer(player, message) {
+  if (!player?.location || !player.dimension) {
+    log("Busca de portal ignorada: scriptevent sem jogador como sourceEntity.");
+    return;
+  }
+  if (player.dimension.id !== "minecraft:overworld") {
+    player.sendMessage(`${PREFIX} [Busca][BLOQUEADO] Execute a busca no mundo normal (Overworld).`);
+    return;
+  }
+  const origin = { x: Math.floor(player.location.x), y: Math.floor(player.location.y), z: Math.floor(player.location.z) };
+  const center = findNearbyPortalSite(player.dimension, origin, message);
+  if (!center) {
+    player.sendMessage(`${PREFIX} [Busca][BLOQUEADO] Nenhum ponto aprovado no raio solicitado. Mova-se para outra area seca e tente novamente.`);
+    log(`Busca local sem candidato para ${player.name}; origem=${Math.floor(player.location.x)} ${Math.floor(player.location.y)} ${Math.floor(player.location.z)}; raio=${message || 16}.`);
+    return;
+  }
+  const command = `execute positioned ${center.x} ${center.y} ${center.z} run function portal_4d/construir_portal`;
+  runCommandSafe(player, command, "montagem parametrizada do portal");
+  player.sendMessage(`${PREFIX} [Busca] Portal solicitado no centro ${center.x} ${center.y} ${center.z}. Valide visualmente toda a base.`);
+  log(`Portal parametrizado solicitado por ${player.name} no centro ${center.x} ${center.y} ${center.z}; raio=${message || 16}.`);
+}
+
+function mountPortalFromCoordinates(message) {
+  const parts = `${message ?? ""}`.trim().split(/\s+/).map(Number);
+  if (parts.length < 3 || parts.slice(0, 3).some((value) => !Number.isFinite(value))) {
+    log(`Busca por coordenada bloqueada: parametros invalidos '${message ?? ""}'. Use x y z [raio].`);
+    return;
+  }
+  const origin = {
+    x: Math.floor(parts[0]),
+    y: Math.floor(parts[1]),
+    z: Math.floor(parts[2]),
+  };
+  if (origin.y < -64 || origin.y > 320) {
+    log(`Busca por coordenada bloqueada: Y fora do mundo (${origin.y}).`);
+    return;
+  }
+  const radius = Math.max(8, Math.min(32, Number.parseInt(parts[3], 10) || 16));
+  const dimension = getDimensionSafe("minecraft:overworld", false);
+  if (!dimension) {
+    log("Busca por coordenada bloqueada: Overworld indisponivel.");
+    return;
+  }
+
+  // Mantém os chunks da busca carregados sem depender da posição de um jogador.
+  runCommandSafe(dimension, "tickingarea remove p4d_portal_busca", "limpeza de tickingarea anterior");
+  runCommandSafe(dimension, `tickingarea add circle ${origin.x} ${origin.y} ${origin.z} 3 p4d_portal_busca`, "carregamento da busca parametrizada");
+  system.runTimeout(() => {
+    const center = findNearbyPortalSite(dimension, origin, radius);
+    if (!center) {
+      log(`Busca parametrizada sem candidato; origem=${origin.x} ${origin.y} ${origin.z}; raio=${radius}.`);
+      runCommandSafe(dimension, "tickingarea remove p4d_portal_busca", "fim da busca sem candidato");
+      return;
+    }
+    runCommandSafe(dimension, `execute positioned ${center.x} ${center.y} ${center.z} run function portal_4d/construir_portal`, "montagem por coordenada");
+    log(`Portal por coordenada solicitado no centro ${center.x} ${center.y} ${center.z}; origem=${origin.x} ${origin.y} ${origin.z}; raio=${radius}.`);
+    system.runTimeout(() => runCommandSafe(dimension, "tickingarea remove p4d_portal_busca", "fim da busca parametrizada"), 20);
+  }, 20);
 }
 
 function emitFeedback(player, title, subtitle, sound = "random.levelup") {
@@ -618,6 +755,9 @@ function ensureDestinationHealthy() {
   }
 
   const anchor = getBlockTypeId(dimension, { x: CUSTOM_CENTER.x, y: CUSTOM_CENTER.y - 1, z: CUSTOM_CENTER.z });
+  if (anchor === undefined) {
+    return;
+  }
   if (anchor !== "minecraft:amethyst_block") {
     builtDestinations.delete(`${CUSTOM_DIMENSION_ID}:${CUSTOM_CENTER.x}:${CUSTOM_CENTER.y}:${CUSTOM_CENTER.z}`);
     log("Ancora da Sala do Hipercubo ausente; reconstruindo destino customizado sem depender do intervalo pesado.");
@@ -1027,6 +1167,10 @@ if (scriptEventReceive?.subscribe) {
   scriptEventReceive.subscribe((event) => {
     if (event.id === RECOVERY_SCRIPT_EVENT_ID) {
       recoverToCustomDimension(event.sourceEntity);
+    } else if (event.id === NEARBY_PORTAL_SCRIPT_EVENT_ID) {
+      mountPortalNearPlayer(event.sourceEntity, event.message);
+    } else if (event.id === COORDINATE_PORTAL_SCRIPT_EVENT_ID) {
+      mountPortalFromCoordinates(event.message);
     }
   });
   log("Scriptevent de recuperacao registrado para o destino unico 4D.");
@@ -1035,8 +1179,8 @@ if (scriptEventReceive?.subscribe) {
 }
 
 system.run(() => {
-  log("Sprint 9 carregada: Sala do Hipercubo com W dinamico, quatro projecoes, puzzle final e verificacao leve de saude.");
-  notifyOperators("Sprint 9 ativa. Sala do Hipercubo: W muda a sala, lapis tem 4 projecoes, W=4 + Projecao=4 abre a passagem final.");
+  log("Sprint 10 carregada: percurso visual focado, controles separados e uma unica fatia W ativa.");
+  notifyOperators("Sprint 10 ativa. Siga o caminho iluminado; esmeralda controla W, lapis controla projecao e o hipercubo e o foco central.");
   buildAllKnownDestinations();
 });
 
