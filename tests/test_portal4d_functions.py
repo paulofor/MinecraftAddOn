@@ -51,14 +51,36 @@ class Portal4DFunctionTests(unittest.TestCase):
     self.assertIn("tickingarea add circle", script)
     self.assertIn("findNearbyPortalSite(dimension, origin, radius)", script)
 
-  def test_portal_manifests_are_paired_at_0_1_32(self) -> None:
+  def test_portal_manifests_are_paired_at_0_1_34(self) -> None:
     bp = json.loads((ROOT / "packs" / "BP_Portal4DEspacial" / "manifest.json").read_text(encoding="utf-8"))
     rp = json.loads((ROOT / "packs" / "RP_Portal4DEspacial" / "manifest.json").read_text(encoding="utf-8"))
 
-    self.assertEqual([0, 1, 32], bp["header"]["version"])
+    self.assertEqual([0, 1, 34], bp["header"]["version"])
     self.assertEqual(bp["header"]["version"], rp["header"]["version"])
-    self.assertTrue(all(module["version"] == [0, 1, 32] for module in bp["modules"] + rp["modules"]))
-    self.assertEqual([0, 1, 32], bp["dependencies"][0]["version"])
+    self.assertTrue(all(module["version"] == [0, 1, 34] for module in bp["modules"] + rp["modules"]))
+    self.assertEqual([0, 1, 34], bp["dependencies"][0]["version"])
+
+  def test_tutorial_uses_plain_language_and_staged_objectives(self) -> None:
+    script = (ROOT / "packs" / "BP_Portal4DEspacial" / "scripts" / "main.js").read_text(encoding="utf-8")
+    self.assertIn("VERDE = outra FATIA", script)
+    self.assertIn("AZUL = outra VISTA", script)
+    self.assertIn("PASSO 1: use o bloco VERDE", script)
+    self.assertIn("Tutorial inicial simplificado exibido", script)
+
+  def test_three_step_lab_and_controls_share_their_real_coordinates(self) -> None:
+    script = (ROOT / "packs" / "BP_Portal4DEspacial" / "scripts" / "main.js").read_text(encoding="utf-8")
+    self.assertIn("function buildThreeStepLearningLab", script)
+    self.assertIn('"minecraft:yellow_concrete"', script)
+    self.assertIn('"minecraft:cyan_concrete"', script)
+    self.assertIn('"minecraft:purple_concrete"', script)
+    self.assertIn("const CUSTOM_ARRIVAL = { x: 0, y: 80, z: -9 }", script)
+    self.assertIn("const rotationControl = { x: arena.center.x + 6, y: arena.center.y, z: arena.center.z + 5 }", script)
+    self.assertIn("const wControl = { x: arena.center.x - 6, y: arena.center.y, z: arena.center.z + 5 }", script)
+    self.assertNotIn("const rotationCenter = { x: arena.center.x + 24", script)
+    sprint5_body = script.split("function buildSprint5Arena", 1)[1].split("function buildAllKnownDestinations", 1)[0]
+    self.assertIn("clearLegacyExperienceAnnexes", sprint5_body)
+    self.assertNotIn("buildRotationRoom", sprint5_body)
+    self.assertNotIn("buildWCorridor", sprint5_body)
 
 
 if __name__ == "__main__":

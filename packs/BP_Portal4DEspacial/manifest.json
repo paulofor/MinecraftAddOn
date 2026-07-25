@@ -7,7 +7,7 @@
     "version": [
       0,
       1,
-      32
+      34
     ],
     "min_engine_version": [
       1,
@@ -22,7 +22,7 @@
       "version": [
         0,
         1,
-        32
+        34
       ]
     },
     {
@@ -32,7 +32,7 @@
       "version": [
         0,
         1,
-        32
+        34
       ],
       "entry": "scripts/controller_patch.js"
     }
@@ -43,7 +43,7 @@
       "version": [
         0,
         1,
-        32
+        34
       ]
     },
     {
