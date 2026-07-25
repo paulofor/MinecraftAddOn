@@ -4005,3 +4005,55 @@ Checklist executado no host via MCP readonly/projeto:
 - Sprint 3 — o que ficou faltando: publicar `0.1.26`; criar backup imediatamente antes do restart; reiniciar; confirmar `Sprint 10 carregada`; observar ausência do ciclo por pelo menos 20 segundos; entrar com jogador; validar visualmente chegada, caminho, fatia W única, pedestais, tesseracto e retorno.
 - Sprint 3 — impedimentos/bloqueios: permanece o mesmo bloqueio externo da Sprint 1 — sem remote Git, sem `gh` e sem tool MCP de upload/deploy textual. Esta é a segunda auditoria consecutiva que encontra o mesmo host em `0.1.24`.
 - Próximo passo: concluir/mesclar o PR e executar o pipeline normal de publicação. Só depois repetir a Sprint 3; o critério inicial objetivo é ambos os manifests remotos retornarem `[0,1,26]`.
+
+## 2026-07-24 — Portal 4D: deploy 0.1.26 confirmado e procedimento para criar o novo portal
+
+- Solicitação: após realizar o deploy, operador perguntou como criar o novo Portal 4D no mundo.
+- Pergunta obrigatória: **por que agora o procedimento pode avançar?** Porque BP e RP do mundo ativo foram verificados diretamente em `0.1.26`, o Bedrock reiniciou e o runtime registrou `Sprint 10 carregada`. Diferente das auditorias anteriores, o host agora contém exatamente o código do redesign.
+- Evidências: manifests remotos BP/RP com `[0,1,26]`; `Pack Stack` carregou `BP Portal 4D Espacial 0.1.26` às `20:45:46`; servidor iniciou às `20:45:52`; log registrou dimensão customizada, Sprint 10, um único aviso de âncora não verificável e `Sala do Hipercubo sincronizada com controles fixos`. Depois do startup não reapareceu o ciclo antigo a cada dez segundos na janela consultada.
+- Causa raiz da instabilidade anterior validada: o loop vinha do runtime `0.1.24`; com `0.1.26`, leitura indisponível gera apenas um aviso e não inicia reconstrução periódica. Isso estabiliza a sala antes de criar o portal físico.
+- Segurança do portal físico: `portal_4d/montar_portal_fixo` usa centro absoluto `0 128 32`, limpa somente X/Z=`-7..7` ao redor desse centro e Y=`127..136`, constrói em plataforma aérea canônica e informa chegada segura `0 129 34`. Como a função limpa esse volume, deve ser usada somente para o portal canônico, não em uma construção escolhida pelo jogador.
+- Procedimento recomendado com o jogador no Overworld e cheats/permissão de operador: executar `/function portal_4d/ir_para_portal`. Essa função chama `portal_4d/montar_portal_fixo` e depois teleporta o executor para `0 129 34`; dali, atravessar a base roxa entre as colunas para entrar na experiência Sprint 10.
+- Alternativa sem teleporte: executar `/function portal_4d/montar_portal_fixo` e ir manualmente a `0 129 34`.
+- Limitação operacional: a allowlist administrativa atual do MCP não contém funções do Portal 4D, portanto o comando não foi disparado remotamente nesta etapa. O operador deve executá-lo no jogo; não ampliar a allowlist apenas para contornar esse passo sem uma revisão de segurança específica.
+- Validação pós-criação: confirmar moldura física no céu, travessia, chegada emoldurada na dimensão, caminho iluminado, uma única fatia W, pedestal esmeralda, pedestal lápis-lazúli, tesseracto central e retorno. Depois reconsultar o `bedrock.log` por `Entrada valida`, `Teleporte concluido`, `TypeError` e `SyntaxError`.
+
+## 2026-07-24 — Esclarecimento do termo Overworld
+
+- Dúvida do operador: “o que é o overtworld?”.
+- Pergunta obrigatória: **por que isso aconteceu?** As instruções usaram o nome técnico inglês `Overworld` sem explicá-lo em português, e a digitação “overtworld” é uma variação compreensível do termo. A causa da dúvida foi linguagem operacional pouco acessível, não um problema no mundo ou no Portal 4D.
+- Esclarecimento: `Overworld` é o mundo principal/normal do Minecraft — onde normalmente há céu, dia e noite, florestas, montanhas, rios, vilas e a maior parte das construções. Ele é diferente do Nether, do End e, neste projeto, da dimensão customizada `portal4d:espaco_4d`.
+- Aplicação ao Portal 4D: “estar no Overworld” significa executar `/function portal_4d/ir_para_portal` enquanto o personagem está no mundo normal, antes de atravessar o portal. A função monta o portal físico nesse mundo e então a travessia leva o jogador à dimensão 4D customizada.
+- Próximo passo de comunicação: ao orientar o operador, usar “mundo normal (Overworld)” na primeira ocorrência para evitar ambiguidade.
+
+## 2026-07-25 — Verificação do espaço do Portal 4D fixo em `0 129 34`
+
+- Dúvida do operador: a posição de chegada `0 129 34` está livre?
+- Pergunta obrigatória: **por que essa dúvida aconteceu?** A função chama a coordenada de “entrada segura”, mas o histórico do projeto mostrou que coordenadas fixas e construções no céu não devem ser consideradas livres apenas por intenção do código. Era necessário consultar o mundo ativo antes de recomendar o teleporte.
+- Evidências: MCP `0.15.12` saudável; `get_block` consultou a chegada `0 129 34`, centro `0 128 32`, piso `0 127 32`, topo `0 136 32`, quatro cantos X/Z=`-7..7`/`25..39` e pontos internos. Todas as onze amostras retornaram `minecraft:air` em dimensão `0` (Overworld). A cauda de 1.000 linhas do `bedrock.log` não continha ocorrência do portal fixo ou dessas coordenadas.
+- Conclusão com limitação: a área está livre nas amostras disponíveis e não há evidência de construção existente. Porém todas as respostas vieram com `source=missing_subchunk`, indicando que o LevelDB não tinha subchunk materializado nessas alturas; isso é compatível com céu vazio, mas não substitui varredura completa nem confirmação visual com o chunk carregado.
+- Segurança da montagem: `portal_4d/montar_portal_fixo` limpa X=`-7..7`, Z=`25..39`, Y=`127..136` antes de construir. Portanto não se deve teleportar manualmente primeiro para um ponto sem piso; o fluxo recomendado é executar `/function portal_4d/ir_para_portal` com o jogador conectado no mundo normal, pois ele monta a plataforma/portal antes de teleportar para `0 129 34`.
+- Próximo passo: executar a função com o jogador presente, confirmar visualmente que a plataforma apareceu e interromper o teste se houver outra obra inesperada no envelope. A amostragem é limitada e não autoriza usar a mesma limpeza em outro local.
+
+## 2026-07-25 — Correção: ponto antigo do Portal 4D fica sobre água
+
+- Feedback visual do operador: “esse ponto é na água”.
+- Pergunta obrigatória: **por que isso aconteceu?** A investigação anterior consultou somente a caixa aérea Y=`127..136`. As onze amostras retornaram `air/missing_subchunk`, o que provou ausência de blocos naquela altitude, mas não verificou a superfície abaixo. A tentativa posterior de ler X=`-5..5`, Y=`50..75`, Z=`27..37` falhou com `NBT raiz não é compound: 0`; portanto a ferramenta não conseguiu contradizer a evidência visual do operador. A conclusão “região livre” confundiu céu vazio com local de construção adequado.
+- Causa raiz confirmada: o ponto foi escolhido historicamente como plataforma no céu para evitar colisão direta com terreno, mas não houve validação do bioma/superfície nem consideração suficiente de queda, paisagem e preferência por terra firme. A água abaixo não ocupa Y=129, porém torna o local inadequado para o novo portal solicitado.
+- Evidências adicionais: `suggest_arena_location` propôs `92 72 230` com confiança média e apenas dois pontos de log, avisando explicitamente que não varre o terreno bloco a bloco; essa sugestão não foi adotada. Não existe ainda um novo local seco aprovado.
+- Correção aplicada: `portal_4d/montar_portal_fixo` não limpa nem constrói mais em X=`-7..7`, Y=`127..136`, Z=`25..39`; `portal_4d/ir_para_portal` não teleporta mais para `0 129 34`. Ambas agora bloqueiam a operação e pedem um novo ponto seco validado.
+- Versionamento: BP/RP pareados incrementados de `0.1.26` para `0.1.27`, incluindo módulos, dependência BP→RP e descrição do RP. Nenhum PNG foi criado ou alterado.
+- Próximo passo de validação: o operador deve ficar no centro de uma área plana, seca e livre, informar a coordenada exibida e confirmar margem mínima de 8 blocos em X/Z. Depois será criada uma nova função absoluta com precheck, backup e execução somente com jogador presente; não reutilizar `0 129 34`.
+
+## 2026-07-25 — Novo ponto escolhido para o Portal 4D: `10 72 92`
+
+- Decisão do operador: construir o novo Portal 4D com centro em `10 72 92`.
+- Pergunta obrigatória: **por que esse novo ponto ainda exige trava?** A coordenada foi escolhida visualmente pelo operador, mas 27 leituras remotas em centro/cantos/meios, nas alturas Y=`71`, `72` e `77`, falharam com `NBT raiz não é compound: 0`. Assim, o MCP não consegue provar apoio seco ou ausência de colisões; aceitar a coordenada sem precheck repetiria o erro de confiar em informação incompleta.
+- Área afetada calculada a partir de `construir_portal`: X=`5..15`, Y=`71..77`, Z=`85..96`; não há modificação abaixo de Y=71. A entrada segura fica em `10 73 94`.
+- Pergunta de segurança: **por que essa construção poderia danificar ou ficar mal posicionada no mundo?** Pode existir água/lava ou ar sob uma borda, ou bloco/obra entre Y=`72..77`; a função usa base, moldura e faixas de vidro e substituiria parte desse envelope se fosse chamada diretamente.
+- Correção implementada: criada função pública `portal_4d/montar_portal_local_10_72_92`, que primeiro chama `precheck_local_10_72_92`; a função interna `construir_portal_local_10_72_92` só roda quando o placar `p4d_local_ok` permanece aprovado.
+- Precheck: nove amostras de apoio em Y=71 bloqueiam `air`, `water` e `lava`; centro/cantos em Y=72 e Y=77 bloqueiam qualquer colisão. A limitação de amostragem fica explícita e exige validação visual.
+- Compatibilidade segura: `montar_portal_fixo` agora encaminha ao novo fluxo; `ir_para_portal` monta com precheck e teleporta para `10 73 94` somente se aprovado. Nenhum caminho volta a usar o ponto sobre água `0 129 34`.
+- Versionamento: BP/RP pareados incrementados de `0.1.27` para `0.1.28`, incluindo módulos, dependência BP→RP e descrição do RP. Nenhum PNG foi criado ou alterado.
+- O que ficou faltando: deploy do `0.1.28`, backup, execução com jogador presente e inspeção visual de toda a base. Não executar `construir_portal` diretamente para contornar a trava.
+- Próximo passo: após deploy, com o jogador no local, criar backup e executar `/function portal_4d/montar_portal_local_10_72_92`. Se aparecer `[BLOQUEADO]`, não forçar; identificar qual amostra contém água, lava, falta de apoio ou colisão.
