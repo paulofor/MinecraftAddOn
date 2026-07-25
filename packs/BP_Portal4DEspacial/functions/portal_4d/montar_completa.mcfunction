@@ -1,5 +1,4 @@
-# Montagem completa disponivel na Sprint 2.
+# Compatibilidade: monta somente o portal local. O Planeta Partido e criado pelo script na dimensao customizada.
+# Para montagem administrativa segura e absoluta, prefira scriptevent portal4d:montar_coordenada X Y Z raio.
 function portal_4d/init
-function portal_4d/construir_portal
-function portal_4d/construir_arena_4d
-function portal_4d/polimento_sprint8
+tellraw @s {"rawtext":[{"text":"[Portal4D] Use a montagem parametrizada por coordenadas; nenhuma arena antiga no Overworld sera criada."}]}

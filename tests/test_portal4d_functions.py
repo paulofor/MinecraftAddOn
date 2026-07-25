@@ -49,38 +49,74 @@ class Portal4DFunctionTests(unittest.TestCase):
     self.assertIn('const COORDINATE_PORTAL_SCRIPT_EVENT_ID = "portal4d:montar_coordenada"', script)
     self.assertIn("function mountPortalFromCoordinates(message)", script)
     self.assertIn("tickingarea add circle", script)
-    self.assertIn("findNearbyPortalSite(dimension, origin, radius)", script)
+    self.assertIn("findNearbyPortalSite(dimension, { x, y, z }, rawRadius)", script)
 
-  def test_portal_manifests_are_paired_at_0_1_34(self) -> None:
+  def test_portal_manifests_are_paired_at_0_1_36(self) -> None:
     bp = json.loads((ROOT / "packs" / "BP_Portal4DEspacial" / "manifest.json").read_text(encoding="utf-8"))
     rp = json.loads((ROOT / "packs" / "RP_Portal4DEspacial" / "manifest.json").read_text(encoding="utf-8"))
 
-    self.assertEqual([0, 1, 34], bp["header"]["version"])
+    self.assertEqual([0, 1, 36], bp["header"]["version"])
     self.assertEqual(bp["header"]["version"], rp["header"]["version"])
-    self.assertTrue(all(module["version"] == [0, 1, 34] for module in bp["modules"] + rp["modules"]))
-    self.assertEqual([0, 1, 34], bp["dependencies"][0]["version"])
+    self.assertTrue(all(module["version"] == [0, 1, 36] for module in bp["modules"] + rp["modules"]))
+    self.assertEqual([0, 1, 36], bp["dependencies"][0]["version"])
 
-  def test_tutorial_uses_plain_language_and_staged_objectives(self) -> None:
+  def test_shattered_planet_has_plain_mission_and_three_fragments(self) -> None:
     script = (ROOT / "packs" / "BP_Portal4DEspacial" / "scripts" / "main.js").read_text(encoding="utf-8")
-    self.assertIn("VERDE = outra FATIA", script)
-    self.assertIn("AZUL = outra VISTA", script)
-    self.assertIn("PASSO 1: use o bloco VERDE", script)
-    self.assertIn("Tutorial inicial simplificado exibido", script)
+    self.assertIn("function buildShatteredPlanet", script)
+    self.assertIn("function buildAccretionDisk", script)
+    self.assertIn("natureza:", script)
+    self.assertIn("ruinas:", script)
+    self.assertIn("maquina:", script)
+    self.assertIn("Atravesse os três fragmentos e reacenda o buraco negro", script)
+    self.assertIn("PLANETA REATIVADO", script)
 
-  def test_three_step_lab_and_controls_share_their_real_coordinates(self) -> None:
+  def test_fragment_anchors_share_their_real_coordinates(self) -> None:
     script = (ROOT / "packs" / "BP_Portal4DEspacial" / "scripts" / "main.js").read_text(encoding="utf-8")
-    self.assertIn("function buildThreeStepLearningLab", script)
-    self.assertIn('"minecraft:yellow_concrete"', script)
-    self.assertIn('"minecraft:cyan_concrete"', script)
-    self.assertIn('"minecraft:purple_concrete"', script)
-    self.assertIn("const CUSTOM_ARRIVAL = { x: 0, y: 80, z: -9 }", script)
-    self.assertIn("const rotationControl = { x: arena.center.x + 6, y: arena.center.y, z: arena.center.z + 5 }", script)
-    self.assertIn("const wControl = { x: arena.center.x - 6, y: arena.center.y, z: arena.center.z + 5 }", script)
-    self.assertNotIn("const rotationCenter = { x: arena.center.x + 24", script)
-    sprint5_body = script.split("function buildSprint5Arena", 1)[1].split("function buildAllKnownDestinations", 1)[0]
-    self.assertIn("clearLegacyExperienceAnnexes", sprint5_body)
-    self.assertNotIn("buildRotationRoom", sprint5_body)
-    self.assertNotIn("buildWCorridor", sprint5_body)
+    self.assertIn("anchor: { x: -38, y: 84, z: -6 }", script)
+    self.assertIn("anchor: { x: 25, y: 88, z: -32 }", script)
+    self.assertIn("anchor: { x: 32, y: 81, z: 28 }", script)
+    self.assertIn("distanceSquared(block.location, fragment.anchor) <= 2", script)
+    self.assertIn('setBlock(dimension, fragment.anchor, "minecraft:lodestone")', script)
+    self.assertNotIn("buildChronosDeck", script)
+    self.assertNotIn("ERA_TAGS", script)
+
+  def test_rebuild_erases_old_world_before_building_new_one(self) -> None:
+    script = (ROOT / "packs" / "BP_Portal4DEspacial" / "scripts" / "main.js").read_text(encoding="utf-8")
+    self.assertIn("function clearPreviousWorld", script)
+    cleanup_call = script.index("clearPreviousWorld(dimension)")
+    build_call = script.index("buildShatteredPlanet(dimension);", cleanup_call)
+    self.assertLess(cleanup_call, build_call)
+    self.assertIn("[[-64, -1], [0, 64]]", script)
+    self.assertIn("for (let y = 60; y <= 124; y += 7)", script)
+
+  def test_finale_requires_all_fragments_and_energizes_core(self) -> None:
+    script = (ROOT / "packs" / "BP_Portal4DEspacial" / "scripts" / "main.js").read_text(encoding="utf-8")
+    self.assertIn("function hasAllFragmentTags", script)
+    self.assertIn("if (hasAllFragmentTags(player))", script)
+    self.assertIn("function energizeBlackHole", script)
+    self.assertIn("{ x: 0, y: 124, z: 0 }", script)
+
+  def test_world_build_has_absolute_precheck_and_temporary_chunks(self) -> None:
+    script = (ROOT / "packs" / "BP_Portal4DEspacial" / "scripts" / "main.js").read_text(encoding="utf-8")
+    self.assertIn("function precheckShatteredPlanet(dimension)", script)
+    self.assertIn("dimension?.id !== CUSTOM_DIMENSION_ID", script)
+    self.assertIn("if (!precheckShatteredPlanet(dimension)) return undefined", script)
+    self.assertIn("tickingarea add circle 0 90 0 4", script)
+    self.assertIn("tickingarea remove ${BUILD_TICKING_AREA}", script)
+
+  def test_cleanup_fill_slices_stay_under_bedrock_limit(self) -> None:
+    largest_quadrant = 65 * 65 * 7
+    self.assertLessEqual(largest_quadrant, 32768)
+
+  def test_obsolete_overworld_arena_functions_are_removed(self) -> None:
+    self.assertFalse((FUNCTIONS / "construir_arena_4d.mcfunction").exists())
+    self.assertFalse((FUNCTIONS / "polimento_sprint8.mcfunction").exists())
+    self.assertFalse((ROOT / "packs" / "BP_Portal4DEspacial" / "scripts" / "controller_patch.js").exists())
+
+  def test_manifest_loads_new_world_directly(self) -> None:
+    bp = json.loads((ROOT / "packs" / "BP_Portal4DEspacial" / "manifest.json").read_text(encoding="utf-8"))
+    script_module = next(module for module in bp["modules"] if module["type"] == "script")
+    self.assertEqual("scripts/main.js", script_module["entry"])
 
 
 if __name__ == "__main__":
