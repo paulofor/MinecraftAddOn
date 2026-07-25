@@ -4067,3 +4067,56 @@ Checklist executado no host via MCP readonly/projeto:
 - Prevenção: criado `tests/test_portal4d_functions.py`, que recusa `execute if score #`, exige `execute if score @s p4d_local_ok`, verifica que o precheck aparece antes da construção interna e confirma BP/RP/módulos/dependência pareados em `0.1.29`.
 - Versionamento: BP/RP pareados incrementados de `0.1.28` para `0.1.29`, incluindo módulos, dependência BP→RP e descrição do RP. Nenhum PNG foi criado ou alterado.
 - Próximo passo: publicar `0.1.29`, reiniciar e validar no `bedrock.log` que as três funções carregaram sem `Unexpected "#"`; somente depois, com backup e jogador presente, executar a função pública. Não reutilizar o deploy `0.1.28`.
+
+## 2026-07-25 — Configuração para preservar inventário após a morte
+
+- Dúvida do operador: qual configuração evita perder os itens do inventário ao morrer?
+- Pergunta obrigatória: **por que isso acontece?** A perda/queda dos itens após a morte é o comportamento padrão do mundo quando a gamerule `keepinventory` está desativada. A busca no repositório não encontrou configuração existente dessa regra, portanto o projeto não estava garantindo a preservação do inventário.
+- Configuração recomendada para o mundo ativo: executar `/gamerule keepinventory true` no chat com cheats/permissão de operador. A regra é aplicada ao mundo e permanece ativa para as mortes posteriores; não recupera itens já perdidos antes da ativação.
+- Verificação: executar `/gamerule keepinventory` para consultar o valor atual. Para voltar ao comportamento padrão, usar `/gamerule keepinventory false`.
+- Limitação: a preservação vale para inventário e experiência conforme o comportamento da gamerule no Bedrock; ainda é recomendável testar com um item sem valor em ambiente seguro antes de depender da regra em uma aventura.
+- Evidência externa: tentativa de consultar a documentação oficial Microsoft Learn via ferramenta web falhou com HTTP 401 no ambiente; a orientação foi mantida com base no comando Bedrock estável e deve ser validada pelo retorno do próprio servidor ao consultar a gamerule.
+
+## 2026-07-25 — Portal 4D não foi gerado após deploy 0.1.29
+
+- Sintoma informado: operador não conseguiu gerar o portal no novo ponto.
+- Pergunta obrigatória: **por que isso aconteceu?** O host está corretamente em BP/RP `0.1.29`; após o restart não há novos erros `Unexpected "#"`, e o jogador conectou/spawnou às `22:01:55`/`22:01:58`. Não há evidência no log de falha de carregamento ou de construção. A hipótese mais provável é que o precheck tenha bloqueado silenciosamente para o log por uma amostra de terreno, exibindo o motivo apenas no chat.
+- Causa raiz identificada no precheck: as amostras de “apoio” usavam Z=`85`, que é a extremidade das faixas decorativas de vidro, mas a base física criada por `construir_portal` começa em Z=`88` e termina em Z=`96`. Exigir apoio no Z=85 podia bloquear corretamente o placar, porém por uma condição que não representa a base real; em terreno natural, esse falso requisito impede a montagem sem que o `bedrock.log` registre o ponto responsável.
+- Evidências: manifests remotos BP/RP `[0,1,29]`; startup sem erro de functions; `Sprint 10 carregada`; conexão do operador; inspeção de `construir_portal.mcfunction` (`fill ~-5 ~-1 ~-4 ~5 ~-1 ~4`) comparada às amostras antigas Z=85; ausência de `Successfully executed`/erro após a sessão, lembrando que funções executadas no chat não registram automaticamente os `tellraw` no log.
+- Correção aplicada: as três amostras de apoio traseiras foram alinhadas de Z=85 para Z=88, mantendo a área decorativa total Z=`85..96` apenas nas checagens de colisão. Foi criada `diagnosticar_precheck_local_10_72_92`, chamada somente quando o placar bloqueia, para informar no chat coordenadas sem apoio e colisões representativas.
+- Segurança preservada: água, lava, nove pontos da base real e colisões continuam bloqueando; a construção interna continua inacessível pelo fluxo público sem aprovação. A correção remove falso positivo, não contorna a trava.
+- Prevenção: teste novo exige ausência de amostra de apoio `Y=71/Z=85`, presença dos cantos reais `5/15 71 88` e chamada do diagnóstico quando bloqueado.
+- Versionamento: BP/RP pareados incrementados de `0.1.29` para `0.1.30`, incluindo módulos, dependência BP→RP e descrição do RP. Nenhum PNG foi criado ou alterado.
+- Próximo passo: publicar `0.1.30`, reiniciar, criar backup e repetir a função pública com jogador presente. Se bloquear, copiar a mensagem de coordenada exibida; não executar a função interna diretamente.
+
+## 2026-07-25 — Busca parametrizada de local para o Portal 4D ao redor do jogador
+
+- Solicitação: permitir que o operador entre no mundo e que o agente tente encontrar automaticamente um local adequado na região, em vez de codificar uma coordenada fixa a cada tentativa.
+- Pergunta obrigatória: **por que as tentativas fixas falharam?** O MCP/LevelDB não consegue ler de forma confiável os blocos dessa região (`NBT raiz não é compound: 0`), enquanto o Script API dentro do jogo consegue consultar os chunks carregados pelo jogador. Prender o fluxo a `10 72 92` obrigou deploys sucessivos para corrigir coordenadas/amostras e não aproveitou a evidência mais confiável disponível: leitura ao vivo perto do personagem.
+- Solução implementada: criada `/function portal_4d/montar_portal_proximo`, que emite `scriptevent portal4d:montar_proximo 16`. O parâmetro numérico é o raio; o script aceita valores de 8 a 32, gera candidatos a cada dois blocos, ordena por distância e escolhe o primeiro que passa na amostragem.
+- Precheck ao vivo: para cada candidato, nove pontos da base real precisam ter bloco sólido diferente de `air`, `water` e `lava`; nove pontos representativos em três alturas precisam estar livres. A busca só funciona no Overworld e usa a altura atual dos pés do jogador.
+- Segurança/limitação: a busca é por amostragem, não varredura completa; raio máximo 32 evita custo excessivo em um único evento. Depois de solicitar a construção, o jogador ainda deve validar visualmente toda a base. Se nenhum candidato passar, nada é construído e o jogador deve mover-se para outra área seca.
+- Operação remota: allowlist MCP ampliada apenas para o comando exato `execute as @a at @s run function portal_4d/montar_portal_proximo`; chamadas genéricas ou sem contexto do jogador continuam recusadas. MCP versionado de `0.15.12` para `0.15.13`.
+- Versionamento: BP/RP pareados incrementados de `0.1.30` para `0.1.31`, incluindo módulos, dependência BP→RP e descrição do RP. Nenhum PNG foi criado ou alterado.
+- Próximo passo: publicar MCP `0.15.13` e BP/RP `0.1.31`; com o operador conectado no mundo normal e na região desejada, criar backup e enviar o comando allowlisted. Conferir o chat/log para o centro escolhido ou mensagem de ausência de candidato; não repetir automaticamente sem mover o jogador se a busca falhar.
+
+## 2026-07-25 — Busca do Portal 4D parametrizada por coordenada, sem depender do jogador
+
+- Correção de requisito: o operador quer que o agente passe a coordenada como parâmetro e ajuste a busca sozinho, sem depender da posição do personagem no jogo.
+- Pergunta obrigatória: **por que a implementação anterior não atendia?** Embora aceitasse raio, `montar_portal_proximo` usava `event.sourceEntity.location`; portanto o centro ainda era a posição do jogador. Isso não era parametrização completa e impedia operação autônoma quando o personagem estivesse longe ou desconectado.
+- Solução: adicionado `scriptevent portal4d:montar_coordenada <x> <y> <z> [raio]`. O script valida três coordenadas inteiras, Y entre -64 e 320 e raio opcional entre 8 e 32; o padrão é 16. A mesma busca ordenada por distância é reutilizada com origem explícita.
+- Independência de jogador/chunk: antes da leitura, o script cria temporariamente `tickingarea` circular de raio 3 chunks chamada `p4d_portal_busca`, aguarda 20 ticks, procura o candidato, solicita a construção e remove a ticking area. Isso permite consultar a região sem usar a posição de um jogador; a área temporária também é removida quando nenhum candidato passa.
+- Segurança: origem e raio são validados; a busca continua rejeitando apoio em ar/água/lava e colisões amostradas. Raio máximo 32 e uma única ticking area nomeada limitam carga/conflito. A amostragem e validação visual continuam sendo limitações conhecidas.
+- MCP: allowlist aceita somente `scriptevent portal4d:montar_coordenada` com três inteiros e raio 8..32 opcional; comandos incompletos ou raio 64 são testados como recusados. MCP versionado para `0.15.14`.
+- Versionamento: BP/RP pareados incrementados de `0.1.31` para `0.1.32`, incluindo módulos, dependência BP→RP e descrição do RP. Nenhum PNG foi criado ou alterado.
+- Próximo passo: publicar MCP `0.15.14` e BP/RP `0.1.32`; criar backup e iniciar com `scriptevent portal4d:montar_coordenada 10 72 92 16`. Ler o log para o centro escolhido. Se não houver candidato, aumentar gradualmente o raio até 32 ou mudar a coordenada de origem; não repetir cegamente o mesmo parâmetro.
+
+## 2026-07-25 — Padronização permanente de montagens por coordenadas
+
+- Solicitação: registrar como regra permanente que peças colocadas no mundo recebam coordenadas como parâmetros e possam ser ajustadas autonomamente, sem depender da posição do jogador.
+- Pergunta obrigatória: **por que isso aconteceu?** A técnica ficou implementada apenas no Portal 4D e descrita no histórico cronológico. Sem uma regra canônica, novos módulos poderiam voltar a aceitar um raio aparente enquanto usam `event.sourceEntity.location`, repetir pontos fixos que exigem deploy para ajuste ou ler terreno sem carregar os chunks.
+- Causa raiz: faltava separar, na documentação geral do projeto, a escolha explícita da origem, o carregamento controlado da região, o precheck e a construção interna. O conhecimento estava ligado ao incidente, e não ao processo obrigatório de criação de novas peças.
+- Correção documental: adicionada ao `AGENTS.md` a regra obrigatória de montagem por coordenadas absolutas e criado `docs/padrao_montagem_parametrizada.md` como referência canônica. O padrão exige parâmetros X/Y/Z validados, raio limitado, envelope afetado, carregamento temporário dos chunks com limpeza, procura ordenada, prechecks, função pública separada, allowlist estrita, backup, logs e validação visual.
+- Exceção controlada: mecânicas cujo propósito seja acompanhar o jogador podem usar posição relativa, mas precisam justificar essa decisão e oferecer entrada absoluta quando produzirem construção persistente ou forem operadas administrativamente.
+- Limitação conhecida: carregamento de chunks e precheck por amostragem não provam que todo o volume está livre; a documentação mantém backup e inspeção visual como etapas obrigatórias.
+- Próximo passo de validação: aplicar o checklist canônico na próxima peça criada e verificar em revisão que a execução funciona sem jogador como `sourceEntity`, que parâmetros inválidos não alteram o mundo e que a área temporária é removida em sucesso e falha.

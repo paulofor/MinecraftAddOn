@@ -23,6 +23,8 @@ const ROTATION_PROGRESS_TAG = "portal4d_rotacao_4d";
 const W_PROGRESS_TAG_PREFIX = "portal4d_w_";
 const ROOM_COMPLETION_TAG = "portal4d_hipercubo_alinhado";
 const RECOVERY_SCRIPT_EVENT_ID = "portal4d:recuperar";
+const NEARBY_PORTAL_SCRIPT_EVENT_ID = "portal4d:montar_proximo";
+const COORDINATE_PORTAL_SCRIPT_EVENT_ID = "portal4d:montar_coordenada";
 const W_SLICE_BLOCKS = [
   "minecraft:redstone_block",
   "minecraft:gold_block",
@@ -505,6 +507,105 @@ function runCommandSafe(dimension, command, context) {
   } catch (error) {
     log(`Falha ao iniciar comando ${context}: ${error}`);
   }
+}
+
+function isDrySupportedPortalSite(dimension, center) {
+  const supportOffsets = [
+    [0, 0], [-5, -4], [5, -4], [-5, 4], [5, 4],
+    [0, -4], [0, 4], [-5, 0], [5, 0],
+  ];
+  for (const [dx, dz] of supportOffsets) {
+    const block = getBlockTypeId(dimension, { x: center.x + dx, y: center.y - 1, z: center.z + dz });
+    if (!block || block === "minecraft:air" || block === "minecraft:water" || block === "minecraft:lava") {
+      return false;
+    }
+  }
+
+  const clearanceOffsets = [
+    [0, 0], [-5, -7], [5, -7], [-5, 4], [5, 4],
+    [0, -7], [0, 4], [-5, 0], [5, 0],
+  ];
+  for (const height of [0, 3, 6]) {
+    for (const [dx, dz] of clearanceOffsets) {
+      const block = getBlockTypeId(dimension, { x: center.x + dx, y: center.y + height, z: center.z + dz });
+      if (block !== "minecraft:air") {
+        return false;
+      }
+    }
+  }
+  return true;
+}
+
+function findNearbyPortalSite(dimension, origin, requestedRadius) {
+  const radius = Math.max(8, Math.min(32, Number.parseInt(requestedRadius, 10) || 16));
+  const candidates = [];
+  for (let dx = -radius; dx <= radius; dx += 2) {
+    for (let dz = -radius; dz <= radius; dz += 2) {
+      candidates.push({ x: origin.x + dx, y: origin.y, z: origin.z + dz, distance: dx * dx + dz * dz });
+    }
+  }
+  candidates.sort((a, b) => a.distance - b.distance);
+  return candidates.find((candidate) => isDrySupportedPortalSite(dimension, candidate));
+}
+
+function mountPortalNearPlayer(player, message) {
+  if (!player?.location || !player.dimension) {
+    log("Busca de portal ignorada: scriptevent sem jogador como sourceEntity.");
+    return;
+  }
+  if (player.dimension.id !== "minecraft:overworld") {
+    player.sendMessage(`${PREFIX} [Busca][BLOQUEADO] Execute a busca no mundo normal (Overworld).`);
+    return;
+  }
+  const origin = { x: Math.floor(player.location.x), y: Math.floor(player.location.y), z: Math.floor(player.location.z) };
+  const center = findNearbyPortalSite(player.dimension, origin, message);
+  if (!center) {
+    player.sendMessage(`${PREFIX} [Busca][BLOQUEADO] Nenhum ponto aprovado no raio solicitado. Mova-se para outra area seca e tente novamente.`);
+    log(`Busca local sem candidato para ${player.name}; origem=${Math.floor(player.location.x)} ${Math.floor(player.location.y)} ${Math.floor(player.location.z)}; raio=${message || 16}.`);
+    return;
+  }
+  const command = `execute positioned ${center.x} ${center.y} ${center.z} run function portal_4d/construir_portal`;
+  runCommandSafe(player, command, "montagem parametrizada do portal");
+  player.sendMessage(`${PREFIX} [Busca] Portal solicitado no centro ${center.x} ${center.y} ${center.z}. Valide visualmente toda a base.`);
+  log(`Portal parametrizado solicitado por ${player.name} no centro ${center.x} ${center.y} ${center.z}; raio=${message || 16}.`);
+}
+
+function mountPortalFromCoordinates(message) {
+  const parts = `${message ?? ""}`.trim().split(/\s+/).map(Number);
+  if (parts.length < 3 || parts.slice(0, 3).some((value) => !Number.isFinite(value))) {
+    log(`Busca por coordenada bloqueada: parametros invalidos '${message ?? ""}'. Use x y z [raio].`);
+    return;
+  }
+  const origin = {
+    x: Math.floor(parts[0]),
+    y: Math.floor(parts[1]),
+    z: Math.floor(parts[2]),
+  };
+  if (origin.y < -64 || origin.y > 320) {
+    log(`Busca por coordenada bloqueada: Y fora do mundo (${origin.y}).`);
+    return;
+  }
+  const radius = Math.max(8, Math.min(32, Number.parseInt(parts[3], 10) || 16));
+  const dimension = getDimensionSafe("minecraft:overworld", false);
+  if (!dimension) {
+    log("Busca por coordenada bloqueada: Overworld indisponivel.");
+    return;
+  }
+
+  // Mantém os chunks da busca carregados sem depender da posição de um jogador.
+  runCommandSafe(dimension, "tickingarea remove p4d_portal_busca", "limpeza de tickingarea anterior");
+  runCommandSafe(dimension, `tickingarea add circle ${origin.x} ${origin.y} ${origin.z} 3 p4d_portal_busca`, "carregamento da busca parametrizada");
+  system.runTimeout(() => {
+    const center = findNearbyPortalSite(dimension, origin, radius);
+    if (!center) {
+      log(`Busca parametrizada sem candidato; origem=${origin.x} ${origin.y} ${origin.z}; raio=${radius}.`);
+      runCommandSafe(dimension, "tickingarea remove p4d_portal_busca", "fim da busca sem candidato");
+      return;
+    }
+    runCommandSafe(dimension, `execute positioned ${center.x} ${center.y} ${center.z} run function portal_4d/construir_portal`, "montagem por coordenada");
+    log(`Portal por coordenada solicitado no centro ${center.x} ${center.y} ${center.z}; origem=${origin.x} ${origin.y} ${origin.z}; raio=${radius}.`);
+    system.runTimeout(() => runCommandSafe(dimension, "tickingarea remove p4d_portal_busca", "fim da busca parametrizada"), 20);
+  }, 20);
 }
 
 function emitFeedback(player, title, subtitle, sound = "random.levelup") {
@@ -1066,6 +1167,10 @@ if (scriptEventReceive?.subscribe) {
   scriptEventReceive.subscribe((event) => {
     if (event.id === RECOVERY_SCRIPT_EVENT_ID) {
       recoverToCustomDimension(event.sourceEntity);
+    } else if (event.id === NEARBY_PORTAL_SCRIPT_EVENT_ID) {
+      mountPortalNearPlayer(event.sourceEntity, event.message);
+    } else if (event.id === COORDINATE_PORTAL_SCRIPT_EVENT_ID) {
+      mountPortalFromCoordinates(event.message);
     }
   });
   log("Scriptevent de recuperacao registrado para o destino unico 4D.");

@@ -33,6 +33,9 @@ class BedrockCommandAllowlistTest(unittest.TestCase):
       "execute as @a at @s run function piramide_egito_gigante/prototipo/limpar_base_chao",
       "function piramide_egito_gigante/prototipo/limpar_base_ponto_operador",
       "say MinecraftAddOn MCP run_bedrock_command operacional",
+      "execute as @a at @s run function portal_4d/montar_portal_proximo",
+      "scriptevent portal4d:montar_coordenada 10 72 92 16",
+      "scriptevent portal4d:montar_coordenada -120 64 300",
     ]
     for command in allowed:
       with self.subTest(command=command):
@@ -68,6 +71,9 @@ class BedrockCommandAllowlistTest(unittest.TestCase):
       "function piramide_egito_gigante/aventura/montar_interior",
       "execute positioned -194 69 111 run function piramide_egito_gigante/montar_completa",
       "execute positioned 1 2 3 run function piramide_egito_gigante/sprint1_base_fundacao",
+      "function portal_4d/montar_portal_proximo",
+      "scriptevent portal4d:montar_coordenada 10 72 92 64",
+      "scriptevent portal4d:montar_coordenada 10 72",
     ]
     for command in rejected:
       with self.subTest(command=command):

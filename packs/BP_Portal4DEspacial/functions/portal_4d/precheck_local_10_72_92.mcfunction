@@ -3,31 +3,31 @@
 # Limitação: valida centro, cantos e meios das bordas; não varre todos os blocos. Confirmacao visual continua obrigatoria.
 scoreboard players set @s p4d_local_ok 1
 
-# Nove amostras do apoio em Y=71: bloqueia ar, agua e lava.
+# Nove amostras da base real em X=5..15, Z=88..96, Y=71: bloqueia ar, agua e lava.
 execute if block 10 71 92 air run scoreboard players set @s p4d_local_ok 0
-execute if block 5 71 85 air run scoreboard players set @s p4d_local_ok 0
-execute if block 15 71 85 air run scoreboard players set @s p4d_local_ok 0
+execute if block 5 71 88 air run scoreboard players set @s p4d_local_ok 0
+execute if block 15 71 88 air run scoreboard players set @s p4d_local_ok 0
 execute if block 5 71 96 air run scoreboard players set @s p4d_local_ok 0
 execute if block 15 71 96 air run scoreboard players set @s p4d_local_ok 0
-execute if block 10 71 85 air run scoreboard players set @s p4d_local_ok 0
+execute if block 10 71 88 air run scoreboard players set @s p4d_local_ok 0
 execute if block 10 71 96 air run scoreboard players set @s p4d_local_ok 0
 execute if block 5 71 92 air run scoreboard players set @s p4d_local_ok 0
 execute if block 15 71 92 air run scoreboard players set @s p4d_local_ok 0
 execute if block 10 71 92 water run scoreboard players set @s p4d_local_ok 0
-execute if block 5 71 85 water run scoreboard players set @s p4d_local_ok 0
-execute if block 15 71 85 water run scoreboard players set @s p4d_local_ok 0
+execute if block 5 71 88 water run scoreboard players set @s p4d_local_ok 0
+execute if block 15 71 88 water run scoreboard players set @s p4d_local_ok 0
 execute if block 5 71 96 water run scoreboard players set @s p4d_local_ok 0
 execute if block 15 71 96 water run scoreboard players set @s p4d_local_ok 0
-execute if block 10 71 85 water run scoreboard players set @s p4d_local_ok 0
+execute if block 10 71 88 water run scoreboard players set @s p4d_local_ok 0
 execute if block 10 71 96 water run scoreboard players set @s p4d_local_ok 0
 execute if block 5 71 92 water run scoreboard players set @s p4d_local_ok 0
 execute if block 15 71 92 water run scoreboard players set @s p4d_local_ok 0
 execute if block 10 71 92 lava run scoreboard players set @s p4d_local_ok 0
-execute if block 5 71 85 lava run scoreboard players set @s p4d_local_ok 0
-execute if block 15 71 85 lava run scoreboard players set @s p4d_local_ok 0
+execute if block 5 71 88 lava run scoreboard players set @s p4d_local_ok 0
+execute if block 15 71 88 lava run scoreboard players set @s p4d_local_ok 0
 execute if block 5 71 96 lava run scoreboard players set @s p4d_local_ok 0
 execute if block 15 71 96 lava run scoreboard players set @s p4d_local_ok 0
-execute if block 10 71 85 lava run scoreboard players set @s p4d_local_ok 0
+execute if block 10 71 88 lava run scoreboard players set @s p4d_local_ok 0
 execute if block 10 71 96 lava run scoreboard players set @s p4d_local_ok 0
 execute if block 5 71 92 lava run scoreboard players set @s p4d_local_ok 0
 execute if block 15 71 92 lava run scoreboard players set @s p4d_local_ok 0
@@ -46,3 +46,4 @@ execute unless block 15 77 96 air run scoreboard players set @s p4d_local_ok 0
 
 execute if score @s p4d_local_ok matches 1 run tellraw @s {"rawtext":[{"text":"[Portal4D][Precheck] APROVADO por amostragem em 10 72 92. Montagem absoluta liberada."}]}
 execute if score @s p4d_local_ok matches 0 run tellraw @s {"rawtext":[{"text":"[Portal4D][Precheck][BLOQUEADO] Ha agua/lava, falta de apoio ou colisao em uma amostra. Nada sera construido."}]}
+execute if score @s p4d_local_ok matches 0 run function portal_4d/diagnosticar_precheck_local_10_72_92
