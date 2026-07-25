@@ -49,38 +49,50 @@ class Portal4DFunctionTests(unittest.TestCase):
     self.assertIn('const COORDINATE_PORTAL_SCRIPT_EVENT_ID = "portal4d:montar_coordenada"', script)
     self.assertIn("function mountPortalFromCoordinates(message)", script)
     self.assertIn("tickingarea add circle", script)
-    self.assertIn("findNearbyPortalSite(dimension, origin, radius)", script)
+    self.assertIn("findNearbyPortalSite(dimension, { x, y, z }, rawRadius)", script)
 
-  def test_portal_manifests_are_paired_at_0_1_34(self) -> None:
+  def test_portal_manifests_are_paired_at_0_1_35(self) -> None:
     bp = json.loads((ROOT / "packs" / "BP_Portal4DEspacial" / "manifest.json").read_text(encoding="utf-8"))
     rp = json.loads((ROOT / "packs" / "RP_Portal4DEspacial" / "manifest.json").read_text(encoding="utf-8"))
 
-    self.assertEqual([0, 1, 34], bp["header"]["version"])
+    self.assertEqual([0, 1, 35], bp["header"]["version"])
     self.assertEqual(bp["header"]["version"], rp["header"]["version"])
-    self.assertTrue(all(module["version"] == [0, 1, 34] for module in bp["modules"] + rp["modules"]))
-    self.assertEqual([0, 1, 34], bp["dependencies"][0]["version"])
+    self.assertTrue(all(module["version"] == [0, 1, 35] for module in bp["modules"] + rp["modules"]))
+    self.assertEqual([0, 1, 35], bp["dependencies"][0]["version"])
 
-  def test_tutorial_uses_plain_language_and_staged_objectives(self) -> None:
+  def test_chronos_mission_uses_plain_language_and_three_eras(self) -> None:
     script = (ROOT / "packs" / "BP_Portal4DEspacial" / "scripts" / "main.js").read_text(encoding="utf-8")
-    self.assertIn("VERDE = outra FATIA", script)
-    self.assertIn("AZUL = outra VISTA", script)
-    self.assertIn("PASSO 1: use o bloco VERDE", script)
-    self.assertIn("Tutorial inicial simplificado exibido", script)
+    self.assertIn('id: "origem"', script)
+    self.assertIn('id: "agora"', script)
+    self.assertIn('id: "amanha"', script)
+    self.assertIn("X, Y e Z dizem ONDE; o momento diz QUANDO", script)
+    self.assertIn("LINHA DO TEMPO COMPLETA", script)
 
-  def test_three_step_lab_and_controls_share_their_real_coordinates(self) -> None:
+  def test_chronos_controls_share_their_real_coordinates(self) -> None:
     script = (ROOT / "packs" / "BP_Portal4DEspacial" / "scripts" / "main.js").read_text(encoding="utf-8")
-    self.assertIn("function buildThreeStepLearningLab", script)
-    self.assertIn('"minecraft:yellow_concrete"', script)
-    self.assertIn('"minecraft:cyan_concrete"', script)
-    self.assertIn('"minecraft:purple_concrete"', script)
-    self.assertIn("const CUSTOM_ARRIVAL = { x: 0, y: 80, z: -9 }", script)
-    self.assertIn("const rotationControl = { x: arena.center.x + 6, y: arena.center.y, z: arena.center.z + 5 }", script)
-    self.assertIn("const wControl = { x: arena.center.x - 6, y: arena.center.y, z: arena.center.z + 5 }", script)
-    self.assertNotIn("const rotationCenter = { x: arena.center.x + 24", script)
-    sprint5_body = script.split("function buildSprint5Arena", 1)[1].split("function buildAllKnownDestinations", 1)[0]
-    self.assertIn("clearLegacyExperienceAnnexes", sprint5_body)
-    self.assertNotIn("buildRotationRoom", sprint5_body)
-    self.assertNotIn("buildWCorridor", sprint5_body)
+    self.assertIn("function buildChronosDeck", script)
+    self.assertIn("origem: { x: -7, y: 80, z: -1 }", script)
+    self.assertIn("agora: { x: 0, y: 80, z: 3 }", script)
+    self.assertIn("amanha: { x: 7, y: 80, z: -1 }", script)
+    self.assertIn("distanceSquared(block.location, ERA_CONTROLS[era.id]) <= 2", script)
+    self.assertNotIn("buildThreeStepLearningLab", script)
+    self.assertNotIn("buildTesseractProjection", script)
+
+  def test_rebuild_erases_old_world_before_building_new_one(self) -> None:
+    script = (ROOT / "packs" / "BP_Portal4DEspacial" / "scripts" / "main.js").read_text(encoding="utf-8")
+    self.assertIn("function clearPreviousWorld", script)
+    self.assertLess(script.index("clearPreviousWorld(dimension)"), script.index("system.runTimeout(() => buildChronosDeck(dimension)"))
+    self.assertIn("X/Z=-30..30, Y=76..104", script)
+
+  def test_obsolete_overworld_arena_functions_are_removed(self) -> None:
+    self.assertFalse((FUNCTIONS / "construir_arena_4d.mcfunction").exists())
+    self.assertFalse((FUNCTIONS / "polimento_sprint8.mcfunction").exists())
+    self.assertFalse((ROOT / "packs" / "BP_Portal4DEspacial" / "scripts" / "controller_patch.js").exists())
+
+  def test_manifest_loads_new_world_directly(self) -> None:
+    bp = json.loads((ROOT / "packs" / "BP_Portal4DEspacial" / "manifest.json").read_text(encoding="utf-8"))
+    script_module = next(module for module in bp["modules"] if module["type"] == "script")
+    self.assertEqual("scripts/main.js", script_module["entry"])
 
 
 if __name__ == "__main__":
