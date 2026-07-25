@@ -51,38 +51,62 @@ class Portal4DFunctionTests(unittest.TestCase):
     self.assertIn("tickingarea add circle", script)
     self.assertIn("findNearbyPortalSite(dimension, { x, y, z }, rawRadius)", script)
 
-  def test_portal_manifests_are_paired_at_0_1_35(self) -> None:
+  def test_portal_manifests_are_paired_at_0_1_36(self) -> None:
     bp = json.loads((ROOT / "packs" / "BP_Portal4DEspacial" / "manifest.json").read_text(encoding="utf-8"))
     rp = json.loads((ROOT / "packs" / "RP_Portal4DEspacial" / "manifest.json").read_text(encoding="utf-8"))
 
-    self.assertEqual([0, 1, 35], bp["header"]["version"])
+    self.assertEqual([0, 1, 36], bp["header"]["version"])
     self.assertEqual(bp["header"]["version"], rp["header"]["version"])
-    self.assertTrue(all(module["version"] == [0, 1, 35] for module in bp["modules"] + rp["modules"]))
-    self.assertEqual([0, 1, 35], bp["dependencies"][0]["version"])
+    self.assertTrue(all(module["version"] == [0, 1, 36] for module in bp["modules"] + rp["modules"]))
+    self.assertEqual([0, 1, 36], bp["dependencies"][0]["version"])
 
-  def test_chronos_mission_uses_plain_language_and_three_eras(self) -> None:
+  def test_shattered_planet_has_plain_mission_and_three_fragments(self) -> None:
     script = (ROOT / "packs" / "BP_Portal4DEspacial" / "scripts" / "main.js").read_text(encoding="utf-8")
-    self.assertIn('id: "origem"', script)
-    self.assertIn('id: "agora"', script)
-    self.assertIn('id: "amanha"', script)
-    self.assertIn("X, Y e Z dizem ONDE; o momento diz QUANDO", script)
-    self.assertIn("LINHA DO TEMPO COMPLETA", script)
+    self.assertIn("function buildShatteredPlanet", script)
+    self.assertIn("function buildAccretionDisk", script)
+    self.assertIn("natureza:", script)
+    self.assertIn("ruinas:", script)
+    self.assertIn("maquina:", script)
+    self.assertIn("Atravesse os três fragmentos e reacenda o buraco negro", script)
+    self.assertIn("PLANETA REATIVADO", script)
 
-  def test_chronos_controls_share_their_real_coordinates(self) -> None:
+  def test_fragment_anchors_share_their_real_coordinates(self) -> None:
     script = (ROOT / "packs" / "BP_Portal4DEspacial" / "scripts" / "main.js").read_text(encoding="utf-8")
-    self.assertIn("function buildChronosDeck", script)
-    self.assertIn("origem: { x: -7, y: 80, z: -1 }", script)
-    self.assertIn("agora: { x: 0, y: 80, z: 3 }", script)
-    self.assertIn("amanha: { x: 7, y: 80, z: -1 }", script)
-    self.assertIn("distanceSquared(block.location, ERA_CONTROLS[era.id]) <= 2", script)
-    self.assertNotIn("buildThreeStepLearningLab", script)
-    self.assertNotIn("buildTesseractProjection", script)
+    self.assertIn("anchor: { x: -38, y: 84, z: -6 }", script)
+    self.assertIn("anchor: { x: 25, y: 88, z: -32 }", script)
+    self.assertIn("anchor: { x: 32, y: 81, z: 28 }", script)
+    self.assertIn("distanceSquared(block.location, fragment.anchor) <= 2", script)
+    self.assertIn('setBlock(dimension, fragment.anchor, "minecraft:lodestone")', script)
+    self.assertNotIn("buildChronosDeck", script)
+    self.assertNotIn("ERA_TAGS", script)
 
   def test_rebuild_erases_old_world_before_building_new_one(self) -> None:
     script = (ROOT / "packs" / "BP_Portal4DEspacial" / "scripts" / "main.js").read_text(encoding="utf-8")
     self.assertIn("function clearPreviousWorld", script)
-    self.assertLess(script.index("clearPreviousWorld(dimension)"), script.index("system.runTimeout(() => buildChronosDeck(dimension)"))
-    self.assertIn("X/Z=-30..30, Y=76..104", script)
+    cleanup_call = script.index("clearPreviousWorld(dimension)")
+    build_call = script.index("buildShatteredPlanet(dimension);", cleanup_call)
+    self.assertLess(cleanup_call, build_call)
+    self.assertIn("[[-64, -1], [0, 64]]", script)
+    self.assertIn("for (let y = 60; y <= 124; y += 7)", script)
+
+  def test_finale_requires_all_fragments_and_energizes_core(self) -> None:
+    script = (ROOT / "packs" / "BP_Portal4DEspacial" / "scripts" / "main.js").read_text(encoding="utf-8")
+    self.assertIn("function hasAllFragmentTags", script)
+    self.assertIn("if (hasAllFragmentTags(player))", script)
+    self.assertIn("function energizeBlackHole", script)
+    self.assertIn("{ x: 0, y: 124, z: 0 }", script)
+
+  def test_world_build_has_absolute_precheck_and_temporary_chunks(self) -> None:
+    script = (ROOT / "packs" / "BP_Portal4DEspacial" / "scripts" / "main.js").read_text(encoding="utf-8")
+    self.assertIn("function precheckShatteredPlanet(dimension)", script)
+    self.assertIn("dimension?.id !== CUSTOM_DIMENSION_ID", script)
+    self.assertIn("if (!precheckShatteredPlanet(dimension)) return undefined", script)
+    self.assertIn("tickingarea add circle 0 90 0 4", script)
+    self.assertIn("tickingarea remove ${BUILD_TICKING_AREA}", script)
+
+  def test_cleanup_fill_slices_stay_under_bedrock_limit(self) -> None:
+    largest_quadrant = 65 * 65 * 7
+    self.assertLessEqual(largest_quadrant, 32768)
 
   def test_obsolete_overworld_arena_functions_are_removed(self) -> None:
     self.assertFalse((FUNCTIONS / "construir_arena_4d.mcfunction").exists())
