@@ -51,14 +51,14 @@ class Portal4DFunctionTests(unittest.TestCase):
     self.assertIn("tickingarea add circle", script)
     self.assertIn("findNearbyPortalSite(dimension, { x, y, z }, rawRadius)", script)
 
-  def test_portal_manifests_are_paired_at_0_1_36(self) -> None:
+  def test_portal_manifests_are_paired_at_0_1_37(self) -> None:
     bp = json.loads((ROOT / "packs" / "BP_Portal4DEspacial" / "manifest.json").read_text(encoding="utf-8"))
     rp = json.loads((ROOT / "packs" / "RP_Portal4DEspacial" / "manifest.json").read_text(encoding="utf-8"))
 
-    self.assertEqual([0, 1, 36], bp["header"]["version"])
+    self.assertEqual([0, 1, 37], bp["header"]["version"])
     self.assertEqual(bp["header"]["version"], rp["header"]["version"])
-    self.assertTrue(all(module["version"] == [0, 1, 36] for module in bp["modules"] + rp["modules"]))
-    self.assertEqual([0, 1, 36], bp["dependencies"][0]["version"])
+    self.assertTrue(all(module["version"] == [0, 1, 37] for module in bp["modules"] + rp["modules"]))
+    self.assertEqual([0, 1, 37], bp["dependencies"][0]["version"])
 
   def test_shattered_planet_has_plain_mission_and_three_fragments(self) -> None:
     script = (ROOT / "packs" / "BP_Portal4DEspacial" / "scripts" / "main.js").read_text(encoding="utf-8")
@@ -72,9 +72,9 @@ class Portal4DFunctionTests(unittest.TestCase):
 
   def test_fragment_anchors_share_their_real_coordinates(self) -> None:
     script = (ROOT / "packs" / "BP_Portal4DEspacial" / "scripts" / "main.js").read_text(encoding="utf-8")
-    self.assertIn("anchor: { x: -38, y: 84, z: -6 }", script)
-    self.assertIn("anchor: { x: 25, y: 88, z: -32 }", script)
-    self.assertIn("anchor: { x: 32, y: 81, z: 28 }", script)
+    self.assertIn("anchor: { x: -62, y: 89, z: -8 }", script)
+    self.assertIn("anchor: { x: 42, y: 97, z: -48 }", script)
+    self.assertIn("anchor: { x: 56, y: 83, z: 42 }", script)
     self.assertIn("distanceSquared(block.location, fragment.anchor) <= 2", script)
     self.assertIn('setBlock(dimension, fragment.anchor, "minecraft:lodestone")', script)
     self.assertNotIn("buildChronosDeck", script)
@@ -83,29 +83,31 @@ class Portal4DFunctionTests(unittest.TestCase):
   def test_rebuild_erases_old_world_before_building_new_one(self) -> None:
     script = (ROOT / "packs" / "BP_Portal4DEspacial" / "scripts" / "main.js").read_text(encoding="utf-8")
     self.assertIn("function clearPreviousWorld", script)
-    cleanup_call = script.index("clearPreviousWorld(dimension)")
-    build_call = script.index("buildShatteredPlanet(dimension);", cleanup_call)
-    self.assertLess(cleanup_call, build_call)
-    self.assertIn("[[-64, -1], [0, 64]]", script)
-    self.assertIn("for (let y = 60; y <= 124; y += 7)", script)
+    cleanup_call = script.index("clearPreviousWorld(dimension, () =>")
+    finish_call = script.index("finishWorldBuild(dimension)", cleanup_call)
+    self.assertLess(cleanup_call, finish_call)
+    self.assertIn("[[-96, -49], [-48, -1], [0, 48], [49, 96]]", script)
+    self.assertIn("y <= WORLD_ENVELOPE.maxY; y += 6", script)
+    self.assertIn("clearPreviousWorld(dimension, () =>", script)
 
   def test_finale_requires_all_fragments_and_energizes_core(self) -> None:
     script = (ROOT / "packs" / "BP_Portal4DEspacial" / "scripts" / "main.js").read_text(encoding="utf-8")
     self.assertIn("function hasAllFragmentTags", script)
     self.assertIn("if (hasAllFragmentTags(player))", script)
     self.assertIn("function energizeBlackHole", script)
-    self.assertIn("{ x: 0, y: 124, z: 0 }", script)
+    self.assertIn("{ x: 0, y: 150, z: 0 }", script)
 
   def test_world_build_has_absolute_precheck_and_temporary_chunks(self) -> None:
     script = (ROOT / "packs" / "BP_Portal4DEspacial" / "scripts" / "main.js").read_text(encoding="utf-8")
     self.assertIn("function precheckShatteredPlanet(dimension)", script)
     self.assertIn("dimension?.id !== CUSTOM_DIMENSION_ID", script)
     self.assertIn("if (!precheckShatteredPlanet(dimension)) return undefined", script)
-    self.assertIn("tickingarea add circle 0 90 0 4", script)
-    self.assertIn("tickingarea remove ${BUILD_TICKING_AREA}", script)
+    self.assertIn("const BUILD_TICKING_AREAS", script)
+    self.assertIn("tickingarea add circle ${area.x} 96 ${area.z} 4", script)
+    self.assertIn("tickingarea remove ${area.name}", script)
 
   def test_cleanup_fill_slices_stay_under_bedrock_limit(self) -> None:
-    largest_quadrant = 65 * 65 * 7
+    largest_quadrant = 49 * 49 * 6
     self.assertLessEqual(largest_quadrant, 32768)
 
   def test_obsolete_overworld_arena_functions_are_removed(self) -> None:
