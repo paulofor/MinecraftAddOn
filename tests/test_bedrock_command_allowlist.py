@@ -36,6 +36,10 @@ class BedrockCommandAllowlistTest(unittest.TestCase):
       "execute as @a at @s run function portal_4d/montar_portal_proximo",
       "scriptevent portal4d:montar_coordenada 10 72 92 16",
       "scriptevent portal4d:montar_coordenada -120 64 300",
+      "scriptevent piramide:refazer_interior -182 71 95",
+      "scriptevent piramide:restaurar_interior -182 71 95",
+      "scriptevent piramide:construir_quatro_selos -182 71 95",
+      "scriptevent piramide:remover_quatro_selos -182 71 95",
     ]
     for command in allowed:
       with self.subTest(command=command):
@@ -74,6 +78,8 @@ class BedrockCommandAllowlistTest(unittest.TestCase):
       "function portal_4d/montar_portal_proximo",
       "scriptevent portal4d:montar_coordenada 10 72 92 64",
       "scriptevent portal4d:montar_coordenada 10 72",
+      "scriptevent piramide:refazer_interior -182 71",
+      "scriptevent piramide:refazer_interior ~ ~ ~",
     ]
     for command in rejected:
       with self.subTest(command=command):
