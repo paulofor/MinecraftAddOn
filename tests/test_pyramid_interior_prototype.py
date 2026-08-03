@@ -43,7 +43,7 @@ def test_interior_prototype_has_spatial_variety_and_reward():
 def test_paired_manifests_are_bumped_together():
   bp = json.loads(BP_MANIFEST.read_text())
   rp = json.loads(RP_MANIFEST.read_text())
-  expected = [0, 1, 29]
+  expected = [0, 1, 30]
   assert bp["header"]["version"] == expected
   assert rp["header"]["version"] == expected
   assert all(module["version"] == expected for module in bp["modules"])

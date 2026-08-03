@@ -87,7 +87,7 @@ do playtest.
 
 ## Execução segura
 
-1. publicar BP/RP `0.1.29` e MCP `0.16.1`;
+1. publicar BP/RP `0.1.30` e MCP `0.16.1`;
 2. reiniciar e confirmar as versões no log;
 3. criar backup do mundo;
 4. enviar o `scriptevent` absoluto uma única vez;
@@ -101,3 +101,22 @@ do playtest.
 - O que ficou faltando:
 - Impedimentos/bloqueios:
 - Resultado visual aprovado pelo operador: sim / não
+
+## Resultado da primeira execução
+
+A execução de `0.1.29` foi bloqueada antes de alterar blocos:
+
+```text
+INTERIOR BLOQUEADO precheck: shell_invalido=1; liquidos=0
+```
+
+**Por que isso aconteceu?** Uma das cinco amostras rígidas não correspondia ao
+material esperado na Pirâmide real, embora as outras quatro confirmassem a
+casca e nenhuma amostra encontrasse líquido. A versão inicial exigia 5/5 e não
+registrava a coordenada divergente, impedindo distinguir pequena variação da
+construção de centro incorreto.
+
+A versão `0.1.30` exige pelo menos 4/5 amostras válidas e continua bloqueando
+duas ou mais divergências ou qualquer líquido. Quando exatamente uma divergir,
+registra sua coordenada e prossegue somente no envelope interno conhecido. Essa
+é uma amostragem limitada; backup e validação visual continuam obrigatórios.

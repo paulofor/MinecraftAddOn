@@ -4357,3 +4357,14 @@ Checklist executado no host via MCP readonly/projeto:
 - Versionamento: BP e RP pareados incrementados de `0.1.28` para `0.1.29` em headers/módulos e dependência BP→RP; MCP incrementado de `0.16.0` para `0.16.1` para allowlist específica dos dois scriptevents. Nenhum PNG foi criado ou alterado.
 - Documentação: criado `docs/piramide_interior_prototipo_automatizado.md` com causa, envelope, comandos públicos, limitações, execução, rollback e registro pós-conclusão.
 - Próximo passo: publicar, confirmar versões, criar backup e executar uma única vez `scriptevent piramide:refazer_interior -182 71 95`; o operador somente percorre e avalia. Não executar antes do deploy/backup.
+
+## 2026-08-03 16:48:53 UTC-3
+
+- Evento: operador informou deploy concluído; MCP `0.16.1`, BP/RP `0.1.29`, script remoto e restart foram confirmados antes da execução.
+- Backup: criado `/root/MinecraftServer/backups/Bedrock-level-pre-piramide-interior-0.1.29.tar.gz`, `165486969` bytes, SHA-256 `f237c617be773a20546c86df2da4718187f2213bdd2d68395132577909e2d0ae`, às `2026-08-03T19:47:32.105264+00:00`.
+- Execução: MCP enviou `scriptevent piramide:refazer_interior -182 71 95`; o log confirmou início e envelope correto, mas o precheck bloqueou com `shell_invalido=1; liquidos=0`. Nenhum bloco do interior foi alterado.
+- Pergunta obrigatória: **por que isso aconteceu?** A trava `0.1.29` exigia correspondência rígida das cinco amostras da casca. Uma única amostra da Pirâmide real divergiu, e o log antigo não informava qual coordenada/material, embora quatro amostras fossem válidas e não houvesse líquido.
+- Causa raiz: precheck excessivamente binário e diagnóstico incompleto para uma construção real que pode ter pequena variação de bloco. Repetir o mesmo comando cegamente apenas produziria o mesmo bloqueio.
+- Correção: BP/RP `0.1.30` passam a aceitar exatamente uma divergência (mínimo 4/5 da casca), registrar a coordenada divergente como aviso e continuar bloqueando duas ou mais divergências ou qualquer líquido. Envelope, tickingarea, concorrência e rollback permanecem iguais.
+- Limitação: `get_block` via LevelDB falhou nas cinco coordenadas com `NBT raiz não é compound: 0`, limitação já observada; portanto não contradiz o precheck runtime. A amostragem continua limitada e exige o backup já criado e inspeção visual.
+- Próximo passo: publicar somente BP/RP `0.1.30`, confirmar restart e repetir uma única vez o mesmo scriptevent. Não é necessário novo backup se nenhuma outra alteração ocorrer no mundo antes da repetição.

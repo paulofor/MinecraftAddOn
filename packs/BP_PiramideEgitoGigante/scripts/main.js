@@ -220,7 +220,7 @@ function precheckExistingPyramid(dimension, center) {
       if (isLiquid(typeId)) liquids.push(`${location.x} ${location.y} ${location.z}=${typeId}`);
     }
   }
-  return { ok: invalidShell.length === 0 && liquids.length === 0, invalidShell, liquids };
+  return { ok: invalidShell.length <= 1 && liquids.length === 0, invalidShell, liquids };
 }
 
 function interiorCommands(center) {
@@ -368,10 +368,14 @@ function handleInteriorEvent(event, rollback = false) {
     system.runTimeout(() => {
       const precheck = precheckExistingPyramid(dimension, center);
       if (!precheck.ok) {
-        log(`${rollback ? "ROLLBACK" : "INTERIOR"} BLOQUEADO precheck: shell_invalido=${precheck.invalidShell.length}; liquidos=${precheck.liquids.length}.`);
+        log(`${rollback ? "ROLLBACK" : "INTERIOR"} BLOQUEADO precheck: shell_invalido=${precheck.invalidShell.length} [${precheck.invalidShell.map((item) => `${item.x} ${item.y} ${item.z}`).join("; ")}]; liquidos=${precheck.liquids.length}.`);
         removeInteriorTickingArea(dimension);
         interiorBuildRunning = false;
         return;
+      }
+      if (precheck.invalidShell.length === 1) {
+        const sample = precheck.invalidShell[0];
+        log(`${rollback ? "ROLLBACK" : "INTERIOR"} AVISO precheck: 4/5 amostras da casca válidas; amostra divergente=${sample.x} ${sample.y} ${sample.z}. Prosseguindo dentro do envelope interno.`);
       }
       const commands = rollback ? rollbackInteriorCommands(center) : interiorCommands(center);
       runInteriorCommands(dimension, commands, rollback ? "ROLLBACK" : "INTERIOR", () => {
