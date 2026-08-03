@@ -10,8 +10,13 @@ legível e declara o resource pack **Realistic Visuals 1.8 / LOW**, UUID
 O mundo ativo é `/root/MinecraftServer/worlds/Bedrock level`. A inspeção
 remota encontrou duas pendências:
 
-1. não existe `RealSource_LOW` em `worlds/Bedrock level/resource_packs`;
-2. `world_resource_packs.json` não contém o UUID do RealSource.
+1. inicialmente não existia `RealSource_LOW` em
+   `worlds/Bedrock level/resource_packs`;
+2. inicialmente `world_resource_packs.json` não continha o UUID do RealSource.
+
+Após o deploy do MCP `0.16.0`, essas duas pendências foram corrigidas em
+`2026-08-03`: `3.069` arquivos (`1.916` PNGs, `35.922.671` bytes) foram
+instalados no pack do mundo, e o binding recebeu o UUID/versão `1.8.0`.
 
 O log consultado termina somente com mensagens periódicas de
 `AutoCompaction` e não mostra uma reinicialização posterior à cópia do pack.
@@ -113,11 +118,11 @@ Para diagnosticar, registrar separadamente:
 
 ## O que já foi feito e o que ainda não foi feito
 
-- **Já foi feito:** leitura do manifesto, conferência das pastas do servidor e
-  inspeção do log existente, conferência de espaço/configuração e backup do
-  mundo ativo.
-- **Ainda não foi feito:** copiar o pack para a pasta do mundo, editar
-  `world_resource_packs.json`, reiniciar o servidor ou testar dentro do jogo.
+- **Já foi feito:** leitura do manifesto, conferência das pastas/log/configuração,
+  backup do mundo, simulação, cópia integral para o pack do mundo e associação
+  em `world_resource_packs.json`.
+- **Ainda não foi feito:** aceitar/baixar o pack ao conectar e validar o visual
+  dentro do jogo.
 - **Licença confirmada:** o operador declarou possuir licença para usar o pack
   no servidor.
 - A expressão “reinício único” significa apenas que, **depois de concluir a
@@ -140,6 +145,38 @@ Essa operação foi implementada no código como
 `install_global_resource_pack`, com simulação obrigatória disponível por
 `execute=false`, confirmação de licença, exigência de backup, validação do
 manifesto, instalação por staging e atualização atômica do binding. Ela só
-ficará disponível no host após a publicação do MCP `0.16.0`; o endpoint remoto
-consultado durante esta execução ainda responde como `0.15.14` e, portanto,
-não pode executar a importação nova neste momento.
+foi publicada no MCP `0.16.0` e concluiu a importação. A tool não pôde reiniciar
+porque `BEDROCK_RESTART_CMD` não está configurado, mas o operador executou
+`systemctl restart bedrock.service` diretamente no host. O serviço voltou
+`active`, abriu `Bedrock level` e registrou `Server started` em
+`2026-08-03 14:55:33`.
+
+O log pós-restart não contém erro que cite `RealSource`, seu UUID ou resource
+pack ausente. Ele mostra somente a pilha de Behavior Packs; portanto, esse
+recorte não fornece confirmação positiva do carregamento do Resource Pack.
+Como o diretório e o binding permanecem corretos após o restart, a confirmação
+final agora é o cliente receber o download e exibir as texturas no mundo.
+
+## Confirmação no cliente
+
+Em `2026-08-03`, uma captura do cliente Windows confirmou a mensagem
+**“Importação de ‘Realistic Visuals 1.8 / LOW’ bem-sucedida”** e o botão
+**Visuais Vibrantes** selecionado em verde. Isso confirma que o cliente
+reconheceu o pack e que o modo gráfico correto está ativo.
+
+A preferência **Desempenho** permanece selecionada na captura. Ela é válida e
+prioriza a taxa de quadros; para comparar a qualidade máxima, o operador pode
+selecionar **Visuais** e voltar ao mundo. A etapa final é apenas observar blocos
+vanilla no servidor e comparar relevo, brilho, água e iluminação. Se a taxa de
+quadros cair, retornar para **Desempenho** sem reinstalar o pack.
+
+Uma segunda captura, já dentro do mundo em `-16 70 130`, concluiu a validação
+visual. Ela mostra reflexo colorido do céu na água, sombras direcionais dos
+postes, iluminação intensa das lanternas, textura detalhada no caminho/grama e
+materiais com relevo aparente. Esses sinais, combinados à importação e ao modo
+Visuais Vibrantes ativo, confirmam que o RealSource está sendo renderizado no
+cliente conectado ao servidor.
+
+Instalação encerrada com sucesso. Não é necessário novo upload, alteração de
+binding ou restart. Ajustes posteriores entre **Desempenho**, **Visuais** e
+**Personalizado** são somente preferências locais de qualidade/FPS.

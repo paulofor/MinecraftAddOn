@@ -4268,3 +4268,40 @@ Checklist executado no host via MCP readonly/projeto:
 - Validação local: `python3 -m py_compile infra/mcp-bedrock-readonly/server.py tests/test_mcp_resource_pack_install.py` e `pytest -q tests/test_mcp_resource_pack_install.py` passaram com dois testes, cobrindo simulação/execução, preservação do PNG, binding exato e recusa sem autorização.
 - Estado remoto: backup e licença prontos, mas nenhuma alteração do pack/binding e nenhum restart foram feitos porque o host ainda executa `0.15.14`. Isso evita afirmar conclusão antes da publicação real.
 - Próximo passo: publicar/implantar este commit pelo workflow do MCP; confirmar `/health` em `0.16.0`; chamar primeiro `install_global_resource_pack` com `execute=false`, revisar o plano, repetir com `execute=true`, confirmar arquivos/binding, reiniciar uma vez e inspecionar o novo `bedrock.log`.
+
+## 2026-08-03 14:52:34 UTC-3
+
+- Evento: operador confirmou que o deploy foi concluído e autorizou continuar a execução da instalação.
+- Verificação prévia: `/health` respondeu MCP `0.16.0` e `tools/list` confirmou `install_global_resource_pack` publicado.
+- Simulação: `execute=false` retornou origem global e destino no mundo corretos, UUID `e84ff511-bab3-4a4a-ad92-64ab325f8aaf`, versão `1.8.0`, `3.069` arquivos, `1.916` PNGs, `35.922.671` bytes, `already_bound=false` e o backup exigido.
+- Execução: repetida a tool com `authorization_confirmed=true` e `execute=true`; resultado `status=installed`. A leitura posterior confirmou `/root/MinecraftServer/worlds/Bedrock level/resource_packs/RealSource_LOW`, manifest `1.8.0`, tamanho `43M` e a nova entrada exata no final de `world_resource_packs.json`.
+- Pergunta obrigatória: **por que o restart ainda não aconteceu?** A chamada `restart_bedrock` falhou com `Reinício não configurado: defina BEDROCK_RESTART_CMD no ambiente do MCP`. O compose publicado não injeta esse comando; portanto, a tool não possui mecanismo autorizado para reiniciar o processo Bedrock.
+- Causa raiz: a capacidade de restart existe na API, mas depende de configuração de runtime ausente. Usar `stop` pelo console não é uma correção segura: ele está explicitamente bloqueado e não foi comprovado que o processo seria recriado automaticamente.
+- Estado seguro: pack e binding instalados; backup preservado; servidor permanece no processo anterior, sem carregar ainda o novo binding. Nenhuma tentativa cega adicional foi feita.
+- Próximo passo: configurar um mecanismo de restart real em `BEDROCK_RESTART_CMD` com acesso controlado ao processo do host ou o operador reiniciar o serviço Bedrock pelo mecanismo já usado no servidor. Depois, consultar o início do novo `bedrock.log` antes de testar no cliente.
+
+## 2026-08-03 14:56:34 UTC-3
+
+- Ação do operador: executou `systemctl restart bedrock.service`, confirmou `systemctl is-active bedrock.service` como `active` e forneceu a cauda do log.
+- Verificação independente via MCP: nova cauda de 500 linhas confirmou segundo início em `2026-08-03 14:55:30`, abertura de `worlds/Bedrock level/db`, portas IPv4/IPv6 e `Server started` em `14:55:33`. O binding ainda contém o UUID `e84ff511-bab3-4a4a-ad92-64ab325f8aaf`, versão `1.8.0`.
+- Pergunta obrigatória: **por que o recorte não mostra “RealSource” na pilha de packs?** O trecho observado imprime entradas `Pack Stack` somente para os Behavior Packs e não apresenta os Resource Packs já associados. Não há evidência suficiente para concluir que a ausência do nome nesse trecho seja falha; também não seria correto afirmar carregamento visual somente pelo restart.
+- Causa/estado mais provável: instalação e binding persistiram e o servidor reiniciou normalmente, sem erro que cite `RealSource`, UUID inválido ou pack ausente. A confirmação restante pertence ao handshake/renderização do cliente, quando o servidor exige o download por `texturepack-required=true`.
+- Avisos não relacionados: três warnings de schema `replace_block_item` já pertencem a itens `quadro_ideias`/`trilho_maritimo`; scripts Portal4D e demais módulos carregaram, e o servidor concluiu a inicialização. Eles não mencionam o RealSource e não explicam eventual ausência visual.
+- Próximo passo: conectar com Minecraft Bedrock atualizado, aceitar o resource pack obrigatório, ativar Vibrant Visuals em Vídeo e validar blocos vanilla. Se não houver solicitação de download ou mudança visual, coletar captura da tela e o Content Log do cliente antes de alterar/reinstalar o servidor.
+
+## 2026-08-03 15:04:38 UTC-3
+
+- Evidência do cliente: captura no Windows mostra “Importação de ‘Realistic Visuals 1.8 / LOW’ bem-sucedida” e **Visuais Vibrantes** selecionado em verde nas configurações de Vídeo.
+- Pergunta obrigatória: **por que ainda era necessário conferir essa tela?** O servidor já tinha pack, binding e restart válidos, mas o log não enumerava os Resource Packs; faltava provar que o cliente reconhecia o conteúdo e disponibilizava o renderizador compatível.
+- Causa raiz da incerteza resolvida: a ausência do nome RealSource no recorte `Pack Stack` era insuficiente como evidência visual. A captura fornece a evidência complementar do lado cliente sem exigir nova alteração no servidor.
+- Estado: configuração correta. A preferência **Desempenho** está ativa e é compatível com Visuais Vibrantes; **Visuais** pode ser selecionada somente para priorizar qualidade na comparação.
+- Próximo passo: fechar as configurações, observar no servidor blocos vanilla, água, relevo/brilho e iluminação. Se houver queda de FPS, manter **Desempenho**; não reinstalar nem reiniciar novamente sem um problema observável.
+
+## 2026-08-03 15:20:28 UTC-3
+
+- Evidência final: captura dentro do mundo, na coordenada exibida `-16 70 130`, mostra o RealSource/Visuais Vibrantes funcionando durante a conexão ao servidor.
+- Pergunta obrigatória: **por que agora é possível afirmar que a instalação está concluída?** As etapas anteriores comprovavam arquivos, binding, restart e importação do cliente, mas ainda faltava observar a renderização real no mundo. A nova captura fecha essa última lacuna.
+- Evidências visuais: reflexos do céu e da margem na água, sombras direcionais dos postes, lanternas com emissão intensa, caminho e grama detalhados, água com ondulação e materiais com relevo aparente.
+- Causa raiz resolvida: o problema inicial era pack presente apenas globalmente e sem binding do mundo. O pack agora existe no mundo, está associado, foi carregado após restart, importado pelo cliente e renderizado com Visuais Vibrantes.
+- Resultado: instalação validada de ponta a ponta. Não realizar novo upload, mudança no binding ou restart para este caso.
+- Próximo passo opcional: escolher **Desempenho**, **Visuais** ou **Personalizado** conforme FPS/qualidade desejados; isso é configuração local e não exige alteração no servidor.
