@@ -4209,3 +4209,90 @@ Checklist executado no host via MCP readonly/projeto:
 - Versionamento: manifests BP/RP e dependência pareada incrementados de `0.1.36` para `0.1.37`. Nenhum PNG foi criado ou alterado.
 - Documentação: criada `docs/portal_4d_espacial/sprint16_planeta_perdido_expandido.md`, com causa raiz, escala, segurança, critérios de aceite e registro pós-conclusão.
 - Próximo passo: criar backup, publicar/reiniciar uma única vez, confirmar no `bedrock.log` `Limpeza integral concluída` antes de `Planeta Partido construído`, atravessar as três rotas e fazer inspeção visual. Se restar legado, registrar a coordenada e diagnosticar a fatia correspondente sem repetir cegamente.
+## 2026-08-03 14:25:44 UTC-3
+
+- Horário da investigação: `2026-08-03 14:24:59 UTC-03:00`.
+- Solicitação: ajudar a concluir a instalação do pack mostrado na captura como `RealSource_RealisticVisuals_1.8LOW...`.
+- Pergunta obrigatória: **por que isso aconteceu?** O arquivo foi extraído no diretório global de resource packs, mas copiar arquivos não associa automaticamente um pack a um mundo Bedrock existente.
+- Evidências: o MCP confirmou `/root/MinecraftServer/resource_packs/RealSource_LOW`; seu manifest é válido e declara UUID `e84ff511-bab3-4a4a-ad92-64ab325f8aaf`, versão `1.8.0` e capacidade `pbr`. O diretório `/root/MinecraftServer/worlds/Bedrock level/resource_packs` não contém o RealSource, e `world_resource_packs.json` não contém esse UUID. As 300 linhas finais de `logging/bedrock.log` exibem somente `AutoCompaction`, sem reinicialização ou carregamento recente do pack.
+- Causa raiz: o pack está disponível globalmente, porém não foi publicado no diretório de packs do mundo ativo nem incluído na lista de resource packs desse mundo. A ausência de reinício é secundária; reiniciar sozinho não corrige a associação ausente.
+- Ação realizada: criado `docs/instalacao_realsource_low.md` com o diagnóstico, UUID/versão exatos, sequência segura de backup, publicação pelo MCP, associação, validação JSON, reinício único e inspeção do log/cliente.
+- Segurança e conformidade: nenhum PNG foi copiado, alterado ou commitado; nenhum arquivo remoto foi modificado e o servidor não foi reiniciado. A licença/origem do pack deve ser confirmada antes da publicação.
+- Limitação: o MCP atual aceita apenas `write_png_base64` por arquivo e não escreve os JSONs do pack; o arquivo de aproximadamente 34 MB visto na estação do operador não está acessível neste repositório. Tentar copiar por Git/workflow violaria a regra do projeto.
+- Próximo passo: fornecer ao fluxo MCP a origem autorizada do pack (ou disponibilizar uma tool de importação compatível), criar backup, publicar no pack do mundo, acrescentar o UUID a `world_resource_packs.json`, reiniciar uma vez e verificar o início do novo `bedrock.log` e a renderização em cliente compatível com Vibrant Visuals.
+
+## 2026-08-03 14:28:57 UTC-3
+
+- Solicitação: esclarecer a frase “validação do JSON, reinício único, inspeção do novo `bedrock.log` e cliente compatível com Vibrant Visuals/PBR”.
+- Pergunta obrigatória: **por que isso aconteceu?** A resposta anterior usou “registrei a validação” para se referir a passos futuros documentados, mas a construção da frase podia ser entendida como se o servidor já tivesse sido alterado, reiniciado e testado.
+- Causa raiz: falta de separação explícita entre diagnóstico já executado e procedimento operacional ainda pendente; os termos técnicos `JSON`, `Vibrant Visuals` e `PBR` também não foram traduzidos para o efeito prático esperado pelo operador.
+- Correção: o guia agora informa que validar o JSON apenas verifica sua formatação, explica que o reinício acontece somente depois da instalação, define PBR em linguagem simples e adiciona um quadro “já foi feito/ainda não foi feito”.
+- Estado confirmado: somente o manifesto, as pastas e o log existente foram consultados. O pack ainda não foi copiado para o mundo, `world_resource_packs.json` não foi editado, o Bedrock não foi reiniciado e não houve teste no jogo.
+- Próximo passo: somente iniciar a instalação operacional após disponibilizar a origem autorizada dos arquivos ao fluxo MCP e criar o backup obrigatório.
+
+## 2026-08-03 14:32:09 UTC-3
+
+- Solicitação: explicar como “colocar” o Vibrant Visuals.
+- Pergunta obrigatória: **por que isso aconteceu?** O guia dizia apenas para usar um cliente compatível e não esclarecia que Vibrant Visuals é um modo gráfico ativado no Minecraft de cada jogador, e não outro pack ou componente instalado no servidor.
+- Causa raiz: a documentação misturava duas responsabilidades: o servidor associa/distribui o RealSource, enquanto o cliente Bedrock oferece e renderiza o modo Vibrant Visuals. Isso induzia o operador a procurar um arquivo adicional para o servidor.
+- Correção: adicionado ao guia o caminho **Configurações → Vídeo → Modo gráfico → Vibrant Visuals**, a orientação para atualizar o Bedrock e aceitar o resource pack ao conectar, além de explicar que a ausência da opção deve ser investigada no dispositivo/versão do cliente.
+- Evidência disponível: o manifest do RealSource declara capacidade `pbr`; isso descreve os materiais do pack, mas não instala uma opção gráfica no Minecraft do jogador.
+- Limitação: a consulta à documentação oficial na internet retornou `401 Unauthorized` no mecanismo de pesquisa desta execução. Por isso, os nomes de menus devem ser confirmados visualmente na versão/plataforma específica, podendo aparecer em português ou inglês.
+- Próximo passo: o operador informa plataforma, versão do Minecraft e se a opção aparece em **Configurações → Vídeo**; com esses dados, validar compatibilidade antes de alterar novamente o servidor.
+
+## 2026-08-03 14:36:29 UTC-3
+
+- Solicitação: acessar o lado servidor, verificar o que ainda falta e começar a preparação da instalação do RealSource LOW.
+- Pergunta obrigatória: **por que isso aconteceu?** A instalação continua incompleta porque o pack foi descompactado apenas no diretório global; ele ainda não está no pack do mundo nem associado em `world_resource_packs.json`. A investigação adicional encontrou também um bloqueio anterior à ativação: o próprio `README-USAGE_NOTICE.txt` declara que texturas, código e configurações não podem ser usados sem permissão do autor.
+- Evidências: MCP `0.15.14` disponível; pack global com `43M`; manifest UUID `e84ff511-bab3-4a4a-ad92-64ab325f8aaf`, versão `1.8.0` e `pbr`; `24G` livres no volume; mundo ativo `Bedrock level`; `texturepack-required=true`; `disable-client-vibrant-visuals=true` somente comentado; ausência do pack na pasta do mundo e da entrada no binding permanece confirmada.
+- Tentativa de backup: a primeira chamada para `/root/Uploads` falhou com `[Errno 30] Read-only file system`, porque esse volume está montado como somente leitura no container MCP. Isso é uma limitação de configuração do destino, não uma falha do mundo.
+- Ação segura concluída: repetida a tool `backup_world` usando `/root/MinecraftServer/backups`, que está no volume gravável. Criado `/root/MinecraftServer/backups/Bedrock-level-pre-realsource-low-1.8.tar.gz`, `131381092` bytes, SHA-256 `e7d22c685fadc62d0ac4ebfcc739250a9eff987fe10f308c1493be32a9ecb9e0`, em `2026-08-03T17:35:34.295020+00:00`.
+- Limitação do backup: a tool avisou que o Bedrock possivelmente estava ativo; o arquivo é uma salvaguarda operacional, mas uma restauração crítica ainda exigiria validação de integridade.
+- Estado após a ação: nenhum PNG foi movido, nenhum binding foi editado e o servidor não foi reiniciado. O backup obrigatório está pronto.
+- Próximo passo: o operador confirma explicitamente que possui autorização/licença para uso do RealSource. Depois dessa confirmação, ainda será necessário publicar o pack no diretório do mundo exclusivamente pelo fluxo MCP para PNGs, acrescentar o UUID ao binding, validar, reiniciar uma vez e inspecionar o novo log.
+
+## 2026-08-03 14:39:38 UTC-3
+
+- Confirmação do operador: possui licença para usar o RealSource; o bloqueio de autorização registrado anteriormente está resolvido.
+- Pergunta obrigatória: **por que a ativação ainda não foi executada após a confirmação?** O MCP publicado oferece `write_png_base64`, mas não consegue ler os PNGs binários do pack global, importar um diretório ou editar `world_resource_packs.json`. A sessão também não possui autenticação SSH. Portanto, não existe atualmente um caminho permitido de ponta a ponta para mover os assets já presentes até o pack do mundo e criar o binding.
+- Causa raiz: assimetria de capacidades do MCP: ele grava um PNG quando recebe base64, porém não expõe a origem binária existente nem uma operação transacional de importação/ativação. Usar cópia direta por shell contornaria a política obrigatória de PNG e não explica/corrige essa lacuna.
+- Estado preservado: backup pré-instalação existente e licença confirmada; nenhum PNG, binding ou processo Bedrock foi alterado nesta etapa.
+- Próximo passo técnico: adicionar e publicar no MCP uma tool de importação de resource pack global que valide origem/destino, reutilize a validação de `write_png_base64` para cada PNG, copie somente arquivos texto permitidos, atualize `world_resource_packs.json` atomicamente e ofereça simulação antes da execução. Após a publicação, executar a tool, reiniciar uma vez e validar o log.
+
+## 2026-08-03 14:43:50 UTC-3
+
+- Autorização operacional: o operador solicitou executar todas as etapas restantes e já confirmou a licença do RealSource.
+- Pergunta obrigatória: **por que a instalação não podia ser executada imediatamente?** O endpoint remoto continua no MCP `0.15.14`, sem operação de importação e sem escrita de binding; reiniciar ou copiar parcialmente deixaria o mundo em estado inconsistente.
+- Causa raiz corrigida no código: adicionada a tool `install_global_resource_pack` ao MCP `0.16.0`. Ela exige `authorization_confirmed=true`, backup `.tar.gz` existente, origem global direta e mundo direto; valida UUID/versão, rejeita symlinks e duplicidade, oferece `execute=false`, instala em staging, grava cada PNG passando por `_write_png_base64`, copia os demais arquivos e substitui o JSON de binding atomicamente.
+- Segurança: em qualquer exceção, staging e destino incompleto são removidos; a tool não reinicia o servidor automaticamente, permitindo validar o resultado antes do restart separado.
+- Validação local: `python3 -m py_compile infra/mcp-bedrock-readonly/server.py tests/test_mcp_resource_pack_install.py` e `pytest -q tests/test_mcp_resource_pack_install.py` passaram com dois testes, cobrindo simulação/execução, preservação do PNG, binding exato e recusa sem autorização.
+- Estado remoto: backup e licença prontos, mas nenhuma alteração do pack/binding e nenhum restart foram feitos porque o host ainda executa `0.15.14`. Isso evita afirmar conclusão antes da publicação real.
+- Próximo passo: publicar/implantar este commit pelo workflow do MCP; confirmar `/health` em `0.16.0`; chamar primeiro `install_global_resource_pack` com `execute=false`, revisar o plano, repetir com `execute=true`, confirmar arquivos/binding, reiniciar uma vez e inspecionar o novo `bedrock.log`.
+
+## 2026-08-03 14:52:34 UTC-3
+
+- Evento: operador confirmou que o deploy foi concluído e autorizou continuar a execução da instalação.
+- Verificação prévia: `/health` respondeu MCP `0.16.0` e `tools/list` confirmou `install_global_resource_pack` publicado.
+- Simulação: `execute=false` retornou origem global e destino no mundo corretos, UUID `e84ff511-bab3-4a4a-ad92-64ab325f8aaf`, versão `1.8.0`, `3.069` arquivos, `1.916` PNGs, `35.922.671` bytes, `already_bound=false` e o backup exigido.
+- Execução: repetida a tool com `authorization_confirmed=true` e `execute=true`; resultado `status=installed`. A leitura posterior confirmou `/root/MinecraftServer/worlds/Bedrock level/resource_packs/RealSource_LOW`, manifest `1.8.0`, tamanho `43M` e a nova entrada exata no final de `world_resource_packs.json`.
+- Pergunta obrigatória: **por que o restart ainda não aconteceu?** A chamada `restart_bedrock` falhou com `Reinício não configurado: defina BEDROCK_RESTART_CMD no ambiente do MCP`. O compose publicado não injeta esse comando; portanto, a tool não possui mecanismo autorizado para reiniciar o processo Bedrock.
+- Causa raiz: a capacidade de restart existe na API, mas depende de configuração de runtime ausente. Usar `stop` pelo console não é uma correção segura: ele está explicitamente bloqueado e não foi comprovado que o processo seria recriado automaticamente.
+- Estado seguro: pack e binding instalados; backup preservado; servidor permanece no processo anterior, sem carregar ainda o novo binding. Nenhuma tentativa cega adicional foi feita.
+- Próximo passo: configurar um mecanismo de restart real em `BEDROCK_RESTART_CMD` com acesso controlado ao processo do host ou o operador reiniciar o serviço Bedrock pelo mecanismo já usado no servidor. Depois, consultar o início do novo `bedrock.log` antes de testar no cliente.
+
+## 2026-08-03 14:56:34 UTC-3
+
+- Ação do operador: executou `systemctl restart bedrock.service`, confirmou `systemctl is-active bedrock.service` como `active` e forneceu a cauda do log.
+- Verificação independente via MCP: nova cauda de 500 linhas confirmou segundo início em `2026-08-03 14:55:30`, abertura de `worlds/Bedrock level/db`, portas IPv4/IPv6 e `Server started` em `14:55:33`. O binding ainda contém o UUID `e84ff511-bab3-4a4a-ad92-64ab325f8aaf`, versão `1.8.0`.
+- Pergunta obrigatória: **por que o recorte não mostra “RealSource” na pilha de packs?** O trecho observado imprime entradas `Pack Stack` somente para os Behavior Packs e não apresenta os Resource Packs já associados. Não há evidência suficiente para concluir que a ausência do nome nesse trecho seja falha; também não seria correto afirmar carregamento visual somente pelo restart.
+- Causa/estado mais provável: instalação e binding persistiram e o servidor reiniciou normalmente, sem erro que cite `RealSource`, UUID inválido ou pack ausente. A confirmação restante pertence ao handshake/renderização do cliente, quando o servidor exige o download por `texturepack-required=true`.
+- Avisos não relacionados: três warnings de schema `replace_block_item` já pertencem a itens `quadro_ideias`/`trilho_maritimo`; scripts Portal4D e demais módulos carregaram, e o servidor concluiu a inicialização. Eles não mencionam o RealSource e não explicam eventual ausência visual.
+- Próximo passo: conectar com Minecraft Bedrock atualizado, aceitar o resource pack obrigatório, ativar Vibrant Visuals em Vídeo e validar blocos vanilla. Se não houver solicitação de download ou mudança visual, coletar captura da tela e o Content Log do cliente antes de alterar/reinstalar o servidor.
+
+## 2026-08-03 15:04:38 UTC-3
+
+- Evidência do cliente: captura no Windows mostra “Importação de ‘Realistic Visuals 1.8 / LOW’ bem-sucedida” e **Visuais Vibrantes** selecionado em verde nas configurações de Vídeo.
+- Pergunta obrigatória: **por que ainda era necessário conferir essa tela?** O servidor já tinha pack, binding e restart válidos, mas o log não enumerava os Resource Packs; faltava provar que o cliente reconhecia o conteúdo e disponibilizava o renderizador compatível.
+- Causa raiz da incerteza resolvida: a ausência do nome RealSource no recorte `Pack Stack` era insuficiente como evidência visual. A captura fornece a evidência complementar do lado cliente sem exigir nova alteração no servidor.
+- Estado: configuração correta. A preferência **Desempenho** está ativa e é compatível com Visuais Vibrantes; **Visuais** pode ser selecionada somente para priorizar qualidade na comparação.
+- Próximo passo: fechar as configurações, observar no servidor blocos vanilla, água, relevo/brilho e iluminação. Se houver queda de FPS, manter **Desempenho**; não reinstalar nem reiniciar novamente sem um problema observável.
