@@ -169,3 +169,14 @@ prioriza a taxa de quadros; para comparar a qualidade máxima, o operador pode
 selecionar **Visuais** e voltar ao mundo. A etapa final é apenas observar blocos
 vanilla no servidor e comparar relevo, brilho, água e iluminação. Se a taxa de
 quadros cair, retornar para **Desempenho** sem reinstalar o pack.
+
+Uma segunda captura, já dentro do mundo em `-16 70 130`, concluiu a validação
+visual. Ela mostra reflexo colorido do céu na água, sombras direcionais dos
+postes, iluminação intensa das lanternas, textura detalhada no caminho/grama e
+materiais com relevo aparente. Esses sinais, combinados à importação e ao modo
+Visuais Vibrantes ativo, confirmam que o RealSource está sendo renderizado no
+cliente conectado ao servidor.
+
+Instalação encerrada com sucesso. Não é necessário novo upload, alteração de
+binding ou restart. Ajustes posteriores entre **Desempenho**, **Visuais** e
+**Personalizado** são somente preferências locais de qualidade/FPS.

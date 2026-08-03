@@ -4296,3 +4296,12 @@ Checklist executado no host via MCP readonly/projeto:
 - Causa raiz da incerteza resolvida: a ausência do nome RealSource no recorte `Pack Stack` era insuficiente como evidência visual. A captura fornece a evidência complementar do lado cliente sem exigir nova alteração no servidor.
 - Estado: configuração correta. A preferência **Desempenho** está ativa e é compatível com Visuais Vibrantes; **Visuais** pode ser selecionada somente para priorizar qualidade na comparação.
 - Próximo passo: fechar as configurações, observar no servidor blocos vanilla, água, relevo/brilho e iluminação. Se houver queda de FPS, manter **Desempenho**; não reinstalar nem reiniciar novamente sem um problema observável.
+
+## 2026-08-03 15:20:28 UTC-3
+
+- Evidência final: captura dentro do mundo, na coordenada exibida `-16 70 130`, mostra o RealSource/Visuais Vibrantes funcionando durante a conexão ao servidor.
+- Pergunta obrigatória: **por que agora é possível afirmar que a instalação está concluída?** As etapas anteriores comprovavam arquivos, binding, restart e importação do cliente, mas ainda faltava observar a renderização real no mundo. A nova captura fecha essa última lacuna.
+- Evidências visuais: reflexos do céu e da margem na água, sombras direcionais dos postes, lanternas com emissão intensa, caminho e grama detalhados, água com ondulação e materiais com relevo aparente.
+- Causa raiz resolvida: o problema inicial era pack presente apenas globalmente e sem binding do mundo. O pack agora existe no mundo, está associado, foi carregado após restart, importado pelo cliente e renderizado com Visuais Vibrantes.
+- Resultado: instalação validada de ponta a ponta. Não realizar novo upload, mudança no binding ou restart para este caso.
+- Próximo passo opcional: escolher **Desempenho**, **Visuais** ou **Personalizado** conforme FPS/qualidade desejados; isso é configuração local e não exige alteração no servidor.
