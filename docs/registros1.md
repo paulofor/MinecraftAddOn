@@ -4305,3 +4305,55 @@ Checklist executado no host via MCP readonly/projeto:
 - Causa raiz resolvida: o problema inicial era pack presente apenas globalmente e sem binding do mundo. O pack agora existe no mundo, está associado, foi carregado após restart, importado pelo cliente e renderizado com Visuais Vibrantes.
 - Resultado: instalação validada de ponta a ponta. Não realizar novo upload, mudança no binding ou restart para este caso.
 - Próximo passo opcional: escolher **Desempenho**, **Visuais** ou **Personalizado** conforme FPS/qualidade desejados; isso é configuração local e não exige alteração no servidor.
+
+## 2026-08-03 15:32:29 UTC-3
+
+- Solicitação: avaliar se o Marketplace “Village Cities Add-On 1.2”, da Float Studios, serve para o projeto/servidor.
+- Pergunta obrigatória: **por que existe risco de ele não servir apesar do nome?** Similaridade temática não comprova compatibilidade técnica nem aderência pedagógica. O projeto precisa de governo, orçamento, votação, população, obras e persistência server-authoritative; um add-on de cidades pode oferecer somente conteúdo urbano.
+- Evidências consultadas: URL oficial do produto; HTML público da página do Marketplace; categoria oficial de Add-Ons; `docs/cidade_constitucional.md`; `especificacoes/especificacao_addon_cidade_constitucional_sem_funcoes_fixas.md`; estrutura e bindings atuais do servidor já investigados neste caso.
+- Limitação da investigação: a página oficial carrega os dados do produto dinamicamente e, sem sessão autenticada, não expôs descrição específica, preço, dependências, alterações de geração, licença de exportação nem suporte explícito ao Bedrock Dedicated Server Linux. O mecanismo web também retornou `401`, e a página foi consultada por HTTP direto.
+- Causa da incerteza: produtos Marketplace dependem de entitlement/conta e podem não fornecer um pack exportável para o fluxo BDS usado neste projeto; também não está confirmado se o add-on modifica vilas vanilla, geração, entidades ou estruturas existentes.
+- Recomendação: não comprar com a finalidade exclusiva de instalar agora no servidor principal. Ele pode servir como complemento visual/urbano, mas não substitui a Cidade Constitucional e deve passar primeiro por cópia local descartável, inventário de BP/RP/UUID/scripts e teste de coexistência com RealSource e packs atuais.
+- Próximo passo: obter no cliente autenticado a descrição completa e confirmar se pode ser aplicado a mundo existente/exportado para BDS. Se já adquirido, testar em cópia, nunca diretamente no mundo ativo.
+
+## 2026-08-03 15:36:03 UTC-3
+
+- Feedback do operador: “os nossos projetos não ficaram bons; todos falharam”.
+- Pergunta obrigatória: **por que isso aconteceu?** O histórico mostra que tratamos especificação, automação, logs e testes estruturais como aproximações de qualidade. Eles comprovaram que comandos rodavam e packs carregavam, mas não que as experiências eram bonitas, compreensíveis ou divertidas.
+- Causa raiz sistêmica: validação humana e visual tardia; evolução por remendos; escopo monumental antes de protótipo jogável; preferência por controle técnico sobre resultado percebido; critérios de aceite concentrados em funcionamento interno, não na experiência do jogador.
+- Evidências: múltiplos redesigns do Portal 4D (tesseracto, tutorial, laboratório, Nave Cronos, Planeta Partido), feedback reiterado de confusão/baixa qualidade, migrações destrutivas e correções que continuaram exigindo novas reconstruções. O sucesso técnico do RealSource, por contraste, só foi aceito após captura visual no jogo.
+- Correção da avaliação: a resposta anterior valorizou indevidamente a Cidade Constitucional própria por sua especificação, embora não exista evidência equivalente de sucesso jogável. O Village Cities passa a ser candidato razoável para substituir a camada urbana própria, desde que agrade visualmente em teste curto e possa ser usado no ambiente escolhido.
+- Nova recomendação: consultar vídeo/descrição/avaliações/preço no cliente; se agradar, comprar para teste isolado de 30–60 minutos. Primeiro avaliar “bonito, compreensível, dá vontade de continuar”; depois investigar BDS e coexistência. Não instalar diretamente no mundo principal.
+- Mudança de processo: suspender novas megaconstruções e grandes sistemas próprios até existir um protótipo pequeno aprovado visualmente pelo operador. Se o Marketplace não exportar para BDS, avaliar Realm/mundo hospedado antes de recomeçar outro projeto do zero.
+
+## 2026-08-03 15:41:06 UTC-3
+
+- Feedback do operador: a Pirâmide é interessante, mas seu interior é muito pobre; o mesmo vale para o Mundo Perdido.
+- Pergunta obrigatória: **por que isso aconteceu?** A inspeção dos arquivos confirma que os projetos priorizaram silhueta, escala e segurança de montagem, mas não densidade de exploração. A aparência externa elevou a expectativa sem existir conteúdo interno proporcional.
+- Evidência da Pirâmide: `prototipo/montar_piramide_completa_segura.mcfunction` declara “câmara interna simples” e entrega uma galeria, uma câmara retangular, dois atris, duas luzes centrais e seis tochas. `aventura/montar_interior.mcfunction` permanece bloqueada e não constrói conteúdo.
+- Evidência do Mundo Perdido: `main.js` gera ilhas elípticas; Natureza tem quatro árvores/linha de água, Ruínas três colunas/viga/esfera, Máquina quatro torres/três esferas. A interação se resume a três pedras-ímã ligadas por pontes; não há interiores, cavernas, rotas alternativas ou recompensas intermediárias.
+- Causa raiz: confundimos tamanho/silhueta com riqueza; medimos sucesso por blocos, comandos e missão concluível, não por quantidade de descobertas, decisões e momentos memoráveis. Os testes automatizados reforçaram essa distorção ao exigir âncoras e mensagens, sem avaliar conteúdo interno.
+- Correção de processo: documentada `docs/auditoria_qualidade_piramide_mundo_perdido.md`. Não aplicar novo remendo decorativo nem ampliar os mapas. Congelar ambos até decidir entre monumento decorativo, substituição por conteúdo pronto ou protótipo único de percurso de 5–10 minutos aprovado manualmente.
+- Próximo passo: o operador escolhe uma das três direções. Nenhuma construção ou limpeza será executada antes dessa escolha e de um protótipo visual pequeno.
+
+## 2026-08-03 15:55:13 UTC-3
+
+- Decisão do operador: aceita ajustar o que não ficou bom, desde que não precise editar manualmente o mundo.
+- Pergunta obrigatória: **por que essa condição é importante?** As tentativas anteriores transferiram ao operador tarefas repetitivas de deploy, comando, inspeção e correção, enquanto a automação produzia resultados pobres. A correção deve reduzir trabalho operacional, não criar uma nova obra manual para compensar o código.
+- Causa raiz operacional: confundimos “validação manual” com “construção manual”. O operador precisa apenas experimentar e julgar; criação, limpeza controlada, rollback, logs e posicionamento devem ser responsabilidade da automação.
+- Decisão técnica: correções futuras serão integralmente automatizadas por função/script com coordenadas absolutas, backup, envelope documentado, chunks temporários, precheck, rotina pública segura, builder interno e rollback. Nenhum bloco precisará ser colocado à mão.
+- Ordem recomendada: Pirâmide primeiro, pois o exterior já é aprovado e o defeito é limitado ao interior. Entregar um percurso automatizado de 5–10 minutos dentro do volume existente; só depois de aprovação aplicar o método a uma única ilha do Mundo Perdido.
+- Segurança: nenhuma alteração no mundo foi executada nesta etapa. Não reconstruir os dois projetos simultaneamente nem iniciar novo builder antes de documentar envelope e reversão do protótipo da Pirâmide.
+- Próximo passo: preparar o protótipo automatizado da Pirâmide; o operador deverá apenas entrar, percorrer e dizer se aprova, sem comandos construtivos ou edição manual.
+
+## 2026-08-03 16:05:35 UTC-3
+
+- Solicitação: implementar a correção automatizada da Pirâmide.
+- Pergunta obrigatória: **por que o interior anterior ficou pobre?** A função `montar_piramide_completa_segura` reservava somente uma galeria/câmara simples com dois atris e iluminação; a aventura mais rica estava bloqueada. O exterior e a segurança receberam prioridade, mas não houve protótipo de densidade interna aprovado.
+- Correção implementada: BP `0.1.29` recebe os eventos públicos `piramide:refazer_interior X Y Z` e `piramide:restaurar_interior X Y Z`. O builder cria corredor com nichos, portal interno, câmara alta, oito pilares, sarcófago, bifurcação, passagem secreta, tesouro e beacon; o rollback recompõe o interior simples.
+- Pergunta de segurança: **por que essa construção poderia danificar ou ficar mal posicionada no mundo?** Ela escava/substitui blocos; um centro errado, chunks ausentes ou concorrência poderiam cortar terreno/obra ou deixar construção parcial.
+- Segurança aplicada: coordenadas absolutas obrigatórias; Overworld explícito; Y=`5..300`; amostragem da casca da Pirâmide; recusa de líquidos; trava concorrente; execução sequencial; tickingarea temporária removida no sucesso/falhas; rollback automatizado. A amostragem não é varredura completa, então backup e inspeção continuam obrigatórios.
+- Envelope relativo: X=`X-8..X+8`, Y=`Y-1..Y+8`, Z=`Z-24..Z+21`. No centro validado `-182 71 95`: X=`-190..-174`, Y=`70..79`, Z=`71..116`; subsolo somente Y=`70`, altura máxima Y=`79`; fachada não é ampliada.
+- Versionamento: BP e RP pareados incrementados de `0.1.28` para `0.1.29` em headers/módulos e dependência BP→RP; MCP incrementado de `0.16.0` para `0.16.1` para allowlist específica dos dois scriptevents. Nenhum PNG foi criado ou alterado.
+- Documentação: criado `docs/piramide_interior_prototipo_automatizado.md` com causa, envelope, comandos públicos, limitações, execução, rollback e registro pós-conclusão.
+- Próximo passo: publicar, confirmar versões, criar backup e executar uma única vez `scriptevent piramide:refazer_interior -182 71 95`; o operador somente percorre e avalia. Não executar antes do deploy/backup.
