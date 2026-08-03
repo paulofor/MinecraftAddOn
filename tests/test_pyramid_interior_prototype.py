@@ -40,10 +40,28 @@ def test_interior_prototype_has_spatial_variety_and_reward():
     assert expected in script
 
 
+def test_four_seals_expansion_is_parametric_interactive_and_reversible():
+  script = SCRIPT.read_text()
+  for expected in (
+    '"piramide:construir_quatro_selos"',
+    '"piramide:remover_quatro_selos"',
+    "sealsExpansionCommands",
+    "sealsRollbackCommands",
+    "precheckRichInterior",
+    "playerInteractWithBlock",
+    "CÂMARA DO FARAÓ",
+    "SOL",
+    "NILO",
+    "CÉU",
+    "VIDA",
+  ):
+    assert expected in script
+
+
 def test_paired_manifests_are_bumped_together():
   bp = json.loads(BP_MANIFEST.read_text())
   rp = json.loads(RP_MANIFEST.read_text())
-  expected = [0, 1, 30]
+  expected = [0, 1, 31]
   assert bp["header"]["version"] == expected
   assert rp["header"]["version"] == expected
   assert all(module["version"] == expected for module in bp["modules"])

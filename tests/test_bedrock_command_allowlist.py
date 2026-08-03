@@ -38,6 +38,8 @@ class BedrockCommandAllowlistTest(unittest.TestCase):
       "scriptevent portal4d:montar_coordenada -120 64 300",
       "scriptevent piramide:refazer_interior -182 71 95",
       "scriptevent piramide:restaurar_interior -182 71 95",
+      "scriptevent piramide:construir_quatro_selos -182 71 95",
+      "scriptevent piramide:remover_quatro_selos -182 71 95",
     ]
     for command in allowed:
       with self.subTest(command=command):

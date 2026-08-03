@@ -4368,3 +4368,36 @@ Checklist executado no host via MCP readonly/projeto:
 - Correção: BP/RP `0.1.30` passam a aceitar exatamente uma divergência (mínimo 4/5 da casca), registrar a coordenada divergente como aviso e continuar bloqueando duas ou mais divergências ou qualquer líquido. Envelope, tickingarea, concorrência e rollback permanecem iguais.
 - Limitação: `get_block` via LevelDB falhou nas cinco coordenadas com `NBT raiz não é compound: 0`, limitação já observada; portanto não contradiz o precheck runtime. A amostragem continua limitada e exige o backup já criado e inspeção visual.
 - Próximo passo: publicar somente BP/RP `0.1.30`, confirmar restart e repetir uma única vez o mesmo scriptevent. Não é necessário novo backup se nenhuma outra alteração ocorrer no mundo antes da repetição.
+
+## 2026-08-03 17:39:18 UTC-3
+
+- Evento: operador informou conclusão do deploy corretivo; MCP confirmou BP e RP `0.1.30` no mundo e `bedrock.log` confirmou Pack Stack `BP Piramide Egito Gigante 0.1.30`, restart e servidor iniciado.
+- Execução: enviado uma única vez `scriptevent piramide:refazer_interior -182 71 95` pelo MCP com executor `codex-piramide-interior-0.1.30`.
+- Resultado: log registrou `INTERIOR INÍCIO` no envelope X=`-190..-174`, Y=`70..79`, Z=`71..116` e, 3,6 segundos depois, `INTERIOR CONCLUÍDO centro=-182 71 95; comandos=63; tickingarea removida.` Não houve marcador de erro.
+- Pergunta obrigatória: **por que agora a execução concluiu?** A versão `0.1.30` explica a variação real da casca aceitando 4/5 amostras, sem remover as travas contra centro amplamente incorreto ou líquidos; assim o precheck deixou de bloquear uma variação isolada e o builder pôde executar sequencialmente.
+- Causa raiz resolvida: rigidez 5/5 do precheck anterior, não ausência da Pirâmide nem líquido. A automação concluiu e removeu sua área temporária.
+- Limitação: tentativa de confirmar o baú em `-182 71 114` via `get_block` retornou novamente `NBT raiz não é compound: 0`; essa limitação do leitor LevelDB não invalida o log runtime, mas mantém obrigatória a inspeção visual.
+- Estado: não repetir o builder. Backup de `0.1.29` e rollback parametrizado permanecem disponíveis.
+- Próximo passo: operador entra na Pirâmide, percorre o interior e envia captura/avaliação. Se reprovar ou observar dano, não corrigir manualmente; usar uma única vez o rollback automatizado após diagnóstico.
+
+## 2026-08-03 17:50:24 UTC-3
+
+- Pergunta do operador: o que mais pode ser colocado na Pirâmide ou se não há mais espaço.
+- Pergunta obrigatória: **por que pode parecer que não há espaço?** O protótipo percorre quase toda a profundidade Z, mas usa apenas 17 blocos de largura e 10 de altura dentro de um envelope externo máximo de 49 × 25 × 49. A silhueta escalonada reduz o espaço superior, porém ainda deixa volume lateral baixo e uma faixa vertical acima da câmara.
+- Evidências: função externa ocupa X=`-206..-158`, Y=`70..94`, Z=`71..119`; interior atual ocupa X=`-190..-174`, Y=`70..79`, Z=`71..116`; as camadas do corpo estreitam progressivamente até o topo.
+- Causa raiz a evitar: preencher o volume disponível com novos corredores repetiria o erro anterior de confundir tamanho com conteúdo. Espaço físico existe; o recurso escasso é densidade de momentos interessantes.
+- Recomendação: depois da avaliação visual do protótipo atual, priorizar um único **Enigma dos Quatro Selos** que abra uma pequena câmara superior. Alternativas: galeria vertical, armadilha segura, mapa celeste, micro-história arqueológica ou tesouro controlado por jogador.
+- Segurança: qualquer expansão continua automatizada, absoluta e limitada ao corpo existente; não escavar profundamente, ampliar a fachada ou executar antes de aprovar visualmente o interior atual.
+- Próximo passo: operador percorre e envia captura da câmara atual; somente então escolhe se quer o Enigma dos Quatro Selos ou outra opção. Nenhuma expansão foi executada nesta etapa.
+
+## 2026-08-03 20:05:56 UTC-3
+
+- Decisão do operador: implementar **Enigma dos Quatro Selos → porta secreta → pequena Câmara Superior do Faraó**.
+- Pergunta obrigatória: **por que essa expansão é preferível a acrescentar mais corredores?** O interior já ocupa quase toda a profundidade, mas ainda possui volume vertical. Um enigma com consequência espacial adiciona decisão, feedback e descoberta no mesmo percurso, em vez de aumentar distância vazia.
+- Implementação: novos eventos absolutos `piramide:construir_quatro_selos X Y Z` e `piramide:remover_quatro_selos X Y Z`; quatro selos em ordem SOL→NILO→CÉU→VIDA; progresso individual; erro reinicia sequência; solução abre porta dourada global; escadaria de dez degraus conduz a câmara com teto celeste, trono, iluminação, lodestone e beacon.
+- Pergunta de segurança: **por que essa construção poderia danificar ou ficar mal posicionada no mundo?** A escada e a sala escavam camadas superiores; centro, altura ou largura errados poderiam atravessar a fachada inclinada.
+- Segurança aplicada: centro absoluto; precheck de quatro marcadores exclusivos do interior `0.1.30`; Overworld explícito; tickingarea temporária; trava concorrente; comandos sequenciais; rollback; nenhuma lava/TNT/dano; persistência do centro em dynamic property.
+- Envelope adicional: relativo X=`X-7..X+7`, Y=`Y..Y+16`, Z=`Z-6..Z+12`; no centro `-182 71 95`, X=`-189..-175`, Y=`71..87`, Z=`89..107`; sem escavação abaixo de Y=`71`; altura máxima Y=`87`, dentro da Pirâmide até Y=`94`.
+- Versionamento: BP/RP pareados `0.1.30`→`0.1.31`; MCP `0.16.1`→`0.16.2` para allowlist específica de construção/remoção. Nenhum PNG criado ou alterado.
+- Limitações: porta é global após solução; progresso é individual em memória e reinicia ao desconectar; precheck é amostragem, não varredura completa; validação visual continua obrigatória.
+- Próximo passo: publicar BP/RP `0.1.31` e MCP `0.16.2`, reiniciar, criar backup e executar uma única vez `scriptevent piramide:construir_quatro_selos -182 71 95`. Não executar antes do deploy confirmado.

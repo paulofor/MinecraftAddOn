@@ -4,8 +4,12 @@ const PREFIX = "[Piramide][Diagnostico]";
 const DIAGNOSTIC_EVENT_ID = "piramide:diagnosticar_local";
 const INTERIOR_BUILD_EVENT_ID = "piramide:refazer_interior";
 const INTERIOR_ROLLBACK_EVENT_ID = "piramide:restaurar_interior";
+const SEALS_BUILD_EVENT_ID = "piramide:construir_quatro_selos";
+const SEALS_ROLLBACK_EVENT_ID = "piramide:remover_quatro_selos";
 const INTERIOR_TICKING_AREA = "piramide_interior_tmp";
 let interiorBuildRunning = false;
+const sealProgress = new Map();
+const SEAL_CENTER_PROPERTY = "piramide:quatro_selos_centro";
 const RADIUS = 64;
 const STRUCTURE_RADIUS = 60;
 const SAMPLE_POINTS = [
@@ -303,6 +307,174 @@ function rollbackInteriorCommands(center) {
   ];
 }
 
+function sealsForCenter(center) {
+  return [
+    { x: center.x - 7, y: center.y + 2, z: center.z + 2, block: "minecraft:gold_block", name: "SOL" },
+    { x: center.x + 7, y: center.y + 2, z: center.z + 2, block: "minecraft:emerald_block", name: "NILO" },
+    { x: center.x - 7, y: center.y + 2, z: center.z + 12, block: "minecraft:lapis_block", name: "CÉU" },
+    { x: center.x + 7, y: center.y + 2, z: center.z + 12, block: "minecraft:redstone_block", name: "VIDA" },
+  ];
+}
+
+function sealsExpansionCommands(center) {
+  const { x, y, z } = center;
+  const commands = [
+    // Câmara superior dentro das camadas Y80..88 da pirâmide.
+    `fill ${x - 5} ${y + 9} ${z - 6} ${x + 5} ${y + 15} ${z + 6} air`,
+    `fill ${x - 5} ${y + 8} ${z - 6} ${x + 5} ${y + 8} ${z + 6} chiseled_sandstone`,
+    `fill ${x - 5} ${y + 16} ${z - 6} ${x + 5} ${y + 16} ${z + 6} black_glazed_terracotta`,
+    `fill ${x - 5} ${y + 9} ${z - 6} ${x - 5} ${y + 15} ${z + 6} smooth_sandstone`,
+    `fill ${x + 5} ${y + 9} ${z - 6} ${x + 5} ${y + 15} ${z + 6} smooth_sandstone`,
+    `fill ${x - 5} ${y + 9} ${z - 6} ${x + 5} ${y + 15} ${z - 6} smooth_sandstone`,
+    `fill ${x - 5} ${y + 9} ${z + 6} ${x + 5} ${y + 15} ${z + 6} smooth_sandstone`,
+  ];
+  // Escadaria de dez degraus atrás da porta secreta, sem escavar abaixo da fundação.
+  for (let step = 0; step < 10; step += 1) {
+    const stepY = y + step;
+    const stepZ = z + 10 - step;
+    commands.push(
+      `fill ${x + 3} ${stepY} ${stepZ} ${x + 5} ${stepY + 2} ${stepZ} air`,
+      `fill ${x + 3} ${stepY - 1} ${stepZ} ${x + 5} ${stepY - 1} ${stepZ} sandstone_stairs`,
+    );
+  }
+  commands.push(
+    // Porta dos selos fecha o acesso até a sequência correta.
+    `fill ${x + 3} ${y} ${z + 10} ${x + 5} ${y + 3} ${z + 10} gold_block`,
+  );
+  for (const seal of sealsForCenter(center)) commands.push(`setblock ${seal.x} ${seal.y} ${seal.z} ${seal.block}`);
+  commands.push(
+    // Trono, mapa celeste e iluminação da pequena câmara superior.
+    `fill ${x - 2} ${y + 9} ${z - 4} ${x + 2} ${y + 10} ${z - 2} red_sandstone`,
+    `fill ${x - 1} ${y + 11} ${z - 4} ${x + 1} ${y + 13} ${z - 4} gold_block`,
+    `setblock ${x} ${y + 14} ${z - 4} emerald_block`,
+    `setblock ${x - 3} ${y + 14} ${z} sea_lantern`,
+    `setblock ${x + 3} ${y + 14} ${z} sea_lantern`,
+    `setblock ${x} ${y + 14} ${z + 3} sea_lantern`,
+    `setblock ${x} ${y + 9} ${z + 3} lodestone`,
+    `setblock ${x} ${y + 10} ${z + 3} beacon`,
+  );
+  return commands;
+}
+
+function sealsRollbackCommands(center) {
+  const { x, y, z } = center;
+  const commands = [];
+  for (let step = 9; step >= 0; step -= 1) {
+    const stepY = y + step;
+    const stepZ = z + 10 - step;
+    commands.push(`fill ${x + 3} ${stepY - 1} ${stepZ} ${x + 5} ${stepY + 2} ${stepZ} sandstone`);
+  }
+  commands.push(
+    `fill ${x - 5} ${y + 8} ${z - 6} ${x + 5} ${y + 16} ${z + 6} sandstone`,
+    `fill ${x + 4} ${y} ${z + 3} ${x + 6} ${y + 3} ${z + 11} air`,
+  );
+  for (const seal of sealsForCenter(center)) commands.push(`setblock ${seal.x} ${seal.y} ${seal.z} chiseled_sandstone`);
+  return commands;
+}
+
+function saveSealCenter(center) {
+  try {
+    world.setDynamicProperty(SEAL_CENTER_PROPERTY, JSON.stringify(center));
+  } catch (error) {
+    log(`QUATRO SELOS aviso: centro não persistido: ${error}`);
+  }
+}
+
+function loadSealCenter() {
+  try {
+    const raw = world.getDynamicProperty(SEAL_CENTER_PROPERTY);
+    if (typeof raw !== "string") return null;
+    const center = JSON.parse(raw);
+    return parseAbsoluteCenter(`${center.x} ${center.y} ${center.z}`);
+  } catch {
+    return null;
+  }
+}
+
+function precheckRichInterior(dimension, center) {
+  const expected = [
+    { x: center.x, y: center.y - 1, z: center.z, block: "minecraft:gold_block" },
+    { x: center.x - 5, y: center.y + 6, z: center.z + 2, block: "minecraft:sea_lantern" },
+    { x: center.x + 5, y: center.y + 6, z: center.z + 10, block: "minecraft:sea_lantern" },
+    { x: center.x, y: center.y + 3, z: center.z + 6, block: "minecraft:emerald_block" },
+  ];
+  const invalid = expected.filter((item) => blockType(dimension, item.x, item.y, item.z) !== item.block);
+  return { ok: invalid.length <= 1, invalid };
+}
+
+function handleSealsBuildEvent(event, rollback = false) {
+  const center = parseAbsoluteCenter(event.message);
+  if (!center || interiorBuildRunning) {
+    log(`QUATRO SELOS BLOQUEADO: centro inválido ou outra operação em andamento.`);
+    return;
+  }
+  const dimension = world.getDimension("overworld");
+  interiorBuildRunning = true;
+  log(`QUATRO SELOS ${rollback ? "ROLLBACK" : "INÍCIO"} centro=${center.x} ${center.y} ${center.z}; envelope=X${center.x - 7}..${center.x + 7},Y${center.y}..${center.y + 16},Z${center.z - 6}..${center.z + 12}.`);
+  removeInteriorTickingArea(dimension);
+  let loaded;
+  try {
+    loaded = runDimensionCommand(dimension, `tickingarea add circle ${center.x} ${center.y} ${center.z} 3 ${INTERIOR_TICKING_AREA} true`);
+  } catch (error) {
+    interiorBuildRunning = false;
+    log(`QUATRO SELOS BLOQUEADO carregamento: ${error}`);
+    return;
+  }
+  Promise.resolve(loaded).then(() => system.runTimeout(() => {
+    const precheck = precheckRichInterior(dimension, center);
+    if (!precheck.ok) {
+      log(`QUATRO SELOS BLOQUEADO precheck: interior_invalido=${precheck.invalid.length}.`);
+      removeInteriorTickingArea(dimension);
+      interiorBuildRunning = false;
+      return;
+    }
+    const commands = rollback ? sealsRollbackCommands(center) : sealsExpansionCommands(center);
+    runInteriorCommands(dimension, commands, "QUATRO SELOS", () => {
+      if (!rollback) saveSealCenter(center);
+      else {
+        try { world.setDynamicProperty(SEAL_CENTER_PROPERTY, undefined); } catch { /* no-op */ }
+      }
+      removeInteriorTickingArea(dimension);
+      interiorBuildRunning = false;
+      log(`QUATRO SELOS ${rollback ? "ROLLBACK" : "CONCLUÍDO"} centro=${center.x} ${center.y} ${center.z}; comandos=${commands.length}; tickingarea removida.`);
+    });
+  }, 10)).catch((error) => {
+    removeInteriorTickingArea(dimension);
+    interiorBuildRunning = false;
+    log(`QUATRO SELOS BLOQUEADO chunks: ${error}`);
+  });
+}
+
+function handleSealInteraction(event) {
+  const player = event.player;
+  const block = event.block;
+  if (!player || !block) return;
+  const center = loadSealCenter();
+  if (!center) return;
+  const seals = sealsForCenter(center);
+  const index = seals.findIndex((seal) => seal.x === block.location.x && seal.y === block.location.y && seal.z === block.location.z && seal.block === block.typeId);
+  if (index < 0) return;
+  const key = player.id ?? player.name;
+  const expected = sealProgress.get(key) ?? 0;
+  if (index !== expected) {
+    sealProgress.set(key, 0);
+    player.sendMessage(`${PREFIX} Os selos perderam a luz. Recomece pelo SOL.`);
+    player.playSound?.("random.break");
+    return;
+  }
+  const next = expected + 1;
+  sealProgress.set(key, next);
+  player.sendMessage(`${PREFIX} Selo ${seals[index].name} desperto (${next}/4).`);
+  player.playSound?.("random.orb");
+  if (next < seals.length) return;
+  const dimension = world.getDimension("overworld");
+  runDimensionCommand(dimension, `fill ${center.x + 3} ${center.y} ${center.z + 10} ${center.x + 5} ${center.y + 3} ${center.z + 10} air`);
+  sealProgress.delete(key);
+  player.onScreenDisplay?.setTitle("CÂMARA DO FARAÓ", { subtitle: "Os quatro selos abriram a passagem superior" });
+  player.playSound?.("random.levelup");
+  log(`QUATRO SELOS RESOLVIDO jogador=${player.name}; centro=${center.x} ${center.y} ${center.z}; porta aberta.`);
+}
+
 function runInteriorCommands(dimension, commands, context, onComplete) {
   let index = 0;
   const next = () => {
@@ -401,6 +573,14 @@ if (scriptEventReceive?.subscribe) {
       handleInteriorEvent(event, true);
       return;
     }
+    if (event.id === SEALS_BUILD_EVENT_ID) {
+      handleSealsBuildEvent(event, false);
+      return;
+    }
+    if (event.id === SEALS_ROLLBACK_EVENT_ID) {
+      handleSealsBuildEvent(event, true);
+      return;
+    }
     if (event.id !== DIAGNOSTIC_EVENT_ID) return;
     if (!event.sourceEntity) {
       log("Evento de diagnostico ignorado: sourceEntity ausente.");
@@ -409,6 +589,7 @@ if (scriptEventReceive?.subscribe) {
     diagnoseLocation(event.sourceEntity);
   });
   log(`Script carregado. Use /function piramide_egito_gigante/diagnosticar_local antes da montagem completa.`);
+  world.afterEvents.playerInteractWithBlock?.subscribe(handleSealInteraction);
 } else {
   log("system.afterEvents.scriptEventReceive indisponivel; diagnostico in-game nao podera registrar coordenada aprovada.");
 }

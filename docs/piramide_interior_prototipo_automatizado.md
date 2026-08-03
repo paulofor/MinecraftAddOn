@@ -97,10 +97,13 @@ do playtest.
 
 ## Registro pós-conclusão
 
-- O que foi feito:
-- O que ficou faltando:
-- Impedimentos/bloqueios:
-- Resultado visual aprovado pelo operador: sim / não
+- O que foi feito: BP/RP `0.1.30` confirmados no host; execução absoluta em
+  `-182 71 95` concluída com 63 comandos e remoção da tickingarea.
+- O que ficou faltando: percurso e aprovação visual do operador.
+- Impedimentos/bloqueios: leitura LevelDB do bloco de controle continua
+  indisponível com `NBT raiz não é compound: 0`; o log runtime confirmou a
+  conclusão.
+- Resultado visual aprovado pelo operador: pendente.
 
 ## Resultado da primeira execução
 
@@ -120,3 +123,117 @@ A versão `0.1.30` exige pelo menos 4/5 amostras válidas e continua bloqueando
 duas ou mais divergências ou qualquer líquido. Quando exatamente uma divergir,
 registra sua coordenada e prossegue somente no envelope interno conhecido. Essa
 é uma amostragem limitada; backup e validação visual continuam obrigatórios.
+
+## Resultado da execução `0.1.30`
+
+O deploy e o restart foram confirmados. A segunda tentativa foi enviada uma
+única vez e terminou com:
+
+```text
+INTERIOR CONCLUÍDO centro=-182 71 95; comandos=63; tickingarea removida.
+```
+
+Não executar novamente. O próximo passo é somente entrar pela fachada da
+Pirâmide e avaliar o corredor, câmara, sarcófago, bifurcação, passagem secreta e
+tesouro. O rollback permanece disponível se houver dano ou reprovação visual.
+
+## Ainda existe espaço?
+
+Sim. A Pirâmide externa ocupa X=`-206..-158`, Y=`70..94`, Z=`71..119`
+(49 × 25 × 49 no envelope máximo), enquanto o protótipo usa somente
+X=`-190..-174`, Y=`70..79`, Z=`71..116` (17 × 10 × 46). O corpo escalonado
+estreita nos níveis superiores, mas ainda há volume lateral na base e volume
+vertical acima da câmara atual.
+
+Isso não significa que devemos preencher tudo. O melhor próximo acréscimo é
+uma experiência interativa curta, e não mais corredores vazios.
+
+### Opções com melhor relação espaço/experiência
+
+1. **Enigma dos quatro selos (recomendado):** quatro símbolos em paredes
+   laterais; uma sequência correta abre uma porta para uma câmara superior.
+2. **Galeria vertical do faraó:** escada curta em espiral/rampa até uma câmara
+   pequena entre Y=`81..88`, aproveitando o volume acima sem tocar na fachada.
+3. **Armadilha segura:** placas de pressão alteram luz/som e fecham uma porta
+   por poucos segundos, sem matar nem destruir itens.
+4. **Câmara do mapa celeste:** teto escuro com constelações luminosas e uma
+   orientação curta ligada ao Egito/astronomia.
+5. **Sala arqueológica:** quatro objetos encontrados no percurso formam uma
+   micro-história, terminando no sarcófago.
+6. **Tesouro variável:** recompensa simbólica e controlada por jogador, para a
+   exploração continuar interessante sem duplicação ilimitada de diamantes.
+
+### O que não cabe bem ou não vale o risco
+
+- dezenas de salas grandes;
+- labirinto longo sem marcos visuais;
+- escavação profunda fora da fundação validada;
+- combate com muitos mobs em corredores estreitos;
+- nova expansão externa ou segundo monumento dentro da mesma Pirâmide.
+
+Antes de escolher uma expansão, o operador deve avaliar visualmente o
+protótipo já construído. Se a câmara atual ainda não estiver boa, acrescentar
+um puzzle apenas esconderia o problema estético em vez de resolvê-lo.
+
+## Expansão aprovada — Enigma dos Quatro Selos
+
+O operador aprovou a implementação do enigma, porta secreta e Câmara Superior
+do Faraó. A entrada pública é parametrizada:
+
+```text
+scriptevent piramide:construir_quatro_selos X Y Z
+```
+
+Para o centro atual:
+
+```text
+scriptevent piramide:construir_quatro_selos -182 71 95
+```
+
+Rollback automatizado:
+
+```text
+scriptevent piramide:remover_quatro_selos -182 71 95
+```
+
+### Por que essa construção poderia danificar ou ficar mal posicionada no mundo?
+
+A expansão escava uma escadaria e uma sala em camadas superiores do corpo. Um
+centro errado poderia perfurar a fachada; altura ou largura excessivas poderiam
+atravessar a inclinação da Pirâmide. Por isso ela exige o centro absoluto,
+confirma blocos exclusivos do interior `0.1.30`, carrega chunks, trava
+concorrência e permanece dentro das camadas calculadas da estrutura existente.
+
+### Envelope adicional
+
+- relativo: X=`X-7..X+7`, Y=`Y..Y+16`, Z=`Z-6..Z+12`;
+- centro atual: X=`-189..-175`, Y=`71..87`, Z=`89..107`;
+- subsolo: nenhum bloco abaixo de Y=`71` é escavado pela expansão;
+- altura máxima: Y=`87`, ainda dentro da casca que chega a Y=`94`.
+
+### Experiência
+
+1. quatro selos aparecem na câmara: **SOL → NILO → CÉU → VIDA**;
+2. cada jogador precisa tocar a sequência correta; erro reinicia seu progresso;
+3. ao completar, a porta dourada desaparece;
+4. uma escadaria de dez degraus leva à Câmara Superior;
+5. a sala contém teto celeste, trono do faraó, iluminação, lodestone e beacon;
+6. o centro do enigma é persistido no mundo para continuar funcionando após
+   restart.
+
+### Segurança e limitação
+
+- precheck aceita no máximo uma divergência entre quatro marcadores exclusivos
+  do interior rico;
+- build e rollback são sequenciais e removem a tickingarea;
+- a porta abre globalmente quando um jogador conclui; o progresso da sequência
+  é individual e reinicia se o jogador desconectar;
+- não há dano, lava, TNT ou perda de inventário;
+- confirmação final continua visual.
+
+### Registro pós-conclusão da expansão
+
+- O que foi feito:
+- O que ficou faltando:
+- Impedimentos/bloqueios:
+- Enigma e Câmara Superior aprovados: sim / não
