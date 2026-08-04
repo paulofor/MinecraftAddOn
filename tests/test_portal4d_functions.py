@@ -51,14 +51,14 @@ class Portal4DFunctionTests(unittest.TestCase):
     self.assertIn("tickingarea add circle", script)
     self.assertIn("findNearbyPortalSite(dimension, { x, y, z }, rawRadius)", script)
 
-  def test_portal_manifests_are_paired_at_0_1_40(self) -> None:
+  def test_portal_manifests_are_paired_at_0_1_41(self) -> None:
     bp = json.loads((ROOT / "packs" / "BP_Portal4DEspacial" / "manifest.json").read_text(encoding="utf-8"))
     rp = json.loads((ROOT / "packs" / "RP_Portal4DEspacial" / "manifest.json").read_text(encoding="utf-8"))
 
-    self.assertEqual([0, 1, 40], bp["header"]["version"])
+    self.assertEqual([0, 1, 41], bp["header"]["version"])
     self.assertEqual(bp["header"]["version"], rp["header"]["version"])
-    self.assertTrue(all(module["version"] == [0, 1, 40] for module in bp["modules"] + rp["modules"]))
-    self.assertEqual([0, 1, 40], bp["dependencies"][0]["version"])
+    self.assertTrue(all(module["version"] == [0, 1, 41] for module in bp["modules"] + rp["modules"]))
+    self.assertEqual([0, 1, 41], bp["dependencies"][0]["version"])
 
   def test_shattered_planet_has_plain_mission_and_three_fragments(self) -> None:
     script = (ROOT / "packs" / "BP_Portal4DEspacial" / "scripts" / "main.js").read_text(encoding="utf-8")
@@ -67,8 +67,25 @@ class Portal4DFunctionTests(unittest.TestCase):
     self.assertIn("natureza:", script)
     self.assertIn("ruinas:", script)
     self.assertIn("maquina:", script)
-    self.assertIn("Atravesse os três fragmentos e reacenda o buraco negro", script)
-    self.assertIn("PLANETA REATIVADO", script)
+    self.assertIn("Bem-vindo à CIDADE IMPOSSÍVEL", script)
+    self.assertIn("CIDADE DESPERTA", script)
+
+  def test_impossible_city_replaces_isolated_planet_layout(self) -> None:
+    script = (ROOT / "packs" / "BP_Portal4DEspacial" / "scripts" / "main.js").read_text(encoding="utf-8")
+    self.assertIn("function buildImpossibleCity(dimension)", script)
+    self.assertIn("function buildCircularPlatform", script)
+    self.assertIn("function buildCityTower", script)
+    self.assertIn("Cidade Impossível construída", script)
+    build = script[script.index("function buildShatteredPlanet"):script.index("function isInsideWorldEnvelope")]
+    self.assertIn("buildImpossibleCity(dimension)", build)
+    self.assertNotIn("buildFloatingFragment", build)
+
+  def test_city_rebuild_requires_exact_absolute_center(self) -> None:
+    script = (ROOT / "packs" / "BP_Portal4DEspacial" / "scripts" / "main.js").read_text(encoding="utf-8")
+    self.assertIn('const CITY_REBUILD_EVENT_ID = "portal4d:reconstruir_cidade_impossivel"', script)
+    self.assertIn("function rebuildImpossibleCity(message)", script)
+    self.assertIn("center.x !== BLACK_HOLE_CENTER.x", script)
+    self.assertIn("ensureWorld(true)", script)
 
   def test_fragment_anchors_share_their_real_coordinates(self) -> None:
     script = (ROOT / "packs" / "BP_Portal4DEspacial" / "scripts" / "main.js").read_text(encoding="utf-8")
