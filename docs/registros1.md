@@ -4435,3 +4435,16 @@ Checklist executado no host via MCP readonly/projeto:
 - Segurança: priorizar um protótipo no fragmento das Ruínas, dentro do envelope existente X/Z=`-96..96`, Y=`45..150`; entrada absoluta, precheck, tickingarea temporária, rollback e backup permanecem obrigatórios. Não reconstruir o mundo completo para acrescentar uma mecânica local.
 - Estado: somente recomendação e documentação; nenhum pack, mundo, versão ou PNG foi alterado nesta etapa.
 - Próximo passo: se aprovado, estruturar o Add-On por sprints e implementar primeiro o enigma das Ruínas antes de expandir para os outros fragmentos.
+
+## 2026-08-03 22:36:49 UTC-3
+
+- Aprovação do operador: “vamos fazer isso”, após a proposta da Anomalia das Três Linhas do Tempo.
+- Escopo escolhido: Sprint 1, protótipo no Fragmento das Ruínas, conforme a ordem previamente recomendada; as Sprints Natureza, Máquina e Convergência permanecem planejadas e possuem campos pós-conclusão em `docs/mundo4d_anomalia_temporal.md`.
+- Pergunta obrigatória: **por que o Mundo 4D precisava desta alteração?** Os três fragmentos repetiam a interação direta com pedra-ímã. A nova Ruína exige interpretar e executar ORIGEM→ASCENSÃO→APOGEU→QUEDA antes de liberar a reativação, adicionando observação, memória e consequência espacial.
+- Investigação adicional: `system.run` chamava `ensureWorld(true)` e `clearPreviousWorld` limpava integralmente X/Z=`-96..96`, Y=`45..150` em todo restart. Essa reconstrução destruiria o novo enigma depois do deploy; portanto, apenas adicionar pilares trataria o sintoma e não a causa de persistência.
+- Correção de causa raiz: inicialização passa a `ensureWorld(false)` e reconhece o marcador existente do buraco negro para reutilizar o mundo pronto. A reconstrução integral continua disponível internamente quando realmente necessária, mas não ocorre automaticamente em cada restart.
+- Implementação: eventos absolutos `portal4d:construir_ruinas_temporais 42 96 -48` e `portal4d:remover_ruinas_temporais 42 96 -48`; precheck de dimensão/centro/envelope/âncora/líquidos/apoios dos quatro pilares; tickingarea temporária; sequência individual; porta da memória; ativação das Ruínas somente após solução; rollback e logs detalhados.
+- Pergunta de segurança: **por que essa construção poderia danificar ou ficar mal posicionada no mundo?** Centro incorreto poderia atingir vazio, borda ou outra ilha. A trava exige o centro exato `42 96 -48` na dimensão exclusiva.
+- Envelope: X=`32..52`, Y=`96..101`, Z=`-58..-37`; nenhum subsolo abaixo de Y=`96`; amostragem de líquidos em nove pontos; não há TNT, lava, dano ou perda de inventário.
+- Versionamento: BP/RP Portal 4D `0.1.37`→`0.1.38`; MCP `0.16.3`→`0.16.4`; nenhum PNG criado ou alterado.
+- Estado: código e testes preparados, mas nada foi publicado ou executado no mundo nesta etapa. Próximo passo é validar, commitar, publicar, criar backup e executar uma única vez após Pack Stack `0.1.38` confirmado.

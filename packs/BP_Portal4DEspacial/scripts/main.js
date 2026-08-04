@@ -11,6 +11,10 @@ const INTERACTION_COOLDOWN_TICKS = 14;
 const RECOVERY_SCRIPT_EVENT_ID = "portal4d:recuperar";
 const NEARBY_PORTAL_SCRIPT_EVENT_ID = "portal4d:montar_proximo";
 const COORDINATE_PORTAL_SCRIPT_EVENT_ID = "portal4d:montar_coordenada";
+const RUINS_PUZZLE_BUILD_EVENT_ID = "portal4d:construir_ruinas_temporais";
+const RUINS_PUZZLE_ROLLBACK_EVENT_ID = "portal4d:remover_ruinas_temporais";
+const RUINS_PUZZLE_CENTER_PROPERTY = "portal4d:ruinas_temporais_centro";
+const RUINS_PUZZLE_TICKING_AREA = "p4d_ruinas_temporais";
 const WORLD_ENVELOPE = { minX: -96, maxX: 96, minY: 45, maxY: 150, minZ: -96, maxZ: 96 };
 const BUILD_TICKING_AREAS = [
   { name: "p4d_planeta_nw", x: -48, z: -48 },
@@ -36,6 +40,8 @@ let buildInProgress = false;
 const worldReadyCallbacks = [];
 const playerOrigins = new Map();
 const cooldowns = new Map();
+const ruinsPuzzleProgress = new Map();
+let ruinsPuzzleOperationRunning = false;
 
 function log(message) {
   console.warn(`${PREFIX} ${message}`);
@@ -99,6 +105,40 @@ function runCommandSafe(dimension, command, context) {
     log(`Falha ao iniciar ${context}: ${error}`);
     return undefined;
   }
+}
+
+function parseAbsoluteCenter(message) {
+  const parts = String(message ?? "").trim().split(/\s+/);
+  if (parts.length !== 3 || !parts.every((part) => /^-?\d+$/.test(part))) return undefined;
+  const [x, y, z] = parts.map(Number);
+  if (![x, y, z].every(Number.isSafeInteger)) return undefined;
+  return { x, y, z };
+}
+
+function runCommandsSequentially(dimension, commands, context, onComplete) {
+  let index = 0;
+  const next = () => {
+    if (index >= commands.length) {
+      onComplete();
+      return;
+    }
+    const command = commands[index];
+    index += 1;
+    try {
+      const result = dimension.runCommandAsync?.(command) ?? dimension.runCommand(command);
+      if (result?.then) result.then(() => system.run(next)).catch((error) => {
+        log(`${context} FALHOU comando=${index}/${commands.length}: ${error}`);
+        ruinsPuzzleOperationRunning = false;
+        runCommandSafe(dimension, `tickingarea remove ${RUINS_PUZZLE_TICKING_AREA}`, "limpeza após falha das ruínas");
+      });
+      else system.run(next);
+    } catch (error) {
+      log(`${context} FALHOU comando=${index}/${commands.length}: ${error}`);
+      ruinsPuzzleOperationRunning = false;
+      runCommandSafe(dimension, `tickingarea remove ${RUINS_PUZZLE_TICKING_AREA}`, "limpeza após falha das ruínas");
+    }
+  };
+  next();
 }
 
 function clearPreviousWorld(dimension, onComplete) {
@@ -278,6 +318,11 @@ function ensureWorld(force = false, onReady) {
   const dimension = getDimensionSafe(CUSTOM_DIMENSION_ID, false);
   if (!dimension) return undefined;
   if (onReady) worldReadyCallbacks.push(onReady);
+  if (!force && blockId(dimension, { x: 0, y: 96, z: 18 }) === "minecraft:black_concrete") {
+    worldBuilt = true;
+    for (const callback of worldReadyCallbacks.splice(0)) callback(dimension);
+    return dimension;
+  }
   if (worldBuilt && !force) {
     for (const callback of worldReadyCallbacks.splice(0)) callback(dimension);
     return dimension;
@@ -328,6 +373,133 @@ function activateFragment(player, block, fragmentId) {
     log(`Planeta Partido concluído por ${player.name}.`);
   }
   log(`Fragmento ${fragmentId} reativado por ${player.name}; progresso=${visited}/3.`);
+}
+
+function ruinsTemporalSeals(center) {
+  return [
+    { x: center.x - 7, y: center.y + 3, z: center.z - 5, block: "minecraft:amethyst_block", name: "ORIGEM" },
+    { x: center.x + 7, y: center.y + 3, z: center.z - 5, block: "minecraft:exposed_copper", name: "ASCENSÃO" },
+    { x: center.x - 7, y: center.y + 3, z: center.z + 9, block: "minecraft:gold_block", name: "APOGEU" },
+    { x: center.x + 7, y: center.y + 3, z: center.z + 9, block: "minecraft:crying_obsidian", name: "QUEDA" },
+  ];
+}
+
+function ruinsTemporalBuildCommands(center) {
+  const commands = [
+    `fill ${center.x - 3} ${center.y + 1} ${center.z - 10} ${center.x + 3} ${center.y + 5} ${center.z - 7} chiseled_stone_bricks hollow`,
+    `fill ${center.x - 1} ${center.y + 1} ${center.z - 7} ${center.x + 1} ${center.y + 3} ${center.z - 7} crying_obsidian`,
+    `setblock ${center.x} ${center.y + 1} ${center.z - 9} lodestone`,
+  ];
+  for (const seal of ruinsTemporalSeals(center)) {
+    commands.push(
+      `fill ${seal.x} ${center.y} ${seal.z} ${seal.x} ${center.y + 2} ${seal.z} chiseled_stone_bricks`,
+      `setblock ${seal.x} ${seal.y} ${seal.z} ${seal.block}`,
+      `setblock ${seal.x} ${seal.y + 1} ${seal.z} sea_lantern`,
+    );
+  }
+  commands.push(
+    `setblock ${center.x - 2} ${center.y + 2} ${center.z - 9} ochre_froglight`,
+    `setblock ${center.x + 2} ${center.y + 2} ${center.z - 9} ochre_froglight`,
+  );
+  return commands;
+}
+
+function ruinsTemporalRollbackCommands(center) {
+  const commands = [`fill ${center.x - 3} ${center.y + 1} ${center.z - 10} ${center.x + 3} ${center.y + 5} ${center.z - 7} air`];
+  for (const seal of ruinsTemporalSeals(center)) commands.push(`fill ${seal.x} ${center.y + 1} ${seal.z} ${seal.x} ${seal.y + 1} ${seal.z} air`);
+  return commands;
+}
+
+function precheckRuinsTemporal(dimension, center) {
+  const expected = FRAGMENTS.ruinas.center;
+  const absoluteCenterMatches = center.x === expected.x && center.y === expected.y && center.z === expected.z;
+  const inEnvelope = center.x - 10 >= WORLD_ENVELOPE.minX && center.x + 10 <= WORLD_ENVELOPE.maxX
+    && center.y >= WORLD_ENVELOPE.minY && center.y + 5 <= WORLD_ENVELOPE.maxY
+    && center.z - 9 >= WORLD_ENVELOPE.minZ && center.z + 11 <= WORLD_ENVELOPE.maxZ;
+  const anchorValid = blockId(dimension, FRAGMENTS.ruinas.anchor) === "minecraft:lodestone";
+  const liquids = [];
+  const unsupported = [];
+  for (const dx of [-10, 0, 10]) for (const dz of [-9, 0, 11]) {
+    const location = { x: center.x + dx, y: center.y, z: center.z + dz };
+    const id = blockId(dimension, location);
+    if (id === "minecraft:water" || id === "minecraft:lava") liquids.push(`${location.x} ${location.y} ${location.z}=${id}`);
+  }
+  for (const seal of ruinsTemporalSeals(center)) {
+    const support = blockId(dimension, { x: seal.x, y: center.y - 1, z: seal.z });
+    if (!support || support === "minecraft:air" || support === "minecraft:water" || support === "minecraft:lava") unsupported.push(`${seal.x} ${center.y - 1} ${seal.z}=${support ?? "indisponível"}`);
+  }
+  return { ok: dimension.id === CUSTOM_DIMENSION_ID && absoluteCenterMatches && inEnvelope && anchorValid && liquids.length === 0 && unsupported.length === 0, absoluteCenterMatches, inEnvelope, anchorValid, liquids, unsupported };
+}
+
+function handleRuinsTemporalBuild(message, rollback = false) {
+  const center = parseAbsoluteCenter(message);
+  const dimension = getDimensionSafe(CUSTOM_DIMENSION_ID);
+  if (!center || !dimension || ruinsPuzzleOperationRunning) {
+    log(`RUÍNAS TEMPORAIS BLOQUEADO: centro absoluto inválido, dimensão ausente ou operação concorrente.`);
+    return;
+  }
+  ruinsPuzzleOperationRunning = true;
+  log(`RUÍNAS TEMPORAIS ${rollback ? "ROLLBACK" : "INÍCIO"} centro=${center.x} ${center.y} ${center.z}; envelope=X${center.x - 10}..${center.x + 10},Y${center.y}..${center.y + 5},Z${center.z - 9}..${center.z + 11}.`);
+  runCommandSafe(dimension, `tickingarea remove ${RUINS_PUZZLE_TICKING_AREA}`, "limpeza preventiva das ruínas");
+  const loaded = runCommandSafe(dimension, `tickingarea add circle ${center.x} ${center.y} ${center.z} 2 ${RUINS_PUZZLE_TICKING_AREA} true`, "carregamento das ruínas");
+  Promise.resolve(loaded).then(() => system.runTimeout(() => {
+    const precheck = precheckRuinsTemporal(dimension, center);
+    if (!precheck.ok) {
+      log(`RUÍNAS TEMPORAIS BLOQUEADO precheck: centro=${precheck.absoluteCenterMatches}; envelope=${precheck.inEnvelope}; ancora=${precheck.anchorValid}; liquidos=${precheck.liquids.length}; apoios_invalidos=${precheck.unsupported.length}.`);
+      runCommandSafe(dimension, `tickingarea remove ${RUINS_PUZZLE_TICKING_AREA}`, "limpeza do precheck das ruínas");
+      ruinsPuzzleOperationRunning = false;
+      return;
+    }
+    const commands = rollback ? ruinsTemporalRollbackCommands(center) : ruinsTemporalBuildCommands(center);
+    runCommandsSequentially(dimension, commands, "RUÍNAS TEMPORAIS", () => {
+      try { world.setDynamicProperty(RUINS_PUZZLE_CENTER_PROPERTY, rollback ? undefined : JSON.stringify(center)); } catch (error) { log(`RUÍNAS TEMPORAIS aviso de persistência: ${error}`); }
+      runCommandSafe(dimension, `tickingarea remove ${RUINS_PUZZLE_TICKING_AREA}`, "limpeza final das ruínas");
+      ruinsPuzzleOperationRunning = false;
+      log(`RUÍNAS TEMPORAIS ${rollback ? "ROLLBACK" : "CONCLUÍDO"} centro=${center.x} ${center.y} ${center.z}; comandos=${commands.length}; tickingarea removida.`);
+    });
+  }, 20)).catch((error) => {
+    ruinsPuzzleOperationRunning = false;
+    runCommandSafe(dimension, `tickingarea remove ${RUINS_PUZZLE_TICKING_AREA}`, "limpeza após carregamento das ruínas");
+    log(`RUÍNAS TEMPORAIS BLOQUEADO chunks: ${error}`);
+  });
+}
+
+function loadRuinsPuzzleCenter() {
+  try {
+    const raw = world.getDynamicProperty(RUINS_PUZZLE_CENTER_PROPERTY);
+    if (typeof raw !== "string") return undefined;
+    const center = JSON.parse(raw);
+    return parseAbsoluteCenter(`${center.x} ${center.y} ${center.z}`);
+  } catch {
+    return undefined;
+  }
+}
+
+function handleRuinsTemporalInteraction(player, block) {
+  const center = loadRuinsPuzzleCenter();
+  if (!center) return false;
+  const seals = ruinsTemporalSeals(center);
+  const index = seals.findIndex((seal) => distanceSquared(block.location, seal) === 0 && block.typeId === seal.block);
+  if (index < 0) return false;
+  const key = keyFor(player);
+  const expected = ruinsPuzzleProgress.get(key) ?? 0;
+  if (index !== expected) {
+    ruinsPuzzleProgress.set(key, 0);
+    player.sendMessage(`${PREFIX} A memória se fragmentou. Recomece pela ORIGEM.`);
+    player.playSound?.("random.break");
+    return true;
+  }
+  const next = expected + 1;
+  ruinsPuzzleProgress.set(key, next);
+  player.sendMessage(`${PREFIX} Memória ${seals[index].name} alinhada (${next}/4).`);
+  player.playSound?.("random.orb");
+  if (next < seals.length) return true;
+  ruinsPuzzleProgress.delete(key);
+  runCommandSafe(block.dimension, `fill ${center.x - 1} ${center.y + 1} ${center.z - 7} ${center.x + 1} ${center.y + 3} ${center.z - 7} air`, "abertura da memória das ruínas");
+  activateFragment(player, { dimension: block.dimension }, "ruinas");
+  player.onScreenDisplay?.setTitle("MEMÓRIA RESTAURADA", { subtitle: "As Ruínas revelaram o presente do planeta" });
+  log(`RUÍNAS TEMPORAIS RESOLVIDO jogador=${player.name}; centro=${center.x} ${center.y} ${center.z}.`);
+  return true;
 }
 
 function saveOrigin(player) {
@@ -448,9 +620,14 @@ function handleInteraction(event) {
   const { player, block } = event;
   if (!player || !block) return;
   if (block.dimension.id === CUSTOM_DIMENSION_ID) {
+    if (handleRuinsTemporalInteraction(player, block)) return;
     if (block.typeId === "minecraft:lodestone") {
       for (const [fragmentId, fragment] of Object.entries(FRAGMENTS)) {
         if (distanceSquared(block.location, fragment.anchor) <= 2) {
+          if (fragmentId === "ruinas" && loadRuinsPuzzleCenter()) {
+            player.sendMessage(`${PREFIX} A pedra-ímã das Ruínas está selada. Alinhe ORIGEM → ASCENSÃO → APOGEU → QUEDA.`);
+            return;
+          }
           activateFragment(player, block, fragmentId);
           return;
         }
@@ -491,12 +668,16 @@ system.afterEvents?.scriptEventReceive?.subscribe((event) => {
     mountPortalNearPlayer(event.sourceEntity, event.message);
   } else if (event.id === COORDINATE_PORTAL_SCRIPT_EVENT_ID) {
     mountPortalFromCoordinates(event.message);
+  } else if (event.id === RUINS_PUZZLE_BUILD_EVENT_ID) {
+    handleRuinsTemporalBuild(event.message, false);
+  } else if (event.id === RUINS_PUZZLE_ROLLBACK_EVENT_ID) {
+    handleRuinsTemporalBuild(event.message, true);
   }
 });
 
 system.run(() => {
   log("Sprint 16 carregada: Planeta Perdido expandido, limpeza integral e três biomas exploráveis.");
-  ensureWorld(true);
+  ensureWorld(false);
 });
 
 system.runInterval(() => {
