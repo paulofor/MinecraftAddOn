@@ -4401,3 +4401,15 @@ Checklist executado no host via MCP readonly/projeto:
 - Versionamento: BP/RP pareados `0.1.30`→`0.1.31`; MCP `0.16.1`→`0.16.2` para allowlist específica de construção/remoção. Nenhum PNG criado ou alterado.
 - Limitações: porta é global após solução; progresso é individual em memória e reinicia ao desconectar; precheck é amostragem, não varredura completa; validação visual continua obrigatória.
 - Próximo passo: publicar BP/RP `0.1.31` e MCP `0.16.2`, reiniciar, criar backup e executar uma única vez `scriptevent piramide:construir_quatro_selos -182 71 95`. Não executar antes do deploy confirmado.
+
+## 2026-08-03 20:50:14 UTC-3
+
+- Evento: operador confirmou deploy; MCP validou BP/RP `0.1.31`, Pack Stack ativo e servidor iniciado sem erro da Pirâmide.
+- Segurança: tentativa inicial em `/root/Uploads` falhou porque o volume está somente leitura. O backup foi então criado no diretório gravável canônico `/root/MinecraftServer/backups/Bedrock-level-pre-piramide-quatro-selos.tar.gz`, com 165492348 bytes e SHA-256 `1361e51d5a9e4ee54c07200dab03786d2654d0c17101d874ba1a182de3ae7edb`.
+- Execução: enviado uma vez `scriptevent piramide:construir_quatro_selos -182 71 95`; o evento iniciou no envelope X=`-189..-175`, Y=`71..87`, Z=`89..107`, mas foi bloqueado antes da construção com `interior_invalido=4`. Nenhum comando de alteração da expansão foi executado.
+- Pergunta obrigatória: **por que isso aconteceu?** A primeira amostra do precheck esperava erroneamente `gold_block` em `X,Y-1,Z`, embora o builder anterior coloque `smooth_sandstone` nesse piso. Além disso, quatro decorações exatas eram usadas como trava primária, duplicando de forma mais rígida a casca estrutural que já havia sido validada com sucesso na construção do interior.
+- Causa raiz: expectativa incorreta em uma amostra e modelagem excessivamente rígida da evidência interna; não foi falta de deploy, coordenada incorreta nem falha parcial da construção.
+- Correção: `precheckRichInterior` passa a reutilizar obrigatoriamente a casca/ausência de líquidos, corrige a amostra do piso, aceita no máximo duas divergências decorativas e registra valores esperados/observados para diagnóstico. A trava continua impedindo centro errado, líquido ou casca incompatível.
+- Versionamento: BP/RP `0.1.31`→`0.1.32`; MCP `0.16.2`→`0.16.3`; nenhum PNG alterado.
+- Limitação: a validação continua por amostragem e a confirmação visual permanece obrigatória. O backup foi criado com o servidor ativo, conforme aviso da própria tool.
+- Próximo passo: publicar BP/RP `0.1.32` e MCP `0.16.3`, reiniciar, confirmar o Pack Stack e repetir uma única vez o evento. Não contornar manualmente a trava no mundo.

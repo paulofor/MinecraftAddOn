@@ -48,6 +48,8 @@ def test_four_seals_expansion_is_parametric_interactive_and_reversible():
     "sealsExpansionCommands",
     "sealsRollbackCommands",
     "precheckRichInterior",
+    "actual: blockType",
+    "pyramid.ok && invalid.length <= 2",
     "playerInteractWithBlock",
     "CÂMARA DO FARAÓ",
     "SOL",
@@ -61,7 +63,7 @@ def test_four_seals_expansion_is_parametric_interactive_and_reversible():
 def test_paired_manifests_are_bumped_together():
   bp = json.loads(BP_MANIFEST.read_text())
   rp = json.loads(RP_MANIFEST.read_text())
-  expected = [0, 1, 31]
+  expected = [0, 1, 32]
   assert bp["header"]["version"] == expected
   assert rp["header"]["version"] == expected
   assert all(module["version"] == expected for module in bp["modules"])

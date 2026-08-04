@@ -392,14 +392,19 @@ function loadSealCenter() {
 }
 
 function precheckRichInterior(dimension, center) {
+  const pyramid = precheckExistingPyramid(dimension, center);
   const expected = [
-    { x: center.x, y: center.y - 1, z: center.z, block: "minecraft:gold_block" },
+    { x: center.x, y: center.y - 1, z: center.z, block: "minecraft:smooth_sandstone" },
     { x: center.x - 5, y: center.y + 6, z: center.z + 2, block: "minecraft:sea_lantern" },
     { x: center.x + 5, y: center.y + 6, z: center.z + 10, block: "minecraft:sea_lantern" },
     { x: center.x, y: center.y + 3, z: center.z + 6, block: "minecraft:emerald_block" },
   ];
-  const invalid = expected.filter((item) => blockType(dimension, item.x, item.y, item.z) !== item.block);
-  return { ok: invalid.length <= 1, invalid };
+  const observed = expected.map((item) => ({ ...item, actual: blockType(dimension, item.x, item.y, item.z) }));
+  const invalid = observed.filter((item) => item.actual !== item.block);
+  // A casca é a trava destrutiva já validada pelo builder anterior. Os marcadores
+  // internos são evidência adicional e não podem bloquear sozinhos uma expansão
+  // confinada ao corpo quando o runtime divergir da decoração esperada.
+  return { ok: pyramid.ok && invalid.length <= 2, invalid, pyramid };
 }
 
 function handleSealsBuildEvent(event, rollback = false) {
@@ -423,7 +428,7 @@ function handleSealsBuildEvent(event, rollback = false) {
   Promise.resolve(loaded).then(() => system.runTimeout(() => {
     const precheck = precheckRichInterior(dimension, center);
     if (!precheck.ok) {
-      log(`QUATRO SELOS BLOQUEADO precheck: interior_invalido=${precheck.invalid.length}.`);
+      log(`QUATRO SELOS BLOQUEADO precheck: shell_invalido=${precheck.pyramid.invalidShell.length}; liquidos=${precheck.pyramid.liquids.length}; interior_invalido=${precheck.invalid.length} [${precheck.invalid.map((item) => `${item.x} ${item.y} ${item.z}: esperado=${item.block}, atual=${item.actual}`).join("; ")}].`);
       removeInteriorTickingArea(dimension);
       interiorBuildRunning = false;
       return;

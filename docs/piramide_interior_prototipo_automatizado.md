@@ -236,4 +236,24 @@ concorrência e permanece dentro das camadas calculadas da estrutura existente.
 - O que foi feito:
 - O que ficou faltando:
 - Impedimentos/bloqueios:
+
+## Correção operacional 0.1.32 — precheck dos Quatro Selos
+
+Na primeira execução após o deploy `0.1.31`, a expansão foi corretamente
+interrompida antes de modificar o mundo: o precheck informou quatro marcadores
+internos divergentes. A causa raiz foi dupla: a primeira amostra esperava
+`gold_block` numa coordenada onde o builder cria `smooth_sandstone`, e a trava
+tratava decoração interna exata como se fosse a evidência estrutural principal.
+
+A versão `0.1.32`:
+
+- corrige o bloco esperado na primeira amostra;
+- reutiliza a casca e a ausência de líquidos como trava estrutural obrigatória;
+- exige que ao menos dois dos quatro marcadores internos coincidam;
+- registra coordenada, bloco esperado e bloco observado em cada divergência;
+- mantém o mesmo envelope absoluto, tickingarea temporária e rollback.
+
+O evento `0.1.31` não executou nenhum comando de construção, portanto não há
+alteração parcial a reparar. Após publicar BP/RP `0.1.32`, reiniciar e confirmar
+o Pack Stack, deve-se repetir o comando apenas uma vez.
 - Enigma e Câmara Superior aprovados: sim / não
