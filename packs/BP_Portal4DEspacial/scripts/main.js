@@ -13,6 +13,7 @@ const NEARBY_PORTAL_SCRIPT_EVENT_ID = "portal4d:montar_proximo";
 const COORDINATE_PORTAL_SCRIPT_EVENT_ID = "portal4d:montar_coordenada";
 const RUINS_PUZZLE_BUILD_EVENT_ID = "portal4d:construir_ruinas_temporais";
 const RUINS_PUZZLE_ROLLBACK_EVENT_ID = "portal4d:remover_ruinas_temporais";
+const CITY_REBUILD_EVENT_ID = "portal4d:reconstruir_cidade_impossivel";
 const RUINS_PUZZLE_CENTER_PROPERTY = "portal4d:ruinas_temporais_centro";
 const RUINS_PUZZLE_TICKING_AREA = "p4d_ruinas_temporais";
 const WORLD_ENVELOPE = { minX: -96, maxX: 96, minY: 45, maxY: 150, minZ: -96, maxZ: 96 };
@@ -259,32 +260,77 @@ function buildArrivalObservatory(dimension) {
   setBlock(dimension, { x: 0, y: ARRIVAL.y, z: ARRIVAL.z + 5 }, "minecraft:lectern");
 }
 
-function buildShatteredPlanet(dimension) {
-  buildSphere(dimension, BLACK_HOLE_CENTER, 18, "minecraft:black_concrete", "minecraft:crying_obsidian");
-  buildAccretionDisk(dimension);
-  buildArrivalObservatory(dimension);
-  buildFloatingFragment(dimension, FRAGMENTS.natureza, 20, "minecraft:moss_block", "minecraft:stone");
-  buildFloatingFragment(dimension, FRAGMENTS.ruinas, 21, "minecraft:stone_bricks", "minecraft:deepslate");
-  buildFloatingFragment(dimension, FRAGMENTS.maquina, 21, "minecraft:oxidized_copper", "minecraft:blackstone");
-  decorateNatureFragment(dimension);
-  decorateRuinsFragment(dimension);
-  decorateMachineFragment(dimension);
-  buildBridge(dimension, { x: -5, y: 83, z: -72 }, { x: -46, y: 89, z: -18 }, "minecraft:lime_stained_glass");
-  buildBridge(dimension, { x: 5, y: 83, z: -72 }, { x: 27, y: 97, z: -58 }, "minecraft:orange_stained_glass");
-  buildBridge(dimension, { x: 9, y: 83, z: -75 }, { x: 43, y: 83, z: 28 }, "minecraft:cyan_stained_glass");
-  for (const debris of [
-    { x: -31, y: 116, z: 35, r: 7 }, { x: 33, y: 126, z: 28, r: 6 },
-    { x: -20, y: 70, z: 42, r: 5 }, { x: 68, y: 111, z: -5, r: 7 },
-    { x: -73, y: 110, z: -45, r: 6 },
-  ]) buildSphere(dimension, debris, debris.r, "minecraft:deepslate", "minecraft:amethyst_block");
-  for (const radius of [26, 34]) {
-    for (let angle = 0; angle < 360; angle += 8) {
-      const radians = angle * Math.PI / 180;
-      setBlock(dimension, { x: Math.round(Math.cos(radians) * radius), y: 96 + Math.round(Math.sin(radians) * 7), z: Math.round(Math.sin(radians) * radius) }, "minecraft:end_rod");
+function buildCircularPlatform(dimension, center, radius, floorBlock, rimBlock) {
+  for (let dx = -radius; dx <= radius; dx += 1) {
+    for (let dz = -radius; dz <= radius; dz += 1) {
+      const distance = Math.sqrt(dx * dx + dz * dz);
+      if (distance > radius) continue;
+      const block = distance > radius - 2 ? rimBlock : floorBlock;
+      setBlock(dimension, { x: center.x + dx, y: center.y, z: center.z + dz }, block);
+      if (distance <= radius - 2 && (Math.abs(dx) + Math.abs(dz)) % 11 === 0) {
+        setBlock(dimension, { x: center.x + dx, y: center.y - 1, z: center.z + dz }, "minecraft:polished_deepslate");
+      }
     }
   }
+}
+
+function buildCityTower(dimension, center, height, body, light) {
+  for (let y = 0; y <= height; y += 1) {
+    const radius = y < 3 ? 4 : y > height - 4 ? 2 : 3;
+    for (let dx = -radius; dx <= radius; dx += 1) for (let dz = -radius; dz <= radius; dz += 1) {
+      const edge = Math.abs(dx) === radius || Math.abs(dz) === radius;
+      if (edge) setBlock(dimension, { x: center.x + dx, y: center.y + y, z: center.z + dz }, (y % 6 === 3 && (dx === 0 || dz === 0)) ? light : body);
+    }
+  }
+  setBlock(dimension, { x: center.x, y: center.y + height + 1, z: center.z }, "minecraft:beacon");
+}
+
+function buildImpossibleCity(dimension) {
+  // Uma cidade contínua substitui as ilhas isoladas: praça central, avenida e três bairros.
+  buildCircularPlatform(dimension, { x: 0, y: 90, z: 0 }, 38, "minecraft:smooth_quartz", "minecraft:sea_lantern");
+  buildCircularPlatform(dimension, { x: 0, y: 84, z: -70 }, 20, "minecraft:polished_blackstone_bricks", "minecraft:crying_obsidian");
+  buildBridge(dimension, { x: 0, y: 84, z: -55 }, { x: 0, y: 90, z: -35 }, "minecraft:smooth_quartz");
+
+  // Santuário central em quatro níveis, com vazio vertical e observatório no topo.
+  for (const [radius, y, block] of [[28, 90, "minecraft:purpur_block"], [20, 94, "minecraft:quartz_bricks"], [13, 99, "minecraft:amethyst_block"], [7, 105, "minecraft:gold_block"]]) {
+    for (let x = -radius; x <= radius; x += 1) for (let z = -radius; z <= radius; z += 1) {
+      const d = Math.sqrt(x * x + z * z);
+      if (d <= radius && d >= radius - 3) setBlock(dimension, { x, y, z }, block);
+    }
+  }
+  for (const [x, z] of [[-24, -24], [24, -24], [-24, 24], [24, 24], [-14, 0], [14, 0], [0, 14]]) {
+    buildCityTower(dimension, { x, y: 91, z }, 18 + (Math.abs(x + z) % 9), "minecraft:polished_blackstone_bricks", "minecraft:purple_stained_glass");
+  }
+  line(dimension, { x: 0, y: 91, z: 0 }, { x: 0, y: 132, z: 0 }, "minecraft:sea_lantern");
+  for (const y of [98, 106, 114, 122]) buildSphere(dimension, { x: 0, y, z: 0 }, 4, "minecraft:purple_stained_glass", "minecraft:ochre_froglight");
+
+  // Jardins suspensos: água, árvores altas, estufa e núcleo de ativação.
+  buildCircularPlatform(dimension, FRAGMENTS.natureza.center, 22, "minecraft:moss_block", "minecraft:lime_stained_glass");
+  decorateNatureFragment(dimension);
+  for (const x of [-72, -62, -52]) line(dimension, { x, y: 89, z: -18 }, { x, y: 89, z: 5 }, "minecraft:water");
+  buildSphere(dimension, { x: -62, y: 99, z: -8 }, 8, "minecraft:lime_stained_glass", "minecraft:glowstone");
+
+  // Arquivo do tempo: praça monumental preserva o enigma das quatro memórias.
+  buildCircularPlatform(dimension, FRAGMENTS.ruinas.center, 23, "minecraft:stone_bricks", "minecraft:orange_stained_glass");
+  decorateRuinsFragment(dimension);
+  for (const z of [-58, -48, -38]) buildCityTower(dimension, { x: 42, y: 97, z }, 17, "minecraft:chiseled_stone_bricks", "minecraft:ochre_froglight");
+
+  // Forja de autômatos: fábricas verticais e um reator visível de toda a cidade.
+  buildCircularPlatform(dimension, FRAGMENTS.maquina.center, 23, "minecraft:oxidized_copper", "minecraft:cyan_stained_glass");
+  decorateMachineFragment(dimension);
+  buildSphere(dimension, { x: 56, y: 101, z: 42 }, 10, "minecraft:light_blue_stained_glass", "minecraft:sea_lantern");
+
+  // Avenidas largas, iluminadas e com guarda-corpos substituem as passarelas estreitas.
+  buildBridge(dimension, { x: -31, y: 91, z: -4 }, { x: -44, y: 89, z: -7 }, "minecraft:lime_concrete");
+  buildBridge(dimension, { x: 27, y: 92, z: -19 }, { x: 30, y: 97, z: -38 }, "minecraft:orange_concrete");
+  buildBridge(dimension, { x: 27, y: 91, z: 20 }, { x: 40, y: 83, z: 33 }, "minecraft:cyan_concrete");
+  buildArrivalObservatory(dimension);
   worldBuilt = true;
-  log("Planeta Partido construído: buraco negro central, três fragmentos e observatório de chegada.");
+  log("Cidade Impossível construída: santuário central, Jardins, Arquivo do Tempo e Forja de Autômatos.");
+}
+
+function buildShatteredPlanet(dimension) {
+  buildImpossibleCity(dimension);
 }
 
 function isInsideWorldEnvelope(location) {
@@ -334,6 +380,25 @@ function ensureWorld(force = false, onReady) {
   return dimension;
 }
 
+function rebuildImpossibleCity(message) {
+  const center = parseAbsoluteCenter(message);
+  if (!center || center.x !== BLACK_HOLE_CENTER.x || center.y !== BLACK_HOLE_CENTER.y || center.z !== BLACK_HOLE_CENTER.z) {
+    log(`CIDADE IMPOSSÍVEL BLOQUEADA: centro absoluto esperado=0 96 0; recebido='${message ?? ""}'.`);
+    return;
+  }
+  if (buildInProgress) {
+    log("CIDADE IMPOSSÍVEL BLOQUEADA: outra montagem já está em andamento.");
+    return;
+  }
+  const dimension = getDimensionSafe(CUSTOM_DIMENSION_ID, false);
+  if (!dimension || !precheckShatteredPlanet(dimension)) {
+    log("CIDADE IMPOSSÍVEL BLOQUEADA: dimensão ou envelope inválido.");
+    return;
+  }
+  log("CIDADE IMPOSSÍVEL INÍCIO centro=0 96 0; envelope=X-96..96,Y45..150,Z-96..96. Backup e validação do operador são obrigatórios.");
+  ensureWorld(true);
+}
+
 function onCooldown(player, scope, ticks) {
   const key = `${keyFor(player)}:${scope}`;
   const available = cooldowns.get(key) ?? 0;
@@ -363,12 +428,12 @@ function activateFragment(player, block, fragmentId) {
   const visited = Object.values(FRAGMENT_TAGS).filter((tag) => player.hasTag(tag)).length;
   line(block.dimension, { ...fragment.anchor, y: fragment.anchor.y + 2 }, BLACK_HOLE_CENTER, "minecraft:sea_lantern");
   player.onScreenDisplay?.setTitle(fragment.title, { subtitle: `Energia enviada ao núcleo — ${visited}/3 fragmentos` });
-  player.sendMessage(`${PREFIX} ${fragment.color}${fragment.title} REATIVADO.§r O feixe aponta diretamente para o buraco negro.`);
+  player.sendMessage(`${PREFIX} ${fragment.color}${fragment.title} REATIVADO.§r O feixe aponta diretamente para o Santuário Central.`);
   if (hasAllFragmentTags(player)) {
     energizeBlackHole(block.dimension);
-    player.onScreenDisplay?.setTitle("PLANETA REATIVADO", { subtitle: "Os três fragmentos reacenderam o núcleo." });
-    player.sendMessage(`${PREFIX} Missão concluída: os três fragmentos alimentam o núcleo. Volte ao observatório e contemple o novo feixe orbital.`);
-    log(`Planeta Partido concluído por ${player.name}.`);
+    player.onScreenDisplay?.setTitle("CIDADE DESPERTA", { subtitle: "Os três bairros reacenderam o Santuário." });
+    player.sendMessage(`${PREFIX} Missão concluída: os três bairros alimentam o Santuário. Volte à praça central e contemple o eixo de luz.`);
+    log(`Cidade Impossível concluída por ${player.name}.`);
   }
   log(`Fragmento ${fragmentId} reativado por ${player.name}; progresso=${visited}/3.`);
 }
@@ -572,8 +637,8 @@ function enterWorld(player, location, mode) {
   saveOrigin(player);
   for (const tag of Object.values(FRAGMENT_TAGS)) player.removeTag(tag);
   ensureWorld(false, (dimension) => {
-    teleport(player, dimension, ARRIVAL, "O PLANETA FOI PARTIDO. Atravesse os três fragmentos e reacenda o buraco negro.");
-    system.runTimeout(() => player.sendMessage(`${PREFIX} Siga as três pontes coloridas. Em cada ilha, toque a PEDRA-ÍMÃ sob a luz. O núcleo negro está sempre no centro.`), 40);
+    teleport(player, dimension, ARRIVAL, "Bem-vindo à CIDADE IMPOSSÍVEL. Explore os três bairros e desperte o Santuário Central.");
+    system.runTimeout(() => player.sendMessage(`${PREFIX} Visite os Jardins, o Arquivo do Tempo e a Forja de Autômatos. Em cada bairro, encontre a PEDRA-ÍMÃ sob a luz.`), 40);
   });
   log(`Entrada de ${player.name} por ${mode} em ${location.x} ${location.y} ${location.z}.`);
 }
@@ -711,7 +776,7 @@ if (startup?.subscribe) {
 world.afterEvents?.playerInteractWithBlock?.subscribe(handleInteraction);
 system.afterEvents?.scriptEventReceive?.subscribe((event) => {
   if (event.id === RECOVERY_SCRIPT_EVENT_ID && event.sourceEntity) {
-    ensureWorld(false, (dimension) => teleport(event.sourceEntity, dimension, ARRIVAL, "Recuperação concluída no observatório do Planeta Partido."));
+    ensureWorld(false, (dimension) => teleport(event.sourceEntity, dimension, ARRIVAL, "Recuperação concluída no portal da Cidade Impossível."));
   } else if (event.id === NEARBY_PORTAL_SCRIPT_EVENT_ID) {
     mountPortalNearPlayer(event.sourceEntity, event.message);
   } else if (event.id === COORDINATE_PORTAL_SCRIPT_EVENT_ID) {
@@ -720,11 +785,13 @@ system.afterEvents?.scriptEventReceive?.subscribe((event) => {
     handleRuinsTemporalBuild(event.message, false);
   } else if (event.id === RUINS_PUZZLE_ROLLBACK_EVENT_ID) {
     handleRuinsTemporalBuild(event.message, true);
+  } else if (event.id === CITY_REBUILD_EVENT_ID) {
+    rebuildImpossibleCity(event.message);
   }
 });
 
 system.run(() => {
-  log("Sprint 16 carregada: Planeta Perdido expandido, limpeza integral e três biomas exploráveis.");
+  log("Sprint 17 carregada: Cidade Impossível, santuário vertical e três bairros exploráveis.");
   ensureWorld(false);
 });
 
@@ -732,7 +799,7 @@ system.runInterval(() => {
   for (const player of world.getPlayers()) {
     if (player.dimension.id === CUSTOM_DIMENSION_ID) {
       const visited = Object.values(FRAGMENT_TAGS).filter((tag) => player.hasTag(tag)).length;
-      player.onScreenDisplay?.setActionBar(`§5PLANETA PARTIDO §7| Fragmentos reativados: §f${visited}/3 §7| Siga as pontes coloridas`);
+      player.onScreenDisplay?.setActionBar(`§5CIDADE IMPOSSÍVEL §7| Bairros despertos: §f${visited}/3 §7| Retorne ao Santuário Central`);
       if (player.location.y < 58) teleport(player, getDimensionSafe(CUSTOM_DIMENSION_ID), ARRIVAL, "Resgate automático concluído no observatório.");
       continue;
     }

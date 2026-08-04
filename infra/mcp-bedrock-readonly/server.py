@@ -23,7 +23,7 @@ from pathlib import Path
 from typing import Any
 
 SERVER_NAME = "bedrock-readonly"
-SERVER_VERSION = "0.16.4"
+SERVER_VERSION = "0.16.5"
 PROTOCOL_VERSION = "2024-11-05"
 
 DEFAULT_ALLOWED_ROOTS = (
@@ -1176,6 +1176,7 @@ ALLOWED_BEDROCK_COMMAND_PATTERNS = (
   re.compile(r"^execute as @a at @s run function portal_4d/montar_portal_proximo$"),
   re.compile(r"^scriptevent portal4d:montar_coordenada -?\d+ -?\d+ -?\d+( ([89]|1[0-9]|2[0-9]|3[0-2]))?$"),
   re.compile(r"^scriptevent portal4d:(construir_ruinas_temporais|remover_ruinas_temporais) -?\d+ -?\d+ -?\d+$"),
+  re.compile(r"^scriptevent portal4d:reconstruir_cidade_impossivel 0 96 0$"),
   re.compile(r"^scriptevent piramide:(refazer_interior|restaurar_interior|construir_quatro_selos|remover_quatro_selos) -?\d+ -?\d+ -?\d+$"),
 )
 

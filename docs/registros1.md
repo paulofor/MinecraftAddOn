@@ -4470,3 +4470,36 @@ Checklist executado no host via MCP readonly/projeto:
 - Segurança: nenhum comando `portal4d:construir_ruinas_temporais` foi enviado no deploy `0.1.39`; portanto não existe montagem parcial a remover. O Planeta Partido acabou de ser reconstruído pela rotina antiga e está em estado-base conhecido.
 - Versionamento: BP/RP `0.1.39`→`0.1.40`; MCP permanece `0.16.4`; nenhum PNG alterado.
 - Próximo passo: publicar BP/RP `0.1.40`, reiniciar, confirmar expressamente que não aparecem novas mensagens `Limpeza integral`/`Planeta Partido construído`, criar backup e somente então executar uma vez o evento das Ruínas.
+## 2026-08-04 00:22:03 UTC-3
+
+- Solicitação: verificar o portal que leva a outro mundo e preparar uma direção segura para melhorar esse mundo.
+- Consulta realizada: código, manifests, testes, documentação, histórico Git e últimas 1.200 linhas de `/root/MinecraftServer/logging/bedrock.log`, acessadas pelo MCP readonly oficial do projeto.
+- Estado confirmado: o destino é `portal4d:espaco_4d` (Planeta Partido); BP `0.1.40` está ativo; a dimensão registra sem erro; a construção principal já existia; as Ruínas Temporais foram concluídas em `42 96 -48` com 72 comandos e remoção da `tickingarea`. Não foram encontrados `TypeError` ou `SyntaxError` do Portal4D no recorte consultado.
+- Pergunta obrigatória: **por que isso aconteceu?** Por que o mundo funcional ainda pode parecer insuficiente? A evidência aponta para profundidade desigual: as três ilhas têm cenário próprio, mas Natureza e Máquina terminam ao tocar uma pedra-ímã, enquanto somente Ruínas oferece um enigma adicional. Os logs atuais provam funcionamento técnico, mas não medem compreensão, abandono, tempo ou diversão.
+- Causa mais provável: ciclo de jogo curto e assimétrico, não falha do teleporte. A hipótese ainda depende de playtest visual com o público-alvo; não foi tratada como certeza.
+- Resultado: criado `docs/portal_4d_espacial/auditoria_e_plano_melhoria_mundo.md`, com auditoria, evidências, incerteza, prioridade e quatro sprints: telemetria/playtest; desafios de Natureza e Máquina; navegação/acessibilidade/continuidade; final/replay/polimento. Cada sprint contém registro pós-conclusão.
+- Segurança: nenhuma construção, teleporte administrativo, rebuild ou alteração do mundo ativo foi executada. O plano registra o envelope atual X=`-96..96`, Y=`45..150`, Z=`-96..96` e exige coordenadas absolutas, dimensão exclusiva, precheck, chunks temporários, rollback, backup e validação visual para futuras peças.
+- Próximo passo: executar a Sprint 1 e colher um playtest-base antes de escolher alterações visuais ou reconstruir qualquer área.
+
+## 2026-08-04 01:16:04 UTC-3
+
+- Feedback visual: operador entrou no destino do portal e confirmou que o Planeta Partido continua muito sem graça; solicitou algo significativamente melhor.
+- Pergunta obrigatória: **por que isso aconteceu?** A entrega anterior foi somente uma auditoria documental e deliberadamente não alterou código nem o mundo. Portanto, o mesmo Planeta Partido necessariamente continuou ativo. No conteúdo existente, a causa estética é a composição de três ilhas isoladas ligadas por passarelas, com repetição de uma única ação nas rotas principais; apenas aumentar ilhas não resolveria a experiência.
+- Correção implementada: Portal4D `0.1.41` substitui o gerador visual pelo conceito Cidade Impossível, com praça contínua de 77 blocos de diâmetro, santuário central em quatro níveis, sete torres, eixo vertical, avenida monumental, Jardins Suspensos, Arquivo do Tempo e Forja de Autômatos. A montagem antiga agora delega ao novo builder e não cria planeta, disco de acreção, destroços ou ilhas fragmentadas.
+- Segurança: evento público exclusivo `portal4d:reconstruir_cidade_impossivel 0 96 0`; qualquer outro centro é recusado; dimensão customizada e envelope são validados; concorrência bloqueada; quatro tickingareas temporárias; limpeza serializada; startup continua sem rebuild automático. Envelope destrutivo X=`-96..96`, Y=`45..150`, Z=`-96..96`, incluindo subsolo até Y=`45` e altura máxima Y=`150`.
+- Pergunta de segurança: **por que essa construção poderia danificar ou ficar mal posicionada no mundo?** A migração remove todo o cenário anterior; centro/dimensão incorretos, concorrência ou execução sem backup poderiam apagar obra manual ou deixar estado parcial. A trava não detecta bloco a bloco toda obra manual; backup e inspeção visual permanecem obrigatórios.
+- Versionamento: BP/RP pareados `0.1.40`→`0.1.41`; MCP `0.16.4`→`0.16.5` com allowlist exata do evento. Nenhum PNG foi criado ou alterado.
+- Documentação: criada Sprint 17 em `docs/portal_4d_espacial/sprint17_cidade_impossivel.md`, incluindo causa raiz, solução, envelope, limitações, deploy seguro e registro pós-conclusão.
+- Próximo passo: publicar as três versões, reiniciar sem rebuild automático, criar backup e executar o evento uma única vez. Depois validar visualmente chegada, centro, bairros e retorno; diante de falha, consultar logs e não repetir cegamente.
+
+## 2026-08-04 01:34:26 UTC-3
+
+- Evento: operador informou deploy concluído da Cidade Impossível.
+- Verificação prévia: MCP inicializou como `0.16.5`; Pack Stack confirmou BP Portal4D `0.1.41`; dimensão `portal4d:espaco_4d` registrou; Sprint 17 carregou; servidor iniciou; não houve `Limpeza integral` nem rebuild automático no restart de `01:28`, confirmando a trava de startup.
+- Pergunta obrigatória: **por que o Planeta Partido ainda existia após apenas o deploy?** O deploy troca o código, mas o startup `ensureWorld(false)` preserva deliberadamente blocos persistentes para impedir apagamento acidental. A substituição exige o evento administrativo explícito depois de backup; isso é comportamento de segurança, não falha do deploy.
+- Backup: primeira tentativa em `/root/Uploads` falhou com `Read-only file system`. Causa identificada: esse mount não estava gravável pelo container MCP. Sem contornar o requisito, a operação foi ajustada para o diretório canônico gravável `/root/MinecraftServer/backups`.
+- Backup concluído: `/root/MinecraftServer/backups/Bedrock-level-pre-cidade-impossivel-0.1.41.tar.gz`, `165516725` bytes, SHA-256 `1c0a35916ee4c92f229a83fa0dd7861b30ec9223d7037174634a676cff36dd04`, criado em `2026-08-04T04:33:31.744369+00:00`. O servidor estava ativo, portanto a inspeção visual posterior permanece obrigatória.
+- Execução única: MCP enviou `scriptevent portal4d:reconstruir_cidade_impossivel 0 96 0` com executor `codex-cidade-impossivel-0.1.41` às `01:33:40` UTC-3.
+- Resultado confirmado no log: início com centro e envelope corretos; `Limpeza integral concluída: 288 fatias` às `01:33:55`; `Cidade Impossível construída: santuário central, Jardins, Arquivo do Tempo e Forja de Autômatos` às `01:33:56`. Não houve marcador `TypeError`, `SyntaxError`, watchdog ou erro do Portal4D no recorte pós-execução.
+- Estado: não repetir o evento. A Cidade Impossível está montada e o backup anterior permanece disponível.
+- Próximo passo: operador atravessa o portal e valida visualmente chegada, avenida, Santuário Central, Jardins, Arquivo do Tempo, Forja de Autômatos, resgate de queda e retorno. Se houver falha visual, registrar captura/coordenada e consultar logs antes de qualquer nova montagem.
