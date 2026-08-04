@@ -4470,3 +4470,13 @@ Checklist executado no host via MCP readonly/projeto:
 - Segurança: nenhum comando `portal4d:construir_ruinas_temporais` foi enviado no deploy `0.1.39`; portanto não existe montagem parcial a remover. O Planeta Partido acabou de ser reconstruído pela rotina antiga e está em estado-base conhecido.
 - Versionamento: BP/RP `0.1.39`→`0.1.40`; MCP permanece `0.16.4`; nenhum PNG alterado.
 - Próximo passo: publicar BP/RP `0.1.40`, reiniciar, confirmar expressamente que não aparecem novas mensagens `Limpeza integral`/`Planeta Partido construído`, criar backup e somente então executar uma vez o evento das Ruínas.
+## 2026-08-04 00:22:03 UTC-3
+
+- Solicitação: verificar o portal que leva a outro mundo e preparar uma direção segura para melhorar esse mundo.
+- Consulta realizada: código, manifests, testes, documentação, histórico Git e últimas 1.200 linhas de `/root/MinecraftServer/logging/bedrock.log`, acessadas pelo MCP readonly oficial do projeto.
+- Estado confirmado: o destino é `portal4d:espaco_4d` (Planeta Partido); BP `0.1.40` está ativo; a dimensão registra sem erro; a construção principal já existia; as Ruínas Temporais foram concluídas em `42 96 -48` com 72 comandos e remoção da `tickingarea`. Não foram encontrados `TypeError` ou `SyntaxError` do Portal4D no recorte consultado.
+- Pergunta obrigatória: **por que isso aconteceu?** Por que o mundo funcional ainda pode parecer insuficiente? A evidência aponta para profundidade desigual: as três ilhas têm cenário próprio, mas Natureza e Máquina terminam ao tocar uma pedra-ímã, enquanto somente Ruínas oferece um enigma adicional. Os logs atuais provam funcionamento técnico, mas não medem compreensão, abandono, tempo ou diversão.
+- Causa mais provável: ciclo de jogo curto e assimétrico, não falha do teleporte. A hipótese ainda depende de playtest visual com o público-alvo; não foi tratada como certeza.
+- Resultado: criado `docs/portal_4d_espacial/auditoria_e_plano_melhoria_mundo.md`, com auditoria, evidências, incerteza, prioridade e quatro sprints: telemetria/playtest; desafios de Natureza e Máquina; navegação/acessibilidade/continuidade; final/replay/polimento. Cada sprint contém registro pós-conclusão.
+- Segurança: nenhuma construção, teleporte administrativo, rebuild ou alteração do mundo ativo foi executada. O plano registra o envelope atual X=`-96..96`, Y=`45..150`, Z=`-96..96` e exige coordenadas absolutas, dimensão exclusiva, precheck, chunks temporários, rollback, backup e validação visual para futuras peças.
+- Próximo passo: executar a Sprint 1 e colher um playtest-base antes de escolher alterações visuais ou reconstruir qualquer área.
