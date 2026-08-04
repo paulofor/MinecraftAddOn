@@ -23,7 +23,7 @@ from pathlib import Path
 from typing import Any
 
 SERVER_NAME = "bedrock-readonly"
-SERVER_VERSION = "0.15.14"
+SERVER_VERSION = "0.16.3"
 PROTOCOL_VERSION = "2024-11-05"
 
 DEFAULT_ALLOWED_ROOTS = (
@@ -757,6 +757,108 @@ def _write_png_base64(path: str, png_base64: str, overwrite: bool = False) -> di
   }
 
 
+def _install_global_resource_pack(
+  source_path: str,
+  world_path: str,
+  backup_archive: str,
+  authorization_confirmed: bool = False,
+  execute: bool = False,
+) -> dict[str, Any]:
+  if not authorization_confirmed:
+    raise ValueError("authorization_confirmed=true é obrigatório")
+
+  ok_source, source = _is_path_allowed(source_path)
+  ok_world, world = _is_path_allowed(world_path)
+  ok_backup, backup = _is_path_allowed(backup_archive)
+  if not ok_source or not ok_world or not ok_backup:
+    raise ValueError("Origem, mundo ou backup fora do escopo permitido")
+  if not source.is_dir() or source.parent != Path("/root/MinecraftServer/resource_packs"):
+    raise ValueError("source_path deve ser um pack global direto")
+  if not world.is_dir() or world.parent != Path("/root/MinecraftServer/worlds"):
+    raise ValueError("world_path deve ser um mundo direto")
+  if not backup.is_file() or backup.suffixes[-2:] != [".tar", ".gz"]:
+    raise ValueError("backup_archive .tar.gz existente é obrigatório")
+
+  manifest_path = source / "manifest.json"
+  if not manifest_path.is_file():
+    raise ValueError("manifest.json ausente no pack global")
+  manifest = json.loads(manifest_path.read_text(encoding="utf-8-sig"))
+  header = manifest.get("header") or {}
+  pack_id = str(header.get("uuid", "")).lower()
+  version = header.get("version")
+  if not re.fullmatch(r"[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}", pack_id):
+    raise ValueError("header.uuid inválido")
+  if not isinstance(version, list) or len(version) != 3 or not all(isinstance(part, int) for part in version):
+    raise ValueError("header.version deve conter três inteiros")
+
+  files = [path for path in source.rglob("*") if path.is_file()]
+  if any(path.is_symlink() for path in source.rglob("*")):
+    raise ValueError("links simbólicos não são permitidos no pack")
+  png_files = [path for path in files if path.suffix.lower() == ".png"]
+  destination_root = world / "resource_packs"
+  destination = destination_root / source.name
+  binding_path = world / "world_resource_packs.json"
+  if destination.exists():
+    raise FileExistsError(f"pack já existe no mundo: {destination}")
+  if not binding_path.is_file():
+    raise FileNotFoundError(f"binding inexistente: {binding_path}")
+
+  bindings = json.loads(binding_path.read_text(encoding="utf-8"))
+  if not isinstance(bindings, list):
+    raise ValueError("world_resource_packs.json deve conter um array")
+  already_bound = any(str(item.get("pack_id", "")).lower() == pack_id for item in bindings if isinstance(item, dict))
+  plan = {
+    "source_path": str(source),
+    "destination_path": str(destination),
+    "binding_path": str(binding_path),
+    "pack_id": pack_id,
+    "version": version,
+    "files": len(files),
+    "png_files": len(png_files),
+    "bytes": sum(path.stat().st_size for path in files),
+    "already_bound": already_bound,
+    "backup_archive": str(backup),
+  }
+  if not execute:
+    return {"status": "planned", **plan}
+  if already_bound:
+    raise ValueError("UUID já está associado ao mundo")
+
+  destination_root.mkdir(parents=True, exist_ok=True)
+  staging = destination_root / f".{source.name}.installing-{os.getpid()}"
+  if staging.exists():
+    shutil.rmtree(staging)
+  staging.mkdir()
+  try:
+    for source_file in files:
+      relative = source_file.relative_to(source)
+      target = staging / relative
+      target.parent.mkdir(parents=True, exist_ok=True)
+      if source_file.suffix.lower() == ".png":
+        encoded = base64.b64encode(source_file.read_bytes()).decode("ascii")
+        _write_png_base64(str(target), encoded, overwrite=False)
+      else:
+        shutil.copy2(source_file, target)
+    staging.rename(destination)
+
+    updated_bindings = [*bindings, {"pack_id": pack_id, "version": version}]
+    temporary_binding = binding_path.with_suffix(".json.tmp")
+    temporary_binding.write_text(
+      json.dumps(updated_bindings, ensure_ascii=False, indent=2) + "\n",
+      encoding="utf-8",
+    )
+    json.loads(temporary_binding.read_text(encoding="utf-8"))
+    temporary_binding.replace(binding_path)
+  except Exception:
+    if staging.exists():
+      shutil.rmtree(staging)
+    if destination.exists():
+      shutil.rmtree(destination)
+    raise
+
+  return {"status": "installed", **plan}
+
+
 
 BUILD_PROFILES: dict[str, dict[str, Any]] = {
   "piramide_egito_gigante": {
@@ -1073,6 +1175,7 @@ ALLOWED_BEDROCK_COMMAND_PATTERNS = (
   re.compile(r"^function piramide_egito_gigante/prototipo/limpar_base_ponto_operador$"),
   re.compile(r"^execute as @a at @s run function portal_4d/montar_portal_proximo$"),
   re.compile(r"^scriptevent portal4d:montar_coordenada -?\d+ -?\d+ -?\d+( ([89]|1[0-9]|2[0-9]|3[0-2]))?$"),
+  re.compile(r"^scriptevent piramide:(refazer_interior|restaurar_interior|construir_quatro_selos|remover_quatro_selos) -?\d+ -?\d+ -?\d+$"),
 )
 
 
@@ -1273,6 +1376,21 @@ def _tools_list_result() -> dict[str, Any]:
         },
       },
       {
+        "name": "install_global_resource_pack",
+        "description": "Simula ou instala um resource pack global no mundo, com licença e backup confirmados.",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "source_path": {"type": "string"},
+            "world_path": {"type": "string"},
+            "backup_archive": {"type": "string"},
+            "authorization_confirmed": {"type": "boolean"},
+            "execute": {"type": "boolean"}
+          },
+          "required": ["source_path", "world_path", "backup_archive", "authorization_confirmed", "execute"]
+        },
+      },
+      {
         "name": "restart_bedrock",
         "description": "Reinicia o servidor Bedrock via comando configurado em BEDROCK_RESTART_CMD.",
         "inputSchema": {
@@ -1462,6 +1580,14 @@ def _handle_rpc(message: dict[str, Any]) -> dict[str, Any] | None:
           path=arguments["path"],
           png_base64=arguments["png_base64"],
           overwrite=bool(arguments.get("overwrite", False)),
+        )
+      elif name == "install_global_resource_pack":
+        payload = _install_global_resource_pack(
+          source_path=arguments["source_path"],
+          world_path=arguments["world_path"],
+          backup_archive=arguments["backup_archive"],
+          authorization_confirmed=bool(arguments.get("authorization_confirmed", False)),
+          execute=bool(arguments.get("execute", False)),
         )
       elif name == "restart_bedrock":
         payload = _restart_bedrock()
