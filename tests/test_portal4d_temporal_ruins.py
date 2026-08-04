@@ -35,7 +35,10 @@ def test_temporal_ruins_are_absolute_safe_interactive_and_reversible():
 def test_temporal_ruins_do_not_rebuild_the_whole_world_on_restart():
   script = SCRIPT.read_text()
   assert "ensureWorld(false);" in script
-  assert "ensureWorld(true);" not in script
+  startup_begin = script.index('system.run(() => {\n  log("Sprint 17 carregada')
+  startup = script[startup_begin:script.index("system.runInterval(() =>", startup_begin)]
+  assert "ensureWorld(true);" not in startup
+  assert "rebuildImpossibleCity" in script
   assert "Mundo existente reutilizado sem reconstrução automática" in script
   assert "if (!force)" in script
 
@@ -43,7 +46,7 @@ def test_temporal_ruins_do_not_rebuild_the_whole_world_on_restart():
 def test_portal4d_paired_manifests_are_bumped():
   bp = json.loads(BP_MANIFEST.read_text())
   rp = json.loads(RP_MANIFEST.read_text())
-  expected = [0, 1, 40]
+  expected = [0, 1, 41]
   assert bp["header"]["version"] == expected
   assert rp["header"]["version"] == expected
   assert all(module["version"] == expected for module in bp["modules"])

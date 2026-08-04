@@ -38,6 +38,7 @@ class BedrockCommandAllowlistTest(unittest.TestCase):
       "scriptevent portal4d:montar_coordenada -120 64 300",
       "scriptevent portal4d:construir_ruinas_temporais 42 96 -48",
       "scriptevent portal4d:remover_ruinas_temporais 42 96 -48",
+      "scriptevent portal4d:reconstruir_cidade_impossivel 0 96 0",
       "scriptevent piramide:refazer_interior -182 71 95",
       "scriptevent piramide:restaurar_interior -182 71 95",
       "scriptevent piramide:construir_quatro_selos -182 71 95",
@@ -82,6 +83,8 @@ class BedrockCommandAllowlistTest(unittest.TestCase):
       "scriptevent portal4d:montar_coordenada 10 72",
       "scriptevent portal4d:construir_ruinas_temporais 42 96",
       "scriptevent portal4d:construir_ruinas_temporais ~ ~ ~",
+      "scriptevent portal4d:reconstruir_cidade_impossivel 1 96 0",
+      "scriptevent portal4d:reconstruir_cidade_impossivel ~ ~ ~",
       "scriptevent piramide:refazer_interior -182 71",
       "scriptevent piramide:refazer_interior ~ ~ ~",
     ]
