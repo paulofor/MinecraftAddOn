@@ -4413,3 +4413,49 @@ Checklist executado no host via MCP readonly/projeto:
 - Versionamento: BP/RP `0.1.31`→`0.1.32`; MCP `0.16.2`→`0.16.3`; nenhum PNG alterado.
 - Limitação: a validação continua por amostragem e a confirmação visual permanece obrigatória. O backup foi criado com o servidor ativo, conforme aviso da própria tool.
 - Próximo passo: publicar BP/RP `0.1.32` e MCP `0.16.3`, reiniciar, confirmar o Pack Stack e repetir uma única vez o evento. Não contornar manualmente a trava no mundo.
+
+## 2026-08-03 22:21:53 UTC-3
+
+- Evento: operador confirmou o novo deploy; MCP respondeu normalmente, os manifests no pack do mundo apresentaram BP/RP `0.1.32`, e o `bedrock.log` confirmou Pack Stack `BP Piramide Egito Gigante 0.1.32` e servidor iniciado.
+- Execução: enviado uma única vez `scriptevent piramide:construir_quatro_selos -182 71 95`, executor auditado `codex-piramide-selos-0.1.32`.
+- Resultado: o log registrou `QUATRO SELOS INÍCIO` no envelope X=`-189..-175`, Y=`71..87`, Z=`89..107` e, 2,5 segundos depois, `QUATRO SELOS CONCLUÍDO centro=-182 71 95; comandos=40; tickingarea removida.` Nenhum marcador de erro foi observado.
+- Pergunta obrigatória: **por que a execução concluiu desta vez?** O deploy carregou a versão `0.1.32`, que corrige a expectativa incorreta do piso e usa a casca/ausência de líquidos como trava estrutural, mantendo os marcadores decorativos como evidência complementar. Isso explica a diferença em relação ao bloqueio seguro da `0.1.31`.
+- Causa raiz confirmada: o bloqueio anterior era exclusivamente a modelagem incorreta do precheck; não era centro errado, falta de espaço, falha do servidor ou dano parcial no mundo.
+- Segurança: foi reutilizado o backup anterior porque a tentativa `0.1.31` não passou do precheck e nenhum outro builder foi executado desde então; coordenada absoluta, envelope conhecido, comandos sequenciais e tickingarea temporária foram respeitados.
+- Estado: expansão automatizada concluída. Não repetir o evento de construção. O rollback `piramide:remover_quatro_selos -182 71 95` permanece disponível somente se a inspeção revelar problema.
+- Limitação e próximo passo: o log confirma execução técnica, mas não substitui validação visual. O operador deve percorrer a escada, tocar SOL→NILO→CÉU→VIDA, confirmar abertura da porta e inspecionar a Câmara Superior; enviar captura ou relatar qualquer bloqueio sem editar manualmente o mundo.
+
+## 2026-08-03 22:28:55 UTC-3
+
+- Pergunta do operador: o que pode ser feito de interessante no Mundo 4D.
+- Investigação: consultados `packs/BP_Portal4DEspacial/scripts/main.js`, as funções do módulo e a auditoria existente. O mundo já possui dimensão exclusiva, buraco negro, observatório, três fragmentos visuais (Natureza, Ruínas e Máquina), pontes, ativação por pedras-ímã e conclusão após 3/3.
+- Pergunta obrigatória: **por que o Mundo 4D ainda pode parecer pouco interessante mesmo sendo grande?** Os três fragmentos têm visuais diferentes, mas repetem o mesmo verbo de jogabilidade: atravessar uma ponte e ativar uma pedra-ímã. A causa raiz é baixa variedade de decisões e regras, não falta de espaço ou quantidade de blocos.
+- Recomendação: implementar **Anomalia das Três Linhas do Tempo** — Natureza representa o passado com enigma de sequência, Ruínas representa o presente com alinhamento lógico, Máquina representa o futuro com circuito temporizado, e o núcleo oferece convergência/decisão final.
+- Alternativas registradas: gravidade instável com resgate seguro, ecos narrativos, buraco negro reativo, cooperação com alternativa solo e observatório de constelações.
+- Segurança: priorizar um protótipo no fragmento das Ruínas, dentro do envelope existente X/Z=`-96..96`, Y=`45..150`; entrada absoluta, precheck, tickingarea temporária, rollback e backup permanecem obrigatórios. Não reconstruir o mundo completo para acrescentar uma mecânica local.
+- Estado: somente recomendação e documentação; nenhum pack, mundo, versão ou PNG foi alterado nesta etapa.
+- Próximo passo: se aprovado, estruturar o Add-On por sprints e implementar primeiro o enigma das Ruínas antes de expandir para os outros fragmentos.
+
+## 2026-08-03 22:36:49 UTC-3
+
+- Aprovação do operador: “vamos fazer isso”, após a proposta da Anomalia das Três Linhas do Tempo.
+- Escopo escolhido: Sprint 1, protótipo no Fragmento das Ruínas, conforme a ordem previamente recomendada; as Sprints Natureza, Máquina e Convergência permanecem planejadas e possuem campos pós-conclusão em `docs/mundo4d_anomalia_temporal.md`.
+- Pergunta obrigatória: **por que o Mundo 4D precisava desta alteração?** Os três fragmentos repetiam a interação direta com pedra-ímã. A nova Ruína exige interpretar e executar ORIGEM→ASCENSÃO→APOGEU→QUEDA antes de liberar a reativação, adicionando observação, memória e consequência espacial.
+- Investigação adicional: `system.run` chamava `ensureWorld(true)` e `clearPreviousWorld` limpava integralmente X/Z=`-96..96`, Y=`45..150` em todo restart. Essa reconstrução destruiria o novo enigma depois do deploy; portanto, apenas adicionar pilares trataria o sintoma e não a causa de persistência.
+- Correção de causa raiz: inicialização passa a `ensureWorld(false)` e reconhece o marcador existente do buraco negro para reutilizar o mundo pronto. A reconstrução integral continua disponível internamente quando realmente necessária, mas não ocorre automaticamente em cada restart.
+- Implementação: eventos absolutos `portal4d:construir_ruinas_temporais 42 96 -48` e `portal4d:remover_ruinas_temporais 42 96 -48`; precheck de dimensão/centro/envelope/âncora/líquidos/apoios dos quatro pilares; tickingarea temporária; sequência individual; porta da memória; ativação das Ruínas somente após solução; rollback e logs detalhados.
+- Pergunta de segurança: **por que essa construção poderia danificar ou ficar mal posicionada no mundo?** Centro incorreto poderia atingir vazio, borda ou outra ilha. A trava exige o centro exato `42 96 -48` na dimensão exclusiva.
+- Envelope: X=`32..52`, Y=`96..101`, Z=`-58..-37`; nenhum subsolo abaixo de Y=`96`; amostragem de líquidos em nove pontos; não há TNT, lava, dano ou perda de inventário.
+- Versionamento: BP/RP Portal 4D `0.1.37`→`0.1.38`; MCP `0.16.3`→`0.16.4`; nenhum PNG criado ou alterado.
+- Estado: código e testes preparados, mas nada foi publicado ou executado no mundo nesta etapa. Próximo passo é validar, commitar, publicar, criar backup e executar uma única vez após Pack Stack `0.1.38` confirmado.
+
+## 2026-08-03 23:17:13 UTC-3
+
+- Feedback do operador: a expansão precisa ser muito grande, bem feita e detalhada; caso contrário repetirá o tédio da versão atual.
+- Pergunta obrigatória: **por que a proposta `0.1.38` ainda poderia ficar chata?** Embora adicionasse uma sequência, ela concentrava quatro pilares e uma câmara pequena em poucos blocos. Isso trocaria a interação direta por outra interação curta, sem exploração espacial suficiente; portanto tratava parcialmente o sintoma, mas não a baixa densidade de momentos.
+- Correção de escopo antes do deploy: a Sprint 1 passa a ocupar X=`24..60`, Y=`96..110`, Z=`-63..-33`, utilizando quase todo o diâmetro seguro da ilha das Ruínas sem modificar abaixo de Y=`96`.
+- Conteúdo ampliado: praça 15×15, caminhos de até 33 blocos, quatro pavilhões 7×7×6, três arcos, obelisco central com beacon, Grande Câmara da Memória 13×6×10, teto oxidado, iluminação, porta monumental, baú com fragmentos de eco e feedback luminoso progressivo/resetável.
+- Jogabilidade: os quatro pontos ficam espacialmente separados; cada acerto ilumina seu pavilhão, erro apaga todos, conclusão abre a câmara, modifica o anel da praça e reativa as Ruínas.
+- Segurança: centro absoluto continua `42 96 -48`; precheck ampliado para 25 amostras de líquido e quatro apoios; tickingarea, trava concorrente, execução sequencial e rollback seletivo permanecem. O rollback restaura a decoração original das Ruínas após remover apenas os elementos adicionados acima do piso.
+- Versionamento: BP/RP Portal 4D `0.1.38`→`0.1.39`; MCP permanece `0.16.4`, pois os eventos allowlisted não mudaram; nenhum PNG alterado.
+- Estado: revisão feita antes de qualquer deploy ou execução. Publicar somente `0.1.39`; não publicar nem executar `0.1.38`.

@@ -257,3 +257,19 @@ O evento `0.1.31` não executou nenhum comando de construção, portanto não h�
 alteração parcial a reparar. Após publicar BP/RP `0.1.32`, reiniciar e confirmar
 o Pack Stack, deve-se repetir o comando apenas uma vez.
 - Enigma e Câmara Superior aprovados: sim / não
+
+## Execução concluída no mundo — 0.1.32
+
+Após a publicação e o reinício, o MCP confirmou BP/RP `0.1.32` no pack do
+mundo e o Bedrock carregou `BP Piramide Egito Gigante 0.1.32` no Pack Stack.
+O evento absoluto foi enviado uma única vez no centro aprovado:
+
+```text
+scriptevent piramide:construir_quatro_selos -182 71 95
+```
+
+O log registrou início no envelope X=`-189..-175`, Y=`71..87`,
+Z=`89..107` e conclusão dos 40 comandos, com remoção da tickingarea. Não houve
+erro de script nem bloqueio de precheck. A construção automatizada está
+concluída; falta apenas a validação visual e funcional dos quatro selos pelo
+operador dentro do jogo.
