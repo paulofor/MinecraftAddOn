@@ -51,14 +51,14 @@ class Portal4DFunctionTests(unittest.TestCase):
     self.assertIn("tickingarea add circle", script)
     self.assertIn("findNearbyPortalSite(dimension, { x, y, z }, rawRadius)", script)
 
-  def test_portal_manifests_are_paired_at_0_1_37(self) -> None:
+  def test_portal_manifests_are_paired_at_0_1_40(self) -> None:
     bp = json.loads((ROOT / "packs" / "BP_Portal4DEspacial" / "manifest.json").read_text(encoding="utf-8"))
     rp = json.loads((ROOT / "packs" / "RP_Portal4DEspacial" / "manifest.json").read_text(encoding="utf-8"))
 
-    self.assertEqual([0, 1, 37], bp["header"]["version"])
+    self.assertEqual([0, 1, 40], bp["header"]["version"])
     self.assertEqual(bp["header"]["version"], rp["header"]["version"])
-    self.assertTrue(all(module["version"] == [0, 1, 37] for module in bp["modules"] + rp["modules"]))
-    self.assertEqual([0, 1, 37], bp["dependencies"][0]["version"])
+    self.assertTrue(all(module["version"] == [0, 1, 40] for module in bp["modules"] + rp["modules"]))
+    self.assertEqual([0, 1, 40], bp["dependencies"][0]["version"])
 
   def test_shattered_planet_has_plain_mission_and_three_fragments(self) -> None:
     script = (ROOT / "packs" / "BP_Portal4DEspacial" / "scripts" / "main.js").read_text(encoding="utf-8")

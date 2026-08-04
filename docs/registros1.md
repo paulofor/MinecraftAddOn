@@ -4209,3 +4209,264 @@ Checklist executado no host via MCP readonly/projeto:
 - Versionamento: manifests BP/RP e dependência pareada incrementados de `0.1.36` para `0.1.37`. Nenhum PNG foi criado ou alterado.
 - Documentação: criada `docs/portal_4d_espacial/sprint16_planeta_perdido_expandido.md`, com causa raiz, escala, segurança, critérios de aceite e registro pós-conclusão.
 - Próximo passo: criar backup, publicar/reiniciar uma única vez, confirmar no `bedrock.log` `Limpeza integral concluída` antes de `Planeta Partido construído`, atravessar as três rotas e fazer inspeção visual. Se restar legado, registrar a coordenada e diagnosticar a fatia correspondente sem repetir cegamente.
+## 2026-08-03 14:25:44 UTC-3
+
+- Horário da investigação: `2026-08-03 14:24:59 UTC-03:00`.
+- Solicitação: ajudar a concluir a instalação do pack mostrado na captura como `RealSource_RealisticVisuals_1.8LOW...`.
+- Pergunta obrigatória: **por que isso aconteceu?** O arquivo foi extraído no diretório global de resource packs, mas copiar arquivos não associa automaticamente um pack a um mundo Bedrock existente.
+- Evidências: o MCP confirmou `/root/MinecraftServer/resource_packs/RealSource_LOW`; seu manifest é válido e declara UUID `e84ff511-bab3-4a4a-ad92-64ab325f8aaf`, versão `1.8.0` e capacidade `pbr`. O diretório `/root/MinecraftServer/worlds/Bedrock level/resource_packs` não contém o RealSource, e `world_resource_packs.json` não contém esse UUID. As 300 linhas finais de `logging/bedrock.log` exibem somente `AutoCompaction`, sem reinicialização ou carregamento recente do pack.
+- Causa raiz: o pack está disponível globalmente, porém não foi publicado no diretório de packs do mundo ativo nem incluído na lista de resource packs desse mundo. A ausência de reinício é secundária; reiniciar sozinho não corrige a associação ausente.
+- Ação realizada: criado `docs/instalacao_realsource_low.md` com o diagnóstico, UUID/versão exatos, sequência segura de backup, publicação pelo MCP, associação, validação JSON, reinício único e inspeção do log/cliente.
+- Segurança e conformidade: nenhum PNG foi copiado, alterado ou commitado; nenhum arquivo remoto foi modificado e o servidor não foi reiniciado. A licença/origem do pack deve ser confirmada antes da publicação.
+- Limitação: o MCP atual aceita apenas `write_png_base64` por arquivo e não escreve os JSONs do pack; o arquivo de aproximadamente 34 MB visto na estação do operador não está acessível neste repositório. Tentar copiar por Git/workflow violaria a regra do projeto.
+- Próximo passo: fornecer ao fluxo MCP a origem autorizada do pack (ou disponibilizar uma tool de importação compatível), criar backup, publicar no pack do mundo, acrescentar o UUID a `world_resource_packs.json`, reiniciar uma vez e verificar o início do novo `bedrock.log` e a renderização em cliente compatível com Vibrant Visuals.
+
+## 2026-08-03 14:28:57 UTC-3
+
+- Solicitação: esclarecer a frase “validação do JSON, reinício único, inspeção do novo `bedrock.log` e cliente compatível com Vibrant Visuals/PBR”.
+- Pergunta obrigatória: **por que isso aconteceu?** A resposta anterior usou “registrei a validação” para se referir a passos futuros documentados, mas a construção da frase podia ser entendida como se o servidor já tivesse sido alterado, reiniciado e testado.
+- Causa raiz: falta de separação explícita entre diagnóstico já executado e procedimento operacional ainda pendente; os termos técnicos `JSON`, `Vibrant Visuals` e `PBR` também não foram traduzidos para o efeito prático esperado pelo operador.
+- Correção: o guia agora informa que validar o JSON apenas verifica sua formatação, explica que o reinício acontece somente depois da instalação, define PBR em linguagem simples e adiciona um quadro “já foi feito/ainda não foi feito”.
+- Estado confirmado: somente o manifesto, as pastas e o log existente foram consultados. O pack ainda não foi copiado para o mundo, `world_resource_packs.json` não foi editado, o Bedrock não foi reiniciado e não houve teste no jogo.
+- Próximo passo: somente iniciar a instalação operacional após disponibilizar a origem autorizada dos arquivos ao fluxo MCP e criar o backup obrigatório.
+
+## 2026-08-03 14:32:09 UTC-3
+
+- Solicitação: explicar como “colocar” o Vibrant Visuals.
+- Pergunta obrigatória: **por que isso aconteceu?** O guia dizia apenas para usar um cliente compatível e não esclarecia que Vibrant Visuals é um modo gráfico ativado no Minecraft de cada jogador, e não outro pack ou componente instalado no servidor.
+- Causa raiz: a documentação misturava duas responsabilidades: o servidor associa/distribui o RealSource, enquanto o cliente Bedrock oferece e renderiza o modo Vibrant Visuals. Isso induzia o operador a procurar um arquivo adicional para o servidor.
+- Correção: adicionado ao guia o caminho **Configurações → Vídeo → Modo gráfico → Vibrant Visuals**, a orientação para atualizar o Bedrock e aceitar o resource pack ao conectar, além de explicar que a ausência da opção deve ser investigada no dispositivo/versão do cliente.
+- Evidência disponível: o manifest do RealSource declara capacidade `pbr`; isso descreve os materiais do pack, mas não instala uma opção gráfica no Minecraft do jogador.
+- Limitação: a consulta à documentação oficial na internet retornou `401 Unauthorized` no mecanismo de pesquisa desta execução. Por isso, os nomes de menus devem ser confirmados visualmente na versão/plataforma específica, podendo aparecer em português ou inglês.
+- Próximo passo: o operador informa plataforma, versão do Minecraft e se a opção aparece em **Configurações → Vídeo**; com esses dados, validar compatibilidade antes de alterar novamente o servidor.
+
+## 2026-08-03 14:36:29 UTC-3
+
+- Solicitação: acessar o lado servidor, verificar o que ainda falta e começar a preparação da instalação do RealSource LOW.
+- Pergunta obrigatória: **por que isso aconteceu?** A instalação continua incompleta porque o pack foi descompactado apenas no diretório global; ele ainda não está no pack do mundo nem associado em `world_resource_packs.json`. A investigação adicional encontrou também um bloqueio anterior à ativação: o próprio `README-USAGE_NOTICE.txt` declara que texturas, código e configurações não podem ser usados sem permissão do autor.
+- Evidências: MCP `0.15.14` disponível; pack global com `43M`; manifest UUID `e84ff511-bab3-4a4a-ad92-64ab325f8aaf`, versão `1.8.0` e `pbr`; `24G` livres no volume; mundo ativo `Bedrock level`; `texturepack-required=true`; `disable-client-vibrant-visuals=true` somente comentado; ausência do pack na pasta do mundo e da entrada no binding permanece confirmada.
+- Tentativa de backup: a primeira chamada para `/root/Uploads` falhou com `[Errno 30] Read-only file system`, porque esse volume está montado como somente leitura no container MCP. Isso é uma limitação de configuração do destino, não uma falha do mundo.
+- Ação segura concluída: repetida a tool `backup_world` usando `/root/MinecraftServer/backups`, que está no volume gravável. Criado `/root/MinecraftServer/backups/Bedrock-level-pre-realsource-low-1.8.tar.gz`, `131381092` bytes, SHA-256 `e7d22c685fadc62d0ac4ebfcc739250a9eff987fe10f308c1493be32a9ecb9e0`, em `2026-08-03T17:35:34.295020+00:00`.
+- Limitação do backup: a tool avisou que o Bedrock possivelmente estava ativo; o arquivo é uma salvaguarda operacional, mas uma restauração crítica ainda exigiria validação de integridade.
+- Estado após a ação: nenhum PNG foi movido, nenhum binding foi editado e o servidor não foi reiniciado. O backup obrigatório está pronto.
+- Próximo passo: o operador confirma explicitamente que possui autorização/licença para uso do RealSource. Depois dessa confirmação, ainda será necessário publicar o pack no diretório do mundo exclusivamente pelo fluxo MCP para PNGs, acrescentar o UUID ao binding, validar, reiniciar uma vez e inspecionar o novo log.
+
+## 2026-08-03 14:39:38 UTC-3
+
+- Confirmação do operador: possui licença para usar o RealSource; o bloqueio de autorização registrado anteriormente está resolvido.
+- Pergunta obrigatória: **por que a ativação ainda não foi executada após a confirmação?** O MCP publicado oferece `write_png_base64`, mas não consegue ler os PNGs binários do pack global, importar um diretório ou editar `world_resource_packs.json`. A sessão também não possui autenticação SSH. Portanto, não existe atualmente um caminho permitido de ponta a ponta para mover os assets já presentes até o pack do mundo e criar o binding.
+- Causa raiz: assimetria de capacidades do MCP: ele grava um PNG quando recebe base64, porém não expõe a origem binária existente nem uma operação transacional de importação/ativação. Usar cópia direta por shell contornaria a política obrigatória de PNG e não explica/corrige essa lacuna.
+- Estado preservado: backup pré-instalação existente e licença confirmada; nenhum PNG, binding ou processo Bedrock foi alterado nesta etapa.
+- Próximo passo técnico: adicionar e publicar no MCP uma tool de importação de resource pack global que valide origem/destino, reutilize a validação de `write_png_base64` para cada PNG, copie somente arquivos texto permitidos, atualize `world_resource_packs.json` atomicamente e ofereça simulação antes da execução. Após a publicação, executar a tool, reiniciar uma vez e validar o log.
+
+## 2026-08-03 14:43:50 UTC-3
+
+- Autorização operacional: o operador solicitou executar todas as etapas restantes e já confirmou a licença do RealSource.
+- Pergunta obrigatória: **por que a instalação não podia ser executada imediatamente?** O endpoint remoto continua no MCP `0.15.14`, sem operação de importação e sem escrita de binding; reiniciar ou copiar parcialmente deixaria o mundo em estado inconsistente.
+- Causa raiz corrigida no código: adicionada a tool `install_global_resource_pack` ao MCP `0.16.0`. Ela exige `authorization_confirmed=true`, backup `.tar.gz` existente, origem global direta e mundo direto; valida UUID/versão, rejeita symlinks e duplicidade, oferece `execute=false`, instala em staging, grava cada PNG passando por `_write_png_base64`, copia os demais arquivos e substitui o JSON de binding atomicamente.
+- Segurança: em qualquer exceção, staging e destino incompleto são removidos; a tool não reinicia o servidor automaticamente, permitindo validar o resultado antes do restart separado.
+- Validação local: `python3 -m py_compile infra/mcp-bedrock-readonly/server.py tests/test_mcp_resource_pack_install.py` e `pytest -q tests/test_mcp_resource_pack_install.py` passaram com dois testes, cobrindo simulação/execução, preservação do PNG, binding exato e recusa sem autorização.
+- Estado remoto: backup e licença prontos, mas nenhuma alteração do pack/binding e nenhum restart foram feitos porque o host ainda executa `0.15.14`. Isso evita afirmar conclusão antes da publicação real.
+- Próximo passo: publicar/implantar este commit pelo workflow do MCP; confirmar `/health` em `0.16.0`; chamar primeiro `install_global_resource_pack` com `execute=false`, revisar o plano, repetir com `execute=true`, confirmar arquivos/binding, reiniciar uma vez e inspecionar o novo `bedrock.log`.
+
+## 2026-08-03 14:52:34 UTC-3
+
+- Evento: operador confirmou que o deploy foi concluído e autorizou continuar a execução da instalação.
+- Verificação prévia: `/health` respondeu MCP `0.16.0` e `tools/list` confirmou `install_global_resource_pack` publicado.
+- Simulação: `execute=false` retornou origem global e destino no mundo corretos, UUID `e84ff511-bab3-4a4a-ad92-64ab325f8aaf`, versão `1.8.0`, `3.069` arquivos, `1.916` PNGs, `35.922.671` bytes, `already_bound=false` e o backup exigido.
+- Execução: repetida a tool com `authorization_confirmed=true` e `execute=true`; resultado `status=installed`. A leitura posterior confirmou `/root/MinecraftServer/worlds/Bedrock level/resource_packs/RealSource_LOW`, manifest `1.8.0`, tamanho `43M` e a nova entrada exata no final de `world_resource_packs.json`.
+- Pergunta obrigatória: **por que o restart ainda não aconteceu?** A chamada `restart_bedrock` falhou com `Reinício não configurado: defina BEDROCK_RESTART_CMD no ambiente do MCP`. O compose publicado não injeta esse comando; portanto, a tool não possui mecanismo autorizado para reiniciar o processo Bedrock.
+- Causa raiz: a capacidade de restart existe na API, mas depende de configuração de runtime ausente. Usar `stop` pelo console não é uma correção segura: ele está explicitamente bloqueado e não foi comprovado que o processo seria recriado automaticamente.
+- Estado seguro: pack e binding instalados; backup preservado; servidor permanece no processo anterior, sem carregar ainda o novo binding. Nenhuma tentativa cega adicional foi feita.
+- Próximo passo: configurar um mecanismo de restart real em `BEDROCK_RESTART_CMD` com acesso controlado ao processo do host ou o operador reiniciar o serviço Bedrock pelo mecanismo já usado no servidor. Depois, consultar o início do novo `bedrock.log` antes de testar no cliente.
+
+## 2026-08-03 14:56:34 UTC-3
+
+- Ação do operador: executou `systemctl restart bedrock.service`, confirmou `systemctl is-active bedrock.service` como `active` e forneceu a cauda do log.
+- Verificação independente via MCP: nova cauda de 500 linhas confirmou segundo início em `2026-08-03 14:55:30`, abertura de `worlds/Bedrock level/db`, portas IPv4/IPv6 e `Server started` em `14:55:33`. O binding ainda contém o UUID `e84ff511-bab3-4a4a-ad92-64ab325f8aaf`, versão `1.8.0`.
+- Pergunta obrigatória: **por que o recorte não mostra “RealSource” na pilha de packs?** O trecho observado imprime entradas `Pack Stack` somente para os Behavior Packs e não apresenta os Resource Packs já associados. Não há evidência suficiente para concluir que a ausência do nome nesse trecho seja falha; também não seria correto afirmar carregamento visual somente pelo restart.
+- Causa/estado mais provável: instalação e binding persistiram e o servidor reiniciou normalmente, sem erro que cite `RealSource`, UUID inválido ou pack ausente. A confirmação restante pertence ao handshake/renderização do cliente, quando o servidor exige o download por `texturepack-required=true`.
+- Avisos não relacionados: três warnings de schema `replace_block_item` já pertencem a itens `quadro_ideias`/`trilho_maritimo`; scripts Portal4D e demais módulos carregaram, e o servidor concluiu a inicialização. Eles não mencionam o RealSource e não explicam eventual ausência visual.
+- Próximo passo: conectar com Minecraft Bedrock atualizado, aceitar o resource pack obrigatório, ativar Vibrant Visuals em Vídeo e validar blocos vanilla. Se não houver solicitação de download ou mudança visual, coletar captura da tela e o Content Log do cliente antes de alterar/reinstalar o servidor.
+
+## 2026-08-03 15:04:38 UTC-3
+
+- Evidência do cliente: captura no Windows mostra “Importação de ‘Realistic Visuals 1.8 / LOW’ bem-sucedida” e **Visuais Vibrantes** selecionado em verde nas configurações de Vídeo.
+- Pergunta obrigatória: **por que ainda era necessário conferir essa tela?** O servidor já tinha pack, binding e restart válidos, mas o log não enumerava os Resource Packs; faltava provar que o cliente reconhecia o conteúdo e disponibilizava o renderizador compatível.
+- Causa raiz da incerteza resolvida: a ausência do nome RealSource no recorte `Pack Stack` era insuficiente como evidência visual. A captura fornece a evidência complementar do lado cliente sem exigir nova alteração no servidor.
+- Estado: configuração correta. A preferência **Desempenho** está ativa e é compatível com Visuais Vibrantes; **Visuais** pode ser selecionada somente para priorizar qualidade na comparação.
+- Próximo passo: fechar as configurações, observar no servidor blocos vanilla, água, relevo/brilho e iluminação. Se houver queda de FPS, manter **Desempenho**; não reinstalar nem reiniciar novamente sem um problema observável.
+
+## 2026-08-03 15:20:28 UTC-3
+
+- Evidência final: captura dentro do mundo, na coordenada exibida `-16 70 130`, mostra o RealSource/Visuais Vibrantes funcionando durante a conexão ao servidor.
+- Pergunta obrigatória: **por que agora é possível afirmar que a instalação está concluída?** As etapas anteriores comprovavam arquivos, binding, restart e importação do cliente, mas ainda faltava observar a renderização real no mundo. A nova captura fecha essa última lacuna.
+- Evidências visuais: reflexos do céu e da margem na água, sombras direcionais dos postes, lanternas com emissão intensa, caminho e grama detalhados, água com ondulação e materiais com relevo aparente.
+- Causa raiz resolvida: o problema inicial era pack presente apenas globalmente e sem binding do mundo. O pack agora existe no mundo, está associado, foi carregado após restart, importado pelo cliente e renderizado com Visuais Vibrantes.
+- Resultado: instalação validada de ponta a ponta. Não realizar novo upload, mudança no binding ou restart para este caso.
+- Próximo passo opcional: escolher **Desempenho**, **Visuais** ou **Personalizado** conforme FPS/qualidade desejados; isso é configuração local e não exige alteração no servidor.
+
+## 2026-08-03 15:32:29 UTC-3
+
+- Solicitação: avaliar se o Marketplace “Village Cities Add-On 1.2”, da Float Studios, serve para o projeto/servidor.
+- Pergunta obrigatória: **por que existe risco de ele não servir apesar do nome?** Similaridade temática não comprova compatibilidade técnica nem aderência pedagógica. O projeto precisa de governo, orçamento, votação, população, obras e persistência server-authoritative; um add-on de cidades pode oferecer somente conteúdo urbano.
+- Evidências consultadas: URL oficial do produto; HTML público da página do Marketplace; categoria oficial de Add-Ons; `docs/cidade_constitucional.md`; `especificacoes/especificacao_addon_cidade_constitucional_sem_funcoes_fixas.md`; estrutura e bindings atuais do servidor já investigados neste caso.
+- Limitação da investigação: a página oficial carrega os dados do produto dinamicamente e, sem sessão autenticada, não expôs descrição específica, preço, dependências, alterações de geração, licença de exportação nem suporte explícito ao Bedrock Dedicated Server Linux. O mecanismo web também retornou `401`, e a página foi consultada por HTTP direto.
+- Causa da incerteza: produtos Marketplace dependem de entitlement/conta e podem não fornecer um pack exportável para o fluxo BDS usado neste projeto; também não está confirmado se o add-on modifica vilas vanilla, geração, entidades ou estruturas existentes.
+- Recomendação: não comprar com a finalidade exclusiva de instalar agora no servidor principal. Ele pode servir como complemento visual/urbano, mas não substitui a Cidade Constitucional e deve passar primeiro por cópia local descartável, inventário de BP/RP/UUID/scripts e teste de coexistência com RealSource e packs atuais.
+- Próximo passo: obter no cliente autenticado a descrição completa e confirmar se pode ser aplicado a mundo existente/exportado para BDS. Se já adquirido, testar em cópia, nunca diretamente no mundo ativo.
+
+## 2026-08-03 15:36:03 UTC-3
+
+- Feedback do operador: “os nossos projetos não ficaram bons; todos falharam”.
+- Pergunta obrigatória: **por que isso aconteceu?** O histórico mostra que tratamos especificação, automação, logs e testes estruturais como aproximações de qualidade. Eles comprovaram que comandos rodavam e packs carregavam, mas não que as experiências eram bonitas, compreensíveis ou divertidas.
+- Causa raiz sistêmica: validação humana e visual tardia; evolução por remendos; escopo monumental antes de protótipo jogável; preferência por controle técnico sobre resultado percebido; critérios de aceite concentrados em funcionamento interno, não na experiência do jogador.
+- Evidências: múltiplos redesigns do Portal 4D (tesseracto, tutorial, laboratório, Nave Cronos, Planeta Partido), feedback reiterado de confusão/baixa qualidade, migrações destrutivas e correções que continuaram exigindo novas reconstruções. O sucesso técnico do RealSource, por contraste, só foi aceito após captura visual no jogo.
+- Correção da avaliação: a resposta anterior valorizou indevidamente a Cidade Constitucional própria por sua especificação, embora não exista evidência equivalente de sucesso jogável. O Village Cities passa a ser candidato razoável para substituir a camada urbana própria, desde que agrade visualmente em teste curto e possa ser usado no ambiente escolhido.
+- Nova recomendação: consultar vídeo/descrição/avaliações/preço no cliente; se agradar, comprar para teste isolado de 30–60 minutos. Primeiro avaliar “bonito, compreensível, dá vontade de continuar”; depois investigar BDS e coexistência. Não instalar diretamente no mundo principal.
+- Mudança de processo: suspender novas megaconstruções e grandes sistemas próprios até existir um protótipo pequeno aprovado visualmente pelo operador. Se o Marketplace não exportar para BDS, avaliar Realm/mundo hospedado antes de recomeçar outro projeto do zero.
+
+## 2026-08-03 15:41:06 UTC-3
+
+- Feedback do operador: a Pirâmide é interessante, mas seu interior é muito pobre; o mesmo vale para o Mundo Perdido.
+- Pergunta obrigatória: **por que isso aconteceu?** A inspeção dos arquivos confirma que os projetos priorizaram silhueta, escala e segurança de montagem, mas não densidade de exploração. A aparência externa elevou a expectativa sem existir conteúdo interno proporcional.
+- Evidência da Pirâmide: `prototipo/montar_piramide_completa_segura.mcfunction` declara “câmara interna simples” e entrega uma galeria, uma câmara retangular, dois atris, duas luzes centrais e seis tochas. `aventura/montar_interior.mcfunction` permanece bloqueada e não constrói conteúdo.
+- Evidência do Mundo Perdido: `main.js` gera ilhas elípticas; Natureza tem quatro árvores/linha de água, Ruínas três colunas/viga/esfera, Máquina quatro torres/três esferas. A interação se resume a três pedras-ímã ligadas por pontes; não há interiores, cavernas, rotas alternativas ou recompensas intermediárias.
+- Causa raiz: confundimos tamanho/silhueta com riqueza; medimos sucesso por blocos, comandos e missão concluível, não por quantidade de descobertas, decisões e momentos memoráveis. Os testes automatizados reforçaram essa distorção ao exigir âncoras e mensagens, sem avaliar conteúdo interno.
+- Correção de processo: documentada `docs/auditoria_qualidade_piramide_mundo_perdido.md`. Não aplicar novo remendo decorativo nem ampliar os mapas. Congelar ambos até decidir entre monumento decorativo, substituição por conteúdo pronto ou protótipo único de percurso de 5–10 minutos aprovado manualmente.
+- Próximo passo: o operador escolhe uma das três direções. Nenhuma construção ou limpeza será executada antes dessa escolha e de um protótipo visual pequeno.
+
+## 2026-08-03 15:55:13 UTC-3
+
+- Decisão do operador: aceita ajustar o que não ficou bom, desde que não precise editar manualmente o mundo.
+- Pergunta obrigatória: **por que essa condição é importante?** As tentativas anteriores transferiram ao operador tarefas repetitivas de deploy, comando, inspeção e correção, enquanto a automação produzia resultados pobres. A correção deve reduzir trabalho operacional, não criar uma nova obra manual para compensar o código.
+- Causa raiz operacional: confundimos “validação manual” com “construção manual”. O operador precisa apenas experimentar e julgar; criação, limpeza controlada, rollback, logs e posicionamento devem ser responsabilidade da automação.
+- Decisão técnica: correções futuras serão integralmente automatizadas por função/script com coordenadas absolutas, backup, envelope documentado, chunks temporários, precheck, rotina pública segura, builder interno e rollback. Nenhum bloco precisará ser colocado à mão.
+- Ordem recomendada: Pirâmide primeiro, pois o exterior já é aprovado e o defeito é limitado ao interior. Entregar um percurso automatizado de 5–10 minutos dentro do volume existente; só depois de aprovação aplicar o método a uma única ilha do Mundo Perdido.
+- Segurança: nenhuma alteração no mundo foi executada nesta etapa. Não reconstruir os dois projetos simultaneamente nem iniciar novo builder antes de documentar envelope e reversão do protótipo da Pirâmide.
+- Próximo passo: preparar o protótipo automatizado da Pirâmide; o operador deverá apenas entrar, percorrer e dizer se aprova, sem comandos construtivos ou edição manual.
+
+## 2026-08-03 16:05:35 UTC-3
+
+- Solicitação: implementar a correção automatizada da Pirâmide.
+- Pergunta obrigatória: **por que o interior anterior ficou pobre?** A função `montar_piramide_completa_segura` reservava somente uma galeria/câmara simples com dois atris e iluminação; a aventura mais rica estava bloqueada. O exterior e a segurança receberam prioridade, mas não houve protótipo de densidade interna aprovado.
+- Correção implementada: BP `0.1.29` recebe os eventos públicos `piramide:refazer_interior X Y Z` e `piramide:restaurar_interior X Y Z`. O builder cria corredor com nichos, portal interno, câmara alta, oito pilares, sarcófago, bifurcação, passagem secreta, tesouro e beacon; o rollback recompõe o interior simples.
+- Pergunta de segurança: **por que essa construção poderia danificar ou ficar mal posicionada no mundo?** Ela escava/substitui blocos; um centro errado, chunks ausentes ou concorrência poderiam cortar terreno/obra ou deixar construção parcial.
+- Segurança aplicada: coordenadas absolutas obrigatórias; Overworld explícito; Y=`5..300`; amostragem da casca da Pirâmide; recusa de líquidos; trava concorrente; execução sequencial; tickingarea temporária removida no sucesso/falhas; rollback automatizado. A amostragem não é varredura completa, então backup e inspeção continuam obrigatórios.
+- Envelope relativo: X=`X-8..X+8`, Y=`Y-1..Y+8`, Z=`Z-24..Z+21`. No centro validado `-182 71 95`: X=`-190..-174`, Y=`70..79`, Z=`71..116`; subsolo somente Y=`70`, altura máxima Y=`79`; fachada não é ampliada.
+- Versionamento: BP e RP pareados incrementados de `0.1.28` para `0.1.29` em headers/módulos e dependência BP→RP; MCP incrementado de `0.16.0` para `0.16.1` para allowlist específica dos dois scriptevents. Nenhum PNG foi criado ou alterado.
+- Documentação: criado `docs/piramide_interior_prototipo_automatizado.md` com causa, envelope, comandos públicos, limitações, execução, rollback e registro pós-conclusão.
+- Próximo passo: publicar, confirmar versões, criar backup e executar uma única vez `scriptevent piramide:refazer_interior -182 71 95`; o operador somente percorre e avalia. Não executar antes do deploy/backup.
+
+## 2026-08-03 16:48:53 UTC-3
+
+- Evento: operador informou deploy concluído; MCP `0.16.1`, BP/RP `0.1.29`, script remoto e restart foram confirmados antes da execução.
+- Backup: criado `/root/MinecraftServer/backups/Bedrock-level-pre-piramide-interior-0.1.29.tar.gz`, `165486969` bytes, SHA-256 `f237c617be773a20546c86df2da4718187f2213bdd2d68395132577909e2d0ae`, às `2026-08-03T19:47:32.105264+00:00`.
+- Execução: MCP enviou `scriptevent piramide:refazer_interior -182 71 95`; o log confirmou início e envelope correto, mas o precheck bloqueou com `shell_invalido=1; liquidos=0`. Nenhum bloco do interior foi alterado.
+- Pergunta obrigatória: **por que isso aconteceu?** A trava `0.1.29` exigia correspondência rígida das cinco amostras da casca. Uma única amostra da Pirâmide real divergiu, e o log antigo não informava qual coordenada/material, embora quatro amostras fossem válidas e não houvesse líquido.
+- Causa raiz: precheck excessivamente binário e diagnóstico incompleto para uma construção real que pode ter pequena variação de bloco. Repetir o mesmo comando cegamente apenas produziria o mesmo bloqueio.
+- Correção: BP/RP `0.1.30` passam a aceitar exatamente uma divergência (mínimo 4/5 da casca), registrar a coordenada divergente como aviso e continuar bloqueando duas ou mais divergências ou qualquer líquido. Envelope, tickingarea, concorrência e rollback permanecem iguais.
+- Limitação: `get_block` via LevelDB falhou nas cinco coordenadas com `NBT raiz não é compound: 0`, limitação já observada; portanto não contradiz o precheck runtime. A amostragem continua limitada e exige o backup já criado e inspeção visual.
+- Próximo passo: publicar somente BP/RP `0.1.30`, confirmar restart e repetir uma única vez o mesmo scriptevent. Não é necessário novo backup se nenhuma outra alteração ocorrer no mundo antes da repetição.
+
+## 2026-08-03 17:39:18 UTC-3
+
+- Evento: operador informou conclusão do deploy corretivo; MCP confirmou BP e RP `0.1.30` no mundo e `bedrock.log` confirmou Pack Stack `BP Piramide Egito Gigante 0.1.30`, restart e servidor iniciado.
+- Execução: enviado uma única vez `scriptevent piramide:refazer_interior -182 71 95` pelo MCP com executor `codex-piramide-interior-0.1.30`.
+- Resultado: log registrou `INTERIOR INÍCIO` no envelope X=`-190..-174`, Y=`70..79`, Z=`71..116` e, 3,6 segundos depois, `INTERIOR CONCLUÍDO centro=-182 71 95; comandos=63; tickingarea removida.` Não houve marcador de erro.
+- Pergunta obrigatória: **por que agora a execução concluiu?** A versão `0.1.30` explica a variação real da casca aceitando 4/5 amostras, sem remover as travas contra centro amplamente incorreto ou líquidos; assim o precheck deixou de bloquear uma variação isolada e o builder pôde executar sequencialmente.
+- Causa raiz resolvida: rigidez 5/5 do precheck anterior, não ausência da Pirâmide nem líquido. A automação concluiu e removeu sua área temporária.
+- Limitação: tentativa de confirmar o baú em `-182 71 114` via `get_block` retornou novamente `NBT raiz não é compound: 0`; essa limitação do leitor LevelDB não invalida o log runtime, mas mantém obrigatória a inspeção visual.
+- Estado: não repetir o builder. Backup de `0.1.29` e rollback parametrizado permanecem disponíveis.
+- Próximo passo: operador entra na Pirâmide, percorre o interior e envia captura/avaliação. Se reprovar ou observar dano, não corrigir manualmente; usar uma única vez o rollback automatizado após diagnóstico.
+
+## 2026-08-03 17:50:24 UTC-3
+
+- Pergunta do operador: o que mais pode ser colocado na Pirâmide ou se não há mais espaço.
+- Pergunta obrigatória: **por que pode parecer que não há espaço?** O protótipo percorre quase toda a profundidade Z, mas usa apenas 17 blocos de largura e 10 de altura dentro de um envelope externo máximo de 49 × 25 × 49. A silhueta escalonada reduz o espaço superior, porém ainda deixa volume lateral baixo e uma faixa vertical acima da câmara.
+- Evidências: função externa ocupa X=`-206..-158`, Y=`70..94`, Z=`71..119`; interior atual ocupa X=`-190..-174`, Y=`70..79`, Z=`71..116`; as camadas do corpo estreitam progressivamente até o topo.
+- Causa raiz a evitar: preencher o volume disponível com novos corredores repetiria o erro anterior de confundir tamanho com conteúdo. Espaço físico existe; o recurso escasso é densidade de momentos interessantes.
+- Recomendação: depois da avaliação visual do protótipo atual, priorizar um único **Enigma dos Quatro Selos** que abra uma pequena câmara superior. Alternativas: galeria vertical, armadilha segura, mapa celeste, micro-história arqueológica ou tesouro controlado por jogador.
+- Segurança: qualquer expansão continua automatizada, absoluta e limitada ao corpo existente; não escavar profundamente, ampliar a fachada ou executar antes de aprovar visualmente o interior atual.
+- Próximo passo: operador percorre e envia captura da câmara atual; somente então escolhe se quer o Enigma dos Quatro Selos ou outra opção. Nenhuma expansão foi executada nesta etapa.
+
+## 2026-08-03 20:05:56 UTC-3
+
+- Decisão do operador: implementar **Enigma dos Quatro Selos → porta secreta → pequena Câmara Superior do Faraó**.
+- Pergunta obrigatória: **por que essa expansão é preferível a acrescentar mais corredores?** O interior já ocupa quase toda a profundidade, mas ainda possui volume vertical. Um enigma com consequência espacial adiciona decisão, feedback e descoberta no mesmo percurso, em vez de aumentar distância vazia.
+- Implementação: novos eventos absolutos `piramide:construir_quatro_selos X Y Z` e `piramide:remover_quatro_selos X Y Z`; quatro selos em ordem SOL→NILO→CÉU→VIDA; progresso individual; erro reinicia sequência; solução abre porta dourada global; escadaria de dez degraus conduz a câmara com teto celeste, trono, iluminação, lodestone e beacon.
+- Pergunta de segurança: **por que essa construção poderia danificar ou ficar mal posicionada no mundo?** A escada e a sala escavam camadas superiores; centro, altura ou largura errados poderiam atravessar a fachada inclinada.
+- Segurança aplicada: centro absoluto; precheck de quatro marcadores exclusivos do interior `0.1.30`; Overworld explícito; tickingarea temporária; trava concorrente; comandos sequenciais; rollback; nenhuma lava/TNT/dano; persistência do centro em dynamic property.
+- Envelope adicional: relativo X=`X-7..X+7`, Y=`Y..Y+16`, Z=`Z-6..Z+12`; no centro `-182 71 95`, X=`-189..-175`, Y=`71..87`, Z=`89..107`; sem escavação abaixo de Y=`71`; altura máxima Y=`87`, dentro da Pirâmide até Y=`94`.
+- Versionamento: BP/RP pareados `0.1.30`→`0.1.31`; MCP `0.16.1`→`0.16.2` para allowlist específica de construção/remoção. Nenhum PNG criado ou alterado.
+- Limitações: porta é global após solução; progresso é individual em memória e reinicia ao desconectar; precheck é amostragem, não varredura completa; validação visual continua obrigatória.
+- Próximo passo: publicar BP/RP `0.1.31` e MCP `0.16.2`, reiniciar, criar backup e executar uma única vez `scriptevent piramide:construir_quatro_selos -182 71 95`. Não executar antes do deploy confirmado.
+
+## 2026-08-03 20:50:14 UTC-3
+
+- Evento: operador confirmou deploy; MCP validou BP/RP `0.1.31`, Pack Stack ativo e servidor iniciado sem erro da Pirâmide.
+- Segurança: tentativa inicial em `/root/Uploads` falhou porque o volume está somente leitura. O backup foi então criado no diretório gravável canônico `/root/MinecraftServer/backups/Bedrock-level-pre-piramide-quatro-selos.tar.gz`, com 165492348 bytes e SHA-256 `1361e51d5a9e4ee54c07200dab03786d2654d0c17101d874ba1a182de3ae7edb`.
+- Execução: enviado uma vez `scriptevent piramide:construir_quatro_selos -182 71 95`; o evento iniciou no envelope X=`-189..-175`, Y=`71..87`, Z=`89..107`, mas foi bloqueado antes da construção com `interior_invalido=4`. Nenhum comando de alteração da expansão foi executado.
+- Pergunta obrigatória: **por que isso aconteceu?** A primeira amostra do precheck esperava erroneamente `gold_block` em `X,Y-1,Z`, embora o builder anterior coloque `smooth_sandstone` nesse piso. Além disso, quatro decorações exatas eram usadas como trava primária, duplicando de forma mais rígida a casca estrutural que já havia sido validada com sucesso na construção do interior.
+- Causa raiz: expectativa incorreta em uma amostra e modelagem excessivamente rígida da evidência interna; não foi falta de deploy, coordenada incorreta nem falha parcial da construção.
+- Correção: `precheckRichInterior` passa a reutilizar obrigatoriamente a casca/ausência de líquidos, corrige a amostra do piso, aceita no máximo duas divergências decorativas e registra valores esperados/observados para diagnóstico. A trava continua impedindo centro errado, líquido ou casca incompatível.
+- Versionamento: BP/RP `0.1.31`→`0.1.32`; MCP `0.16.2`→`0.16.3`; nenhum PNG alterado.
+- Limitação: a validação continua por amostragem e a confirmação visual permanece obrigatória. O backup foi criado com o servidor ativo, conforme aviso da própria tool.
+- Próximo passo: publicar BP/RP `0.1.32` e MCP `0.16.3`, reiniciar, confirmar o Pack Stack e repetir uma única vez o evento. Não contornar manualmente a trava no mundo.
+
+## 2026-08-03 22:21:53 UTC-3
+
+- Evento: operador confirmou o novo deploy; MCP respondeu normalmente, os manifests no pack do mundo apresentaram BP/RP `0.1.32`, e o `bedrock.log` confirmou Pack Stack `BP Piramide Egito Gigante 0.1.32` e servidor iniciado.
+- Execução: enviado uma única vez `scriptevent piramide:construir_quatro_selos -182 71 95`, executor auditado `codex-piramide-selos-0.1.32`.
+- Resultado: o log registrou `QUATRO SELOS INÍCIO` no envelope X=`-189..-175`, Y=`71..87`, Z=`89..107` e, 2,5 segundos depois, `QUATRO SELOS CONCLUÍDO centro=-182 71 95; comandos=40; tickingarea removida.` Nenhum marcador de erro foi observado.
+- Pergunta obrigatória: **por que a execução concluiu desta vez?** O deploy carregou a versão `0.1.32`, que corrige a expectativa incorreta do piso e usa a casca/ausência de líquidos como trava estrutural, mantendo os marcadores decorativos como evidência complementar. Isso explica a diferença em relação ao bloqueio seguro da `0.1.31`.
+- Causa raiz confirmada: o bloqueio anterior era exclusivamente a modelagem incorreta do precheck; não era centro errado, falta de espaço, falha do servidor ou dano parcial no mundo.
+- Segurança: foi reutilizado o backup anterior porque a tentativa `0.1.31` não passou do precheck e nenhum outro builder foi executado desde então; coordenada absoluta, envelope conhecido, comandos sequenciais e tickingarea temporária foram respeitados.
+- Estado: expansão automatizada concluída. Não repetir o evento de construção. O rollback `piramide:remover_quatro_selos -182 71 95` permanece disponível somente se a inspeção revelar problema.
+- Limitação e próximo passo: o log confirma execução técnica, mas não substitui validação visual. O operador deve percorrer a escada, tocar SOL→NILO→CÉU→VIDA, confirmar abertura da porta e inspecionar a Câmara Superior; enviar captura ou relatar qualquer bloqueio sem editar manualmente o mundo.
+
+## 2026-08-03 22:28:55 UTC-3
+
+- Pergunta do operador: o que pode ser feito de interessante no Mundo 4D.
+- Investigação: consultados `packs/BP_Portal4DEspacial/scripts/main.js`, as funções do módulo e a auditoria existente. O mundo já possui dimensão exclusiva, buraco negro, observatório, três fragmentos visuais (Natureza, Ruínas e Máquina), pontes, ativação por pedras-ímã e conclusão após 3/3.
+- Pergunta obrigatória: **por que o Mundo 4D ainda pode parecer pouco interessante mesmo sendo grande?** Os três fragmentos têm visuais diferentes, mas repetem o mesmo verbo de jogabilidade: atravessar uma ponte e ativar uma pedra-ímã. A causa raiz é baixa variedade de decisões e regras, não falta de espaço ou quantidade de blocos.
+- Recomendação: implementar **Anomalia das Três Linhas do Tempo** — Natureza representa o passado com enigma de sequência, Ruínas representa o presente com alinhamento lógico, Máquina representa o futuro com circuito temporizado, e o núcleo oferece convergência/decisão final.
+- Alternativas registradas: gravidade instável com resgate seguro, ecos narrativos, buraco negro reativo, cooperação com alternativa solo e observatório de constelações.
+- Segurança: priorizar um protótipo no fragmento das Ruínas, dentro do envelope existente X/Z=`-96..96`, Y=`45..150`; entrada absoluta, precheck, tickingarea temporária, rollback e backup permanecem obrigatórios. Não reconstruir o mundo completo para acrescentar uma mecânica local.
+- Estado: somente recomendação e documentação; nenhum pack, mundo, versão ou PNG foi alterado nesta etapa.
+- Próximo passo: se aprovado, estruturar o Add-On por sprints e implementar primeiro o enigma das Ruínas antes de expandir para os outros fragmentos.
+
+## 2026-08-03 22:36:49 UTC-3
+
+- Aprovação do operador: “vamos fazer isso”, após a proposta da Anomalia das Três Linhas do Tempo.
+- Escopo escolhido: Sprint 1, protótipo no Fragmento das Ruínas, conforme a ordem previamente recomendada; as Sprints Natureza, Máquina e Convergência permanecem planejadas e possuem campos pós-conclusão em `docs/mundo4d_anomalia_temporal.md`.
+- Pergunta obrigatória: **por que o Mundo 4D precisava desta alteração?** Os três fragmentos repetiam a interação direta com pedra-ímã. A nova Ruína exige interpretar e executar ORIGEM→ASCENSÃO→APOGEU→QUEDA antes de liberar a reativação, adicionando observação, memória e consequência espacial.
+- Investigação adicional: `system.run` chamava `ensureWorld(true)` e `clearPreviousWorld` limpava integralmente X/Z=`-96..96`, Y=`45..150` em todo restart. Essa reconstrução destruiria o novo enigma depois do deploy; portanto, apenas adicionar pilares trataria o sintoma e não a causa de persistência.
+- Correção de causa raiz: inicialização passa a `ensureWorld(false)` e reconhece o marcador existente do buraco negro para reutilizar o mundo pronto. A reconstrução integral continua disponível internamente quando realmente necessária, mas não ocorre automaticamente em cada restart.
+- Implementação: eventos absolutos `portal4d:construir_ruinas_temporais 42 96 -48` e `portal4d:remover_ruinas_temporais 42 96 -48`; precheck de dimensão/centro/envelope/âncora/líquidos/apoios dos quatro pilares; tickingarea temporária; sequência individual; porta da memória; ativação das Ruínas somente após solução; rollback e logs detalhados.
+- Pergunta de segurança: **por que essa construção poderia danificar ou ficar mal posicionada no mundo?** Centro incorreto poderia atingir vazio, borda ou outra ilha. A trava exige o centro exato `42 96 -48` na dimensão exclusiva.
+- Envelope: X=`32..52`, Y=`96..101`, Z=`-58..-37`; nenhum subsolo abaixo de Y=`96`; amostragem de líquidos em nove pontos; não há TNT, lava, dano ou perda de inventário.
+- Versionamento: BP/RP Portal 4D `0.1.37`→`0.1.38`; MCP `0.16.3`→`0.16.4`; nenhum PNG criado ou alterado.
+- Estado: código e testes preparados, mas nada foi publicado ou executado no mundo nesta etapa. Próximo passo é validar, commitar, publicar, criar backup e executar uma única vez após Pack Stack `0.1.38` confirmado.
+
+## 2026-08-03 23:17:13 UTC-3
+
+- Feedback do operador: a expansão precisa ser muito grande, bem feita e detalhada; caso contrário repetirá o tédio da versão atual.
+- Pergunta obrigatória: **por que a proposta `0.1.38` ainda poderia ficar chata?** Embora adicionasse uma sequência, ela concentrava quatro pilares e uma câmara pequena em poucos blocos. Isso trocaria a interação direta por outra interação curta, sem exploração espacial suficiente; portanto tratava parcialmente o sintoma, mas não a baixa densidade de momentos.
+- Correção de escopo antes do deploy: a Sprint 1 passa a ocupar X=`24..60`, Y=`96..110`, Z=`-63..-33`, utilizando quase todo o diâmetro seguro da ilha das Ruínas sem modificar abaixo de Y=`96`.
+- Conteúdo ampliado: praça 15×15, caminhos de até 33 blocos, quatro pavilhões 7×7×6, três arcos, obelisco central com beacon, Grande Câmara da Memória 13×6×10, teto oxidado, iluminação, porta monumental, baú com fragmentos de eco e feedback luminoso progressivo/resetável.
+- Jogabilidade: os quatro pontos ficam espacialmente separados; cada acerto ilumina seu pavilhão, erro apaga todos, conclusão abre a câmara, modifica o anel da praça e reativa as Ruínas.
+- Segurança: centro absoluto continua `42 96 -48`; precheck ampliado para 25 amostras de líquido e quatro apoios; tickingarea, trava concorrente, execução sequencial e rollback seletivo permanecem. O rollback restaura a decoração original das Ruínas após remover apenas os elementos adicionados acima do piso.
+- Versionamento: BP/RP Portal 4D `0.1.38`→`0.1.39`; MCP permanece `0.16.4`, pois os eventos allowlisted não mudaram; nenhum PNG alterado.
+- Estado: revisão feita antes de qualquer deploy ou execução. Publicar somente `0.1.39`; não publicar nem executar `0.1.38`.
+
+## 2026-08-03 23:40:31 UTC-3
+
+- Evento: operador confirmou deploy `0.1.39`; MCP validou BP/RP no pack do mundo e o Pack Stack carregou `BP Portal 4D Espacial 0.1.39`.
+- Verificação antes da montagem: o restart ainda registrou `Limpeza integral concluída: 288 fatias` e `Planeta Partido construído`, portanto o enigma monumental não foi executado.
+- Pergunta obrigatória: **por que o mundo ainda foi reconstruído apesar de `ensureWorld(false)`?** No início do servidor, o chunk do marcador na dimensão customizada ainda não estava disponível; `blockId` retornou vazio, a condição interpretou isso como mundo ausente e chamou a limpeza integral. A correção anterior explicava a intenção, mas não tratava a indisponibilidade transitória do chunk.
+- Causa raiz confirmada: usar uma leitura de bloco possivelmente descarregada como autorização implícita para uma operação destrutiva. Ausência de leitura não é evidência de ausência do mundo.
+- Correção segura: no fluxo normal `force=false`, `ensureWorld` sempre reutiliza a dimensão existente e nunca chama `clearPreviousWorld`; reconstrução permanece possível apenas por chamada interna explicitamente forçada após diagnóstico. Assim um restart não pode apagar expansões locais.
+- Segurança: nenhum comando `portal4d:construir_ruinas_temporais` foi enviado no deploy `0.1.39`; portanto não existe montagem parcial a remover. O Planeta Partido acabou de ser reconstruído pela rotina antiga e está em estado-base conhecido.
+- Versionamento: BP/RP `0.1.39`→`0.1.40`; MCP permanece `0.16.4`; nenhum PNG alterado.
+- Próximo passo: publicar BP/RP `0.1.40`, reiniciar, confirmar expressamente que não aparecem novas mensagens `Limpeza integral`/`Planeta Partido construído`, criar backup e somente então executar uma vez o evento das Ruínas.
