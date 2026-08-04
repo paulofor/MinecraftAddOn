@@ -377,49 +377,91 @@ function activateFragment(player, block, fragmentId) {
 
 function ruinsTemporalSeals(center) {
   return [
-    { x: center.x - 7, y: center.y + 3, z: center.z - 5, block: "minecraft:amethyst_block", name: "ORIGEM" },
-    { x: center.x + 7, y: center.y + 3, z: center.z - 5, block: "minecraft:exposed_copper", name: "ASCENSÃO" },
-    { x: center.x - 7, y: center.y + 3, z: center.z + 9, block: "minecraft:gold_block", name: "APOGEU" },
-    { x: center.x + 7, y: center.y + 3, z: center.z + 9, block: "minecraft:crying_obsidian", name: "QUEDA" },
+    { x: center.x - 12, y: center.y + 3, z: center.z - 9, block: "minecraft:amethyst_block", name: "ORIGEM" },
+    { x: center.x + 12, y: center.y + 3, z: center.z - 9, block: "minecraft:exposed_copper", name: "ASCENSÃO" },
+    { x: center.x - 12, y: center.y + 3, z: center.z + 9, block: "minecraft:gold_block", name: "APOGEU" },
+    { x: center.x + 12, y: center.y + 3, z: center.z + 9, block: "minecraft:crying_obsidian", name: "QUEDA" },
   ];
 }
 
 function ruinsTemporalBuildCommands(center) {
   const commands = [
-    `fill ${center.x - 3} ${center.y + 1} ${center.z - 10} ${center.x + 3} ${center.y + 5} ${center.z - 7} chiseled_stone_bricks hollow`,
-    `fill ${center.x - 1} ${center.y + 1} ${center.z - 7} ${center.x + 1} ${center.y + 3} ${center.z - 7} crying_obsidian`,
-    `setblock ${center.x} ${center.y + 1} ${center.z - 9} lodestone`,
+    // Praça e quatro caminhos largos ocupam a ilha existente sem escavar o subsolo.
+    `fill ${center.x - 16} ${center.y} ${center.z - 2} ${center.x + 16} ${center.y} ${center.z + 2} cracked_stone_bricks`,
+    `fill ${center.x - 2} ${center.y} ${center.z - 13} ${center.x + 2} ${center.y} ${center.z + 13} cracked_stone_bricks`,
+    `fill ${center.x - 7} ${center.y} ${center.z - 7} ${center.x + 7} ${center.y} ${center.z + 7} polished_andesite`,
+    `fill ${center.x - 5} ${center.y} ${center.z - 5} ${center.x + 5} ${center.y} ${center.z + 5} cut_copper`,
+    // Grande Câmara da Memória ao norte, com nave, teto e porta selada.
+    `fill ${center.x - 6} ${center.y + 1} ${center.z - 15} ${center.x + 6} ${center.y + 10} ${center.z - 10} chiseled_stone_bricks hollow`,
+    `fill ${center.x - 5} ${center.y + 9} ${center.z - 14} ${center.x + 5} ${center.y + 9} ${center.z - 11} oxidized_cut_copper`,
+    `fill ${center.x - 2} ${center.y + 1} ${center.z - 10} ${center.x + 2} ${center.y + 5} ${center.z - 10} crying_obsidian`,
+    `setblock ${center.x} ${center.y + 1} ${center.z - 13} lodestone`,
+    `setblock ${center.x - 4} ${center.y + 3} ${center.z - 13} ochre_froglight`,
+    `setblock ${center.x + 4} ${center.y + 3} ${center.z - 13} ochre_froglight`,
+    `setblock ${center.x} ${center.y + 7} ${center.z - 13} sea_lantern`,
+    `setblock ${center.x} ${center.y + 1} ${center.z - 11} chest`,
+    `replaceitem block ${center.x} ${center.y + 1} ${center.z - 11} slot.container 0 echo_shard 4`,
+    `replaceitem block ${center.x} ${center.y + 1} ${center.z - 11} slot.container 1 compass 1`,
+    // Obelisco central e anéis que convergem para a memória restaurada.
+    `fill ${center.x - 1} ${center.y + 1} ${center.z - 1} ${center.x + 1} ${center.y + 8} ${center.z + 1} deepslate_tiles`,
+    `setblock ${center.x} ${center.y + 9} ${center.z} beacon`,
+    `fill ${center.x - 4} ${center.y + 1} ${center.z - 4} ${center.x + 4} ${center.y + 1} ${center.z + 4} purple_stained_glass outline`,
   ];
   for (const seal of ruinsTemporalSeals(center)) {
     commands.push(
-      `fill ${seal.x} ${center.y} ${seal.z} ${seal.x} ${center.y + 2} ${seal.z} chiseled_stone_bricks`,
+      // Cada selo ganha um pavilhão próprio, visível do centro da ilha.
+      `fill ${seal.x - 3} ${center.y} ${seal.z - 3} ${seal.x + 3} ${center.y} ${seal.z + 3} polished_blackstone_bricks`,
+      `fill ${seal.x - 2} ${center.y} ${seal.z - 2} ${seal.x + 2} ${center.y} ${seal.z + 2} smooth_stone`,
+      `fill ${seal.x - 3} ${center.y + 1} ${seal.z - 3} ${seal.x - 3} ${center.y + 6} ${seal.z - 3} chiseled_stone_bricks`,
+      `fill ${seal.x + 3} ${center.y + 1} ${seal.z - 3} ${seal.x + 3} ${center.y + 6} ${seal.z - 3} chiseled_stone_bricks`,
+      `fill ${seal.x - 3} ${center.y + 1} ${seal.z + 3} ${seal.x - 3} ${center.y + 6} ${seal.z + 3} chiseled_stone_bricks`,
+      `fill ${seal.x + 3} ${center.y + 1} ${seal.z + 3} ${seal.x + 3} ${center.y + 6} ${seal.z + 3} chiseled_stone_bricks`,
+      `fill ${seal.x - 3} ${center.y + 6} ${seal.z - 3} ${seal.x + 3} ${center.y + 6} ${seal.z - 3} cracked_stone_bricks`,
+      `fill ${seal.x - 3} ${center.y + 6} ${seal.z + 3} ${seal.x + 3} ${center.y + 6} ${seal.z + 3} cracked_stone_bricks`,
+      `fill ${seal.x} ${center.y + 1} ${seal.z} ${seal.x} ${center.y + 2} ${seal.z} chiseled_stone_bricks`,
       `setblock ${seal.x} ${seal.y} ${seal.z} ${seal.block}`,
-      `setblock ${seal.x} ${seal.y + 1} ${seal.z} sea_lantern`,
+      `setblock ${seal.x} ${seal.y + 1} ${seal.z} black_stained_glass`,
+      `setblock ${seal.x - 2} ${center.y + 1} ${seal.z} soul_lantern`,
+      `setblock ${seal.x + 2} ${center.y + 1} ${seal.z} soul_lantern`,
     );
   }
   commands.push(
-    `setblock ${center.x - 2} ${center.y + 2} ${center.z - 9} ochre_froglight`,
-    `setblock ${center.x + 2} ${center.y + 2} ${center.z - 9} ochre_froglight`,
+    // Arcos nos quatro acessos tornam a travessia uma sequência espacial.
+    `fill ${center.x - 9} ${center.y + 1} ${center.z - 2} ${center.x - 9} ${center.y + 6} ${center.z + 2} stone_bricks outline`,
+    `fill ${center.x + 9} ${center.y + 1} ${center.z - 2} ${center.x + 9} ${center.y + 6} ${center.z + 2} stone_bricks outline`,
+    `fill ${center.x - 2} ${center.y + 1} ${center.z + 8} ${center.x + 2} ${center.y + 6} ${center.z + 8} stone_bricks outline`,
   );
   return commands;
 }
 
 function ruinsTemporalRollbackCommands(center) {
-  const commands = [`fill ${center.x - 3} ${center.y + 1} ${center.z - 10} ${center.x + 3} ${center.y + 5} ${center.z - 7} air`];
-  for (const seal of ruinsTemporalSeals(center)) commands.push(`fill ${seal.x} ${center.y + 1} ${seal.z} ${seal.x} ${seal.y + 1} ${seal.z} air`);
+  const commands = [
+    `fill ${center.x - 6} ${center.y + 1} ${center.z - 15} ${center.x + 6} ${center.y + 10} ${center.z - 10} air`,
+    `fill ${center.x - 4} ${center.y + 1} ${center.z - 4} ${center.x + 4} ${center.y + 9} ${center.z + 4} air`,
+    `fill ${center.x - 9} ${center.y + 1} ${center.z - 2} ${center.x - 9} ${center.y + 6} ${center.z + 2} air`,
+    `fill ${center.x + 9} ${center.y + 1} ${center.z - 2} ${center.x + 9} ${center.y + 6} ${center.z + 2} air`,
+    `fill ${center.x - 2} ${center.y + 1} ${center.z + 8} ${center.x + 2} ${center.y + 6} ${center.z + 8} air`,
+    `fill ${center.x - 16} ${center.y} ${center.z - 2} ${center.x + 16} ${center.y} ${center.z + 2} stone_bricks`,
+    `fill ${center.x - 2} ${center.y} ${center.z - 13} ${center.x + 2} ${center.y} ${center.z + 13} stone_bricks`,
+    `fill ${center.x - 7} ${center.y} ${center.z - 7} ${center.x + 7} ${center.y} ${center.z + 7} stone_bricks`,
+  ];
+  for (const seal of ruinsTemporalSeals(center)) commands.push(
+    `fill ${seal.x - 3} ${center.y + 1} ${seal.z - 3} ${seal.x + 3} ${center.y + 6} ${seal.z + 3} air`,
+    `fill ${seal.x - 3} ${center.y} ${seal.z - 3} ${seal.x + 3} ${center.y} ${seal.z + 3} stone_bricks`,
+  );
   return commands;
 }
 
 function precheckRuinsTemporal(dimension, center) {
   const expected = FRAGMENTS.ruinas.center;
   const absoluteCenterMatches = center.x === expected.x && center.y === expected.y && center.z === expected.z;
-  const inEnvelope = center.x - 10 >= WORLD_ENVELOPE.minX && center.x + 10 <= WORLD_ENVELOPE.maxX
-    && center.y >= WORLD_ENVELOPE.minY && center.y + 5 <= WORLD_ENVELOPE.maxY
-    && center.z - 9 >= WORLD_ENVELOPE.minZ && center.z + 11 <= WORLD_ENVELOPE.maxZ;
+  const inEnvelope = center.x - 18 >= WORLD_ENVELOPE.minX && center.x + 18 <= WORLD_ENVELOPE.maxX
+    && center.y >= WORLD_ENVELOPE.minY && center.y + 14 <= WORLD_ENVELOPE.maxY
+    && center.z - 15 >= WORLD_ENVELOPE.minZ && center.z + 15 <= WORLD_ENVELOPE.maxZ;
   const anchorValid = blockId(dimension, FRAGMENTS.ruinas.anchor) === "minecraft:lodestone";
   const liquids = [];
   const unsupported = [];
-  for (const dx of [-10, 0, 10]) for (const dz of [-9, 0, 11]) {
+  for (const dx of [-18, -13, 0, 13, 18]) for (const dz of [-15, -10, 0, 10, 15]) {
     const location = { x: center.x + dx, y: center.y, z: center.z + dz };
     const id = blockId(dimension, location);
     if (id === "minecraft:water" || id === "minecraft:lava") liquids.push(`${location.x} ${location.y} ${location.z}=${id}`);
@@ -439,7 +481,7 @@ function handleRuinsTemporalBuild(message, rollback = false) {
     return;
   }
   ruinsPuzzleOperationRunning = true;
-  log(`RUÍNAS TEMPORAIS ${rollback ? "ROLLBACK" : "INÍCIO"} centro=${center.x} ${center.y} ${center.z}; envelope=X${center.x - 10}..${center.x + 10},Y${center.y}..${center.y + 5},Z${center.z - 9}..${center.z + 11}.`);
+  log(`RUÍNAS TEMPORAIS ${rollback ? "ROLLBACK" : "INÍCIO"} centro=${center.x} ${center.y} ${center.z}; envelope=X${center.x - 18}..${center.x + 18},Y${center.y}..${center.y + 14},Z${center.z - 15}..${center.z + 15}.`);
   runCommandSafe(dimension, `tickingarea remove ${RUINS_PUZZLE_TICKING_AREA}`, "limpeza preventiva das ruínas");
   const loaded = runCommandSafe(dimension, `tickingarea add circle ${center.x} ${center.y} ${center.z} 2 ${RUINS_PUZZLE_TICKING_AREA} true`, "carregamento das ruínas");
   Promise.resolve(loaded).then(() => system.runTimeout(() => {
@@ -452,6 +494,11 @@ function handleRuinsTemporalBuild(message, rollback = false) {
     }
     const commands = rollback ? ruinsTemporalRollbackCommands(center) : ruinsTemporalBuildCommands(center);
     runCommandsSequentially(dimension, commands, "RUÍNAS TEMPORAIS", () => {
+      if (rollback) {
+        decorateRuinsFragment(dimension);
+        setBlock(dimension, FRAGMENTS.ruinas.anchor, "minecraft:lodestone");
+        setBlock(dimension, { ...FRAGMENTS.ruinas.anchor, y: FRAGMENTS.ruinas.anchor.y + 1 }, "minecraft:sea_lantern");
+      }
       try { world.setDynamicProperty(RUINS_PUZZLE_CENTER_PROPERTY, rollback ? undefined : JSON.stringify(center)); } catch (error) { log(`RUÍNAS TEMPORAIS aviso de persistência: ${error}`); }
       runCommandSafe(dimension, `tickingarea remove ${RUINS_PUZZLE_TICKING_AREA}`, "limpeza final das ruínas");
       ruinsPuzzleOperationRunning = false;
@@ -485,17 +532,20 @@ function handleRuinsTemporalInteraction(player, block) {
   const expected = ruinsPuzzleProgress.get(key) ?? 0;
   if (index !== expected) {
     ruinsPuzzleProgress.set(key, 0);
+    for (const seal of seals) runCommandSafe(block.dimension, `setblock ${seal.x} ${seal.y + 1} ${seal.z} black_stained_glass`, "reinício visual da sequência temporal");
     player.sendMessage(`${PREFIX} A memória se fragmentou. Recomece pela ORIGEM.`);
     player.playSound?.("random.break");
     return true;
   }
   const next = expected + 1;
   ruinsPuzzleProgress.set(key, next);
+  runCommandSafe(block.dimension, `setblock ${seals[index].x} ${seals[index].y + 1} ${seals[index].z} sea_lantern`, `iluminação do selo ${seals[index].name}`);
   player.sendMessage(`${PREFIX} Memória ${seals[index].name} alinhada (${next}/4).`);
   player.playSound?.("random.orb");
   if (next < seals.length) return true;
   ruinsPuzzleProgress.delete(key);
-  runCommandSafe(block.dimension, `fill ${center.x - 1} ${center.y + 1} ${center.z - 7} ${center.x + 1} ${center.y + 3} ${center.z - 7} air`, "abertura da memória das ruínas");
+  runCommandSafe(block.dimension, `fill ${center.x - 2} ${center.y + 1} ${center.z - 10} ${center.x + 2} ${center.y + 5} ${center.z - 10} air`, "abertura da grande Câmara da Memória");
+  runCommandSafe(block.dimension, `fill ${center.x - 4} ${center.y + 2} ${center.z - 4} ${center.x + 4} ${center.y + 2} ${center.z + 4} purple_stained_glass outline`, "convergência temporal da praça");
   activateFragment(player, { dimension: block.dimension }, "ruinas");
   player.onScreenDisplay?.setTitle("MEMÓRIA RESTAURADA", { subtitle: "As Ruínas revelaram o presente do planeta" });
   log(`RUÍNAS TEMPORAIS RESOLVIDO jogador=${player.name}; centro=${center.x} ${center.y} ${center.z}.`);

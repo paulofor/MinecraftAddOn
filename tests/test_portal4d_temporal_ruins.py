@@ -25,6 +25,9 @@ def test_temporal_ruins_are_absolute_safe_interactive_and_reversible():
     "ASCENSÃO",
     "APOGEU",
     "QUEDA",
+    "Grande Câmara da Memória",
+    "echo_shard 4",
+    "convergência temporal da praça",
   ):
     assert expected in script
 
@@ -39,7 +42,7 @@ def test_temporal_ruins_do_not_rebuild_the_whole_world_on_restart():
 def test_portal4d_paired_manifests_are_bumped():
   bp = json.loads(BP_MANIFEST.read_text())
   rp = json.loads(RP_MANIFEST.read_text())
-  expected = [0, 1, 38]
+  expected = [0, 1, 39]
   assert bp["header"]["version"] == expected
   assert rp["header"]["version"] == expected
   assert all(module["version"] == expected for module in bp["modules"])

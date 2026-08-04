@@ -4448,3 +4448,14 @@ Checklist executado no host via MCP readonly/projeto:
 - Envelope: X=`32..52`, Y=`96..101`, Z=`-58..-37`; nenhum subsolo abaixo de Y=`96`; amostragem de líquidos em nove pontos; não há TNT, lava, dano ou perda de inventário.
 - Versionamento: BP/RP Portal 4D `0.1.37`→`0.1.38`; MCP `0.16.3`→`0.16.4`; nenhum PNG criado ou alterado.
 - Estado: código e testes preparados, mas nada foi publicado ou executado no mundo nesta etapa. Próximo passo é validar, commitar, publicar, criar backup e executar uma única vez após Pack Stack `0.1.38` confirmado.
+
+## 2026-08-03 23:17:13 UTC-3
+
+- Feedback do operador: a expansão precisa ser muito grande, bem feita e detalhada; caso contrário repetirá o tédio da versão atual.
+- Pergunta obrigatória: **por que a proposta `0.1.38` ainda poderia ficar chata?** Embora adicionasse uma sequência, ela concentrava quatro pilares e uma câmara pequena em poucos blocos. Isso trocaria a interação direta por outra interação curta, sem exploração espacial suficiente; portanto tratava parcialmente o sintoma, mas não a baixa densidade de momentos.
+- Correção de escopo antes do deploy: a Sprint 1 passa a ocupar X=`24..60`, Y=`96..110`, Z=`-63..-33`, utilizando quase todo o diâmetro seguro da ilha das Ruínas sem modificar abaixo de Y=`96`.
+- Conteúdo ampliado: praça 15×15, caminhos de até 33 blocos, quatro pavilhões 7×7×6, três arcos, obelisco central com beacon, Grande Câmara da Memória 13×6×10, teto oxidado, iluminação, porta monumental, baú com fragmentos de eco e feedback luminoso progressivo/resetável.
+- Jogabilidade: os quatro pontos ficam espacialmente separados; cada acerto ilumina seu pavilhão, erro apaga todos, conclusão abre a câmara, modifica o anel da praça e reativa as Ruínas.
+- Segurança: centro absoluto continua `42 96 -48`; precheck ampliado para 25 amostras de líquido e quatro apoios; tickingarea, trava concorrente, execução sequencial e rollback seletivo permanecem. O rollback restaura a decoração original das Ruínas após remover apenas os elementos adicionados acima do piso.
+- Versionamento: BP/RP Portal 4D `0.1.38`→`0.1.39`; MCP permanece `0.16.4`, pois os eventos allowlisted não mudaram; nenhum PNG alterado.
+- Estado: revisão feita antes de qualquer deploy ou execução. Publicar somente `0.1.39`; não publicar nem executar `0.1.38`.
