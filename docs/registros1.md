@@ -4459,3 +4459,14 @@ Checklist executado no host via MCP readonly/projeto:
 - Segurança: centro absoluto continua `42 96 -48`; precheck ampliado para 25 amostras de líquido e quatro apoios; tickingarea, trava concorrente, execução sequencial e rollback seletivo permanecem. O rollback restaura a decoração original das Ruínas após remover apenas os elementos adicionados acima do piso.
 - Versionamento: BP/RP Portal 4D `0.1.38`→`0.1.39`; MCP permanece `0.16.4`, pois os eventos allowlisted não mudaram; nenhum PNG alterado.
 - Estado: revisão feita antes de qualquer deploy ou execução. Publicar somente `0.1.39`; não publicar nem executar `0.1.38`.
+
+## 2026-08-03 23:40:31 UTC-3
+
+- Evento: operador confirmou deploy `0.1.39`; MCP validou BP/RP no pack do mundo e o Pack Stack carregou `BP Portal 4D Espacial 0.1.39`.
+- Verificação antes da montagem: o restart ainda registrou `Limpeza integral concluída: 288 fatias` e `Planeta Partido construído`, portanto o enigma monumental não foi executado.
+- Pergunta obrigatória: **por que o mundo ainda foi reconstruído apesar de `ensureWorld(false)`?** No início do servidor, o chunk do marcador na dimensão customizada ainda não estava disponível; `blockId` retornou vazio, a condição interpretou isso como mundo ausente e chamou a limpeza integral. A correção anterior explicava a intenção, mas não tratava a indisponibilidade transitória do chunk.
+- Causa raiz confirmada: usar uma leitura de bloco possivelmente descarregada como autorização implícita para uma operação destrutiva. Ausência de leitura não é evidência de ausência do mundo.
+- Correção segura: no fluxo normal `force=false`, `ensureWorld` sempre reutiliza a dimensão existente e nunca chama `clearPreviousWorld`; reconstrução permanece possível apenas por chamada interna explicitamente forçada após diagnóstico. Assim um restart não pode apagar expansões locais.
+- Segurança: nenhum comando `portal4d:construir_ruinas_temporais` foi enviado no deploy `0.1.39`; portanto não existe montagem parcial a remover. O Planeta Partido acabou de ser reconstruído pela rotina antiga e está em estado-base conhecido.
+- Versionamento: BP/RP `0.1.39`→`0.1.40`; MCP permanece `0.16.4`; nenhum PNG alterado.
+- Próximo passo: publicar BP/RP `0.1.40`, reiniciar, confirmar expressamente que não aparecem novas mensagens `Limpeza integral`/`Planeta Partido construído`, criar backup e somente então executar uma vez o evento das Ruínas.

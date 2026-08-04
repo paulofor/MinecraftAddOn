@@ -318,16 +318,14 @@ function ensureWorld(force = false, onReady) {
   const dimension = getDimensionSafe(CUSTOM_DIMENSION_ID, false);
   if (!dimension) return undefined;
   if (onReady) worldReadyCallbacks.push(onReady);
-  if (!force && blockId(dimension, { x: 0, y: 96, z: 18 }) === "minecraft:black_concrete") {
+  if (!force) {
+    const marker = blockId(dimension, { x: 0, y: 96, z: 18 });
+    if (marker && marker !== "minecraft:black_concrete") log(`Mundo existente reutilizado sem reconstrução automática; marcador observado=${marker}. Use manutenção explícita após diagnóstico se necessário.`);
     worldBuilt = true;
     for (const callback of worldReadyCallbacks.splice(0)) callback(dimension);
     return dimension;
   }
-  if (worldBuilt && !force) {
-    for (const callback of worldReadyCallbacks.splice(0)) callback(dimension);
-    return dimension;
-  }
-  if (!buildInProgress && (force || !worldBuilt || blockId(dimension, { x: 0, y: 96, z: 18 }) !== "minecraft:black_concrete")) {
+  if (!buildInProgress) {
     if (!precheckShatteredPlanet(dimension)) return undefined;
     buildInProgress = true;
     for (const area of BUILD_TICKING_AREAS) runCommandSafe(dimension, `tickingarea add circle ${area.x} 96 ${area.z} 4 ${area.name} true`, `carregamento temporário ${area.name}`);

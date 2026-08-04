@@ -61,7 +61,7 @@ fragmento.
 - O que ficou faltando:
 - Impedimentos/bloqueios:
 
-## Sprint 1 ampliada — versão 0.1.39
+## Sprint 1 ampliada — versão 0.1.40
 
 Comando de montagem após deploy, backup e reinício:
 
@@ -98,15 +98,17 @@ borda da ilha ou substituir outro fragmento.
 
 O script anterior chamava `ensureWorld(true)` em toda inicialização e, por isso,
 apagava e reconstruía integralmente X/Z=`-96..96`, Y=`45..150` a cada restart.
-Isso destruiria qualquer expansão local persistente. A versão `0.1.38` detecta
-o marcador já existente do buraco negro e reutiliza o mundo quando ele está
-pronto; a reconstrução integral deixa de ser automática.
+Isso destruiria qualquer expansão local persistente. A primeira correção ainda
+consultava o marcador antes de o chunk da dimensão estar disponível e, no
+deploy `0.1.39`, a leitura vazia provocou outra reconstrução. A versão `0.1.40`
+torna o comportamento seguro por padrão: chamadas normais sempre reutilizam o
+mundo; somente uma chamada interna explicitamente forçada pode reconstruí-lo.
 
 ### Densidade arquitetônica e de jogabilidade
 
 A primeira proposta `0.1.38` ainda seria pequena: quatro pilares próximos e uma
 câmara mínima repetiriam o erro de entregar somente um cenário com uma ação
-curta. Antes do deploy, a Sprint 1 foi ampliada para `0.1.39`:
+curta. Antes da montagem, a Sprint 1 foi ampliada e consolidada em `0.1.40`:
 
 - praça central de 15 × 15 com cobre, andesito e anel temporal;
 - dois eixos de caminhos, com até 33 blocos de extensão;
