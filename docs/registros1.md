@@ -4424,3 +4424,14 @@ Checklist executado no host via MCP readonly/projeto:
 - Segurança: foi reutilizado o backup anterior porque a tentativa `0.1.31` não passou do precheck e nenhum outro builder foi executado desde então; coordenada absoluta, envelope conhecido, comandos sequenciais e tickingarea temporária foram respeitados.
 - Estado: expansão automatizada concluída. Não repetir o evento de construção. O rollback `piramide:remover_quatro_selos -182 71 95` permanece disponível somente se a inspeção revelar problema.
 - Limitação e próximo passo: o log confirma execução técnica, mas não substitui validação visual. O operador deve percorrer a escada, tocar SOL→NILO→CÉU→VIDA, confirmar abertura da porta e inspecionar a Câmara Superior; enviar captura ou relatar qualquer bloqueio sem editar manualmente o mundo.
+
+## 2026-08-03 22:28:55 UTC-3
+
+- Pergunta do operador: o que pode ser feito de interessante no Mundo 4D.
+- Investigação: consultados `packs/BP_Portal4DEspacial/scripts/main.js`, as funções do módulo e a auditoria existente. O mundo já possui dimensão exclusiva, buraco negro, observatório, três fragmentos visuais (Natureza, Ruínas e Máquina), pontes, ativação por pedras-ímã e conclusão após 3/3.
+- Pergunta obrigatória: **por que o Mundo 4D ainda pode parecer pouco interessante mesmo sendo grande?** Os três fragmentos têm visuais diferentes, mas repetem o mesmo verbo de jogabilidade: atravessar uma ponte e ativar uma pedra-ímã. A causa raiz é baixa variedade de decisões e regras, não falta de espaço ou quantidade de blocos.
+- Recomendação: implementar **Anomalia das Três Linhas do Tempo** — Natureza representa o passado com enigma de sequência, Ruínas representa o presente com alinhamento lógico, Máquina representa o futuro com circuito temporizado, e o núcleo oferece convergência/decisão final.
+- Alternativas registradas: gravidade instável com resgate seguro, ecos narrativos, buraco negro reativo, cooperação com alternativa solo e observatório de constelações.
+- Segurança: priorizar um protótipo no fragmento das Ruínas, dentro do envelope existente X/Z=`-96..96`, Y=`45..150`; entrada absoluta, precheck, tickingarea temporária, rollback e backup permanecem obrigatórios. Não reconstruir o mundo completo para acrescentar uma mecânica local.
+- Estado: somente recomendação e documentação; nenhum pack, mundo, versão ou PNG foi alterado nesta etapa.
+- Próximo passo: se aprovado, estruturar o Add-On por sprints e implementar primeiro o enigma das Ruínas antes de expandir para os outros fragmentos.

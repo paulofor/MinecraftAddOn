@@ -100,3 +100,50 @@ O primeiro protótipo da Pirâmide deve caber no volume interno já existente e
 entregar variedade espacial real: descida, bifurcação curta, câmara marcante,
 segredo e recompensa visível. A automação constrói tudo; o operador apenas
 testa.
+
+## Próxima expansão recomendada para o Mundo 4D
+
+### Anomalia das Três Linhas do Tempo
+
+O melhor próximo passo é transformar os três fragmentos existentes em três
+experiências diferentes, em vez de adicionar outra ilha grande:
+
+1. **Natureza — passado:** recuperar uma sequência de vida observando a ordem
+   em que árvores, água e luz reagem;
+2. **Ruínas — presente:** alinhar quatro símbolos ou pilares para reconstruir
+   uma memória do planeta;
+3. **Máquina — futuro:** estabilizar um circuito sob limite de tempo, com
+   feedback visual e tentativa segura sem perda de inventário;
+4. **Núcleo — convergência:** depois das três soluções, o observatório revela
+   uma plataforma que alterna entre passado, presente e futuro e apresenta uma
+   decisão narrativa final.
+
+**Por que isso é mais interessante?** Atualmente os três ambientes possuem
+identidade visual, mas compartilham essencialmente a mesma ação: chegar à
+pedra-ímã e ativá-la. A causa da repetição não é falta de área construída; é a
+ausência de verbos e regras diferentes em cada fragmento. A expansão temporal
+reaproveita o mundo já montado, adiciona observação, lógica e pressão leve e
+mantém o foco educativo para jovens de 16 a 20 anos.
+
+### Alternativas menores
+
+- **Gravidade instável:** zonas com levitação lenta, queda segura e rotas que
+  mudam conforme o jogador carrega uma âncora;
+- **Ecos do explorador:** hologramas/mensagens em pontos fixos contam uma
+  micro-história e liberam um final secreto;
+- **Buraco negro reativo:** o disco muda de cor e abre passagens conforme cada
+  fragmento é concluído;
+- **Expedição cooperativa:** dois jogadores mantêm mecanismos ativos em ilhas
+  diferentes, mas com alternativa solo para não bloquear o conteúdo;
+- **Observatório astronômico:** alinhar constelações para descobrir coordenadas
+  e conceitos de orientação espacial.
+
+### Segurança e espaço
+
+Essas ideias cabem no envelope atual X/Z=`-96..96`, Y=`45..150` porque alteram
+principalmente interação, estado e pequenos elementos internos. Uma eventual
+construção deve continuar recebendo coordenadas absolutas, usar tickingareas
+temporárias, validar colisões e líquidos, possuir rollback e não reconstruir o
+Planeta Partido inteiro a cada reinício. A primeira entrega recomendada é um
+protótipo apenas no fragmento das Ruínas; após validação visual e de jogabilidade,
+o mesmo padrão pode ser expandido aos outros dois fragmentos.
